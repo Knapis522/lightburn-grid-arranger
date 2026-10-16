@@ -1,0 +1,44 @@
+# --- Python ---
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# --- Build / distribuce (ZIP se přikládá jen ke GitHub Release) ---
+build/
+dist/
+*.spec
+deployment/
+*.zip
+*.exe
+
+# --- Qt: .qm se generují při buildu z .ts ---
+*.qm
+
+# --- Projekty LightBurn: nikdy do Gitu, kromě syntetických vzorků ---
+*.lbrn2
+*.lbrn
+!tests/fixtures/synthetic/**/*.lbrn2
+
+# --- Výstupy a protokoly aplikace ---
+*__grid_*.lbrn2
+*__grid_*.json
+*__grid_*.txt
+*.log
+
+# --- Lokální nastavení a tajné údaje ---
+.env
+*.pfx
+*.p12
+.idea/
+.vscode/
+
+# --- Windows ---
+Thumbs.db
+desktop.ini

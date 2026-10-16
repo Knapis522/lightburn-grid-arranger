@@ -1,0 +1,7 @@
+# Textové soubory normalizovat, ale projekty LightBurnu nikdy neměnit
+# (testy bajtové shody originálu by jinak selhaly kvůli konci řádků).
+* text=auto
+*.lbrn2 binary
+*.lbrn binary
+*.png binary
+*.qm binary
