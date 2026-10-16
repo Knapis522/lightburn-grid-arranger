@@ -25,7 +25,26 @@ Složka `.venv` je v `.gitignore` a do Gitu se nedostane.
 python -m pytest
 ```
 
-Očekávaný výsledek: všechny testy `passed`. Testy jádra nepotřebují LightBurn ani žádný `.lbrn2`.
+Očekávaný výsledek: všechny testy `passed` (3 regresní testy na reálných souborech se bez nastavení přeskočí). Testy používají jen syntetické projekty generované v `tests/integration/lbrn2_builder.py`.
+
+Regresní testy na skutečných projektech (mimo Git):
+
+```bat
+set GRID_ARRANGER_REAL_DATA=..\lightburn-grid-arranger-data
+python -m pytest tests\integration\test_real_projects.py
+```
+
+## Vývojářská příkazová řádka
+
+```bat
+python -m grid_arranger info "..\lightburn-grid-arranger-data\projekt.lbrn2"
+python -m grid_arranger arrange "..\lightburn-grid-arranger-data\projekt.lbrn2" --columns 3 --gap 5 --material 0 0 1300 900 --margin 5 --dry-run
+```
+
+- Souřadnice `--start X Y` (levý horní roh mřížky na obrazovce) a `--material X Y Š V` jsou **hodnoty z LightBurnu**.
+- Bez `--start` začne mřížka v levém horním rohu vybraných výrobků.
+- `--order G3,G1,G2` = výběr a pořadí; bez něj všechny podporované v pořadí dokumentu.
+- Bez `--dry-run` vznikne nový `…__grid_001.lbrn2` a protokol `.json` vedle originálu.
 
 ## Testovací data
 

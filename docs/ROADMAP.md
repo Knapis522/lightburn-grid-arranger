@@ -23,7 +23,7 @@ V11-ACCEPT → V20-ACCEPT → FUT-01 (jen při veřejném API)
 | PLAN-00 | GitHub Projects board, Issues pro hlavní etapy | GIT-00 | Nezahájeno | — |
 | KAL-00 | Důkaz bezpečného přesunu skupiny v `.lbrn2` | GIT-00, DOC-00 | **Hotovo** 2026-10-16 (LightBurn 2.2.00-RC-7, Mirror True/True + False/True) | `docs/FORMAT_COMPATIBILITY.md` V-001…V-003, `tools/kal00/` |
 | CORE-00 | Deterministický algoritmus mřížky + testy ALG-* | DOC-00 | **Implementováno a otestováno** 2026-10-16 (automaticky; ověření na Windows čeká) | `src/grid_arranger/core`, `tests/unit` (143 testů) |
-| ADAPT-00 | Bezpečné čtení, identifikace skupin, zápis, diff | KAL-00 | Nezahájeno | — |
+| ADAPT-00 | Bezpečné čtení, identifikace skupin, zápis, diff | KAL-00 | **Implementováno a otestováno** 2026-10-16 (automaticky); čeká ruční T-MVP-26 | `src/grid_arranger/adapters`, `safety`, `application`; `tests/integration` |
 | GUI-00 | PySide6 aplikace: výběr, pořadí, náhled, validace | CORE-00, ADAPT-00 | Nezahájeno | — |
 | HELP-01 | Offline příručka F1, cs/en | GUI-00 | Nezahájeno | — |
 | MVP-ACCEPT | Ověření MVP-01..08, test v LightBurnu | výše | Nezahájeno | — |

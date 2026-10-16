@@ -1,22 +1,22 @@
 # Architektura
 
-**Aktualizováno:** 2026-10-16 (CORE-00). Závazný návrh: spec. kap. 11 a 25.
+**Aktualizováno:** 2026-10-16 (ADAPT-00). Závazný návrh: spec. kap. 11 a 25.
 
 ## Vrstvy a závislosti
 
 ```text
-ui/ (PySide6, GUI-00 — zatím neexistuje)
+ui/ (PySide6, GUI-00 — zatím neexistuje)      cli.py (vývojářský nástroj)
+  │                                              │
+application/arrange_job.py  ← načtení → plán → validace → zápis → kontrola → protokol
+  │                     │
+adapters/lightburn/     safety/verify.py  (nezávislá kontrola výstupu)
   │
-application/ (orchestrace úlohy — zatím neexistuje)
+core/   (mřížka, pořadí, kolize)
   │
-adapters/lightburn/ (čtení, převod souřadnic, zápis .lbrn2 — ADAPT-00, zatím neexistuje)
-  │
-core/        ← implementováno (CORE-00)
-  │
-domain/      ← implementováno (CORE-00)
+domain/ (datové typy, chyby)
 ```
 
-Závislosti směřují **pouze dovnitř**. `domain` a `core` používají jen standardní knihovnu, nesmí importovat Qt ani nic o formátu LightBurnu.
+Závislosti směřují **pouze dovnitř**. `domain` a `core` používají jen standardní knihovnu, nesmí importovat Qt ani nic o formátu LightBurnu. Celý projekt zatím nemá žádnou externí závislost.
 
 ## Souřadné systémy
 
@@ -37,7 +37,23 @@ Převod (ověřeno v KAL-00, spec. kap. 8): `screen_x = MirrorX ? −x : +x`, `s
 | `core/order.py` | `default_order`, `move_up`, `move_down`, `select` (na konec), `deselect`, `validate_permutation` — čisté funkce | MVP-02, MVP-03 |
 | `core/collision.py` | `validate_layout(...)` → `ValidationReport` (chyby blokují uložení, varování ne); zametací algoritmus pro dvojice | MVP-04, kap. 21.4 |
 | `core/tolerance.py` | `EPSILON = 0.001 mm` | kap. 7.4 |
+| `adapters/lightburn/xmltree.py` | bezpečné parsování (`expat`, zákaz DTD/entit, jen UTF-8) do stromu s bajtovými pozicemi obsahu | kap. 9.1, ADR-0002 |
+| `adapters/lightburn/geometry.py` | `XForm`, `VertList` (řídicí body), `PrimList` (`LineClosed`, `L`/`B` řetězec), konzervativní AABB, `fmt_num` (8 platných číslic) | kap. 5, 7.4 |
+| `adapters/lightburn/coords.py` | `Orientation` — převod soubor ↔ jádro podle `MirrorX/MirrorY` | kap. 8 |
+| `adapters/lightburn/read.py` | `load_project` — brány verze/orientace/neznámých prvků, výrobky (obrys = uzavřená cesta obsahující vše ostatní), důvody blokace, varování, překážky | kap. 5, 9.1, 41 |
+| `adapters/lightburn/write.py` | `plan_patches` (XForm skupiny + BackupPath textů), `apply_patches`, `next_output_path` (`__grid_NNN`), `write_new_file` (dočasný soubor + zveřejnění bez přepisu) | kap. 9.2, 9.4 |
+| `safety/verify.py` | `verify_output` — znovu parsuje zdroj i výstup; mimo obsah `XForm` musí být bajty shodné; změněné `XForm` jen u povolených uzlů a o přesný posun | kap. 9.3, 14.3 |
+| `application/arrange_job.py` | `make_plan`, `execute`, `run`; souřadnice od uživatele jsou souřadnice LightBurnu; JSON protokol vedle výstupu | kap. 21.5 |
+| `cli.py`, `__main__.py` | `python -m grid_arranger info|arrange …` | kap. 11 |
 | `version.py` | `__version__` — jediný zdroj verze | kap. 30.3 |
+
+## Pravidla rozpoznání výrobku (adaptér)
+
+- Výrobek = nejvyšší `Shape Type="Group"`; povolené atributy jen `Type`, `CutIndex` (jinak např. zamčení → blokace).
+- Uvnitř jen ověřené typy `Group`, `Path`, `Text`; jiný typ → blokace (mohl by nést světové souřadnice jako `BackupPath`).
+- Obrys = uzavřená cesta, jejíž AABB obsahuje AABB veškerého změřitelného obsahu; právě jedna (shodné duplicitní obrysy → nejednoznačné).
+- Text: `BackupPath/XForm` musí odpovídat složené transformaci textu (±0,01 mm), jinak blokace; text bez `BackupPath` → jen varování.
+- Projekt jako celek se odmítne: jiná přípona (`.lbrn` zvlášť), vadné XML, DTD, verze ≠ 2.2.x / formát ≠ 1, `MirrorY=False`, neznámé prvky či atributy kořene, více stránek.
 
 ## Datový tok (cílový stav MVP)
 
@@ -69,3 +85,15 @@ Převod (ověřeno v KAL-00, spec. kap. 8): `screen_x = MirrorX ? −x : +x`, `s
 | `obstacle_overlap`, `obstacle_gap_violation`, `obstacle_unmeasurable` | chyba | nepřesouvané překážky |
 | `zero_gap` | varování | nulová mezera — riziko při řezání |
 | `minimum_gap_only` | varování | různé rozměry → mezera je jen minimální |
+
+## Kódy adaptéru a úlohy
+
+| Kód | Úroveň | Význam |
+|---|---|---|
+| `legacy_format`, `not_lbrn2`, `file_too_large` | projekt | soubor nelze otevřít |
+| `xml_malformed`, `xml_encoding`, `xml_dtd_forbidden`, `not_lightburn_project` | projekt | vadný nebo nebezpečný obsah |
+| `unsupported_version`, `unsupported_orientation`, `unknown_orientation`, `unknown_element`, `unknown_project_attribute`, `multi_page_unsupported` | projekt | neověřená konstrukce |
+| `unknown_group_attribute`, `unsupported_shape_type`, `unknown_element`, `bad_xform`, `unreadable_path` | výrobek | blokace výrobku |
+| `no_outline`, `content_outside_outline`, `ambiguous_outline`, `degenerate_outline`, `empty_group`, `text_backup_mismatch` | výrobek | blokace výrobku |
+| `text_unmeasurable` | výrobek | varování |
+| `item_not_supported`, `validation_failed`, `verification_failed`, `source_changed`, `output_exists`, `would_overwrite_source`, `write_failed`, `no_free_output_name` | úloha | nic se neuloží |

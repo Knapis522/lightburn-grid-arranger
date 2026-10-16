@@ -8,10 +8,14 @@
 | MVP jádro: mřížka | T-MVP-01 – 04 | 26.1 | automatický | prochází | `tests/unit/test_layout.py` |
 | MVP jádro: výběr, pořadí | T-MVP-05, 06, 08 – 10 | 26.1 | automatický | prochází | `tests/unit/test_ordering.py`, `test_layout.py` |
 | MVP jádro: materiál, kolize | T-MVP-11 – 18 | 26.1 | automatický | prochází | `tests/unit/test_collision.py` |
-| Integrace `.lbrn2` | LB-01 – LB-13 | 14.2 | automatický + ruční v LightBurnu | nezahájeno | — |
+| Integrace `.lbrn2` (syntetické) | LB-01 – 06, 08, 10, 11 | 14.2 | automatický | prochází | `tests/integration/test_lbrn2_read.py`, `test_lbrn2_write.py` |
+| Integrace `.lbrn2` (reálné, mimo Git) | V-001 načtení, rozměry, round-trip | 14.2 | automatický, volitelný | prochází | `tests/integration/test_real_projects.py` |
+| Integrace v LightBurnu | LB-07, 09, 12, 13 | 14.2 | ruční | nezahájeno | — |
 | Invariance MVP | — | 14.3 | automatický | nezahájeno | — |
-| MVP funkce (zbytek) | T-MVP-07, T-MVP-19 – T-MVP-26 | 26.1 | automatický / ruční (T-MVP-26) | nezahájeno (ADAPT-00) | — |
-| Formát | T-FMT-01 – T-FMT-07 | 41.5 | automatický / ruční | nezahájeno | — |
+| MVP: nepodporované skupiny, ukládání | T-MVP-07, T-MVP-19 – T-MVP-25 | 26.1 | automatický | prochází | `tests/integration/` |
+| MVP: kontrola v LightBurnu | T-MVP-26 | 26.1 | ruční | čeká | zkušební výstup V-001 |
+| Formát | T-FMT-01 – 05, 07 | 41.5 | automatický | prochází | `tests/integration/` |
+| Formát v LightBurnu | T-FMT-06 | 41.5 | ruční | ověřeno pro prototyp (KAL-00) | protokol níže |
 | Lokalizace (interní) | T-I18N-01 – T-I18N-16 | 36.6 | automatický / ruční | nezahájeno | — |
 | Lokalizace (veřejná) | T-I18N-17 – T-I18N-22 | 36.6 | ruční | nezahájeno | — |
 | Nápověda | T-HELP-01 – T-HELP-10 | 38.5 | ruční | nezahájeno | — |
