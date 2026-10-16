@@ -28,3 +28,5 @@
 
 | Datum | Test | LightBurn | Soubor | Výsledek | Poznámka |
 |---|---|---|---|---|---|
+| 2026-10-16 | GH-01 | — | — | prochází | Repo publikováno jako Private; v commitu `55ab47e` jen 9 dokumentačních souborů, žádný `.lbrn2` |
+| 2026-10-16 | GH-02 | — | — | probíhá | Commit + push změny `docs/STATUS.md`, `ROADMAP.md`, `TEST_PLAN.md` |

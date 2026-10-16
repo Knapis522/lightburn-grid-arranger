@@ -18,8 +18,8 @@ V11-ACCEPT → V20-ACCEPT → FUT-01 (jen při veřejném API)
 
 | ID | Výstup | Závislost | Stav | Důkaz |
 |---|---|---|---|---|
-| GIT-00 | Soukromý GitHub repozitář, 2FA, GitHub Desktop | — | Probíhá | — |
-| DOC-00 | Kostra dokumentace, specifikace v repozitáři | souběžně s GIT-00 | Připraveno lokálně, čeká na první commit | — |
+| GIT-00 | Soukromý GitHub repozitář, 2FA, GitHub Desktop | — | Probíhá: GH-01 splněno, GH-02 se ověřuje | repo `Knapis522/lightburn-grid-arranger` (Private), commit `55ab47e` |
+| DOC-00 | Kostra dokumentace, specifikace v repozitáři | souběžně s GIT-00 | Hotovo (čeká na formální uzavření s GIT-00) | commit `55ab47e` |
 | PLAN-00 | GitHub Projects board, Issues pro hlavní etapy | GIT-00 | Nezahájeno | — |
 | KAL-00 | Důkaz bezpečného přesunu skupiny v `.lbrn2` | GIT-00, DOC-00 | Blokováno: chybí testovací soubor | — |
 | CORE-00 | Deterministický algoritmus mřížky + testy ALG-* | DOC-00 | Nezahájeno | — |
