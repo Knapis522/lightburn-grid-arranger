@@ -56,6 +56,25 @@ def move_down(order: Sequence[str], item_id: str) -> tuple[str, ...]:
     return tuple(lst)
 
 
+def swap(order: Sequence[str], item_id: str, target_id: str) -> tuple[str, ...]:
+    """Prohodí místa dvou položek (přetažení v náhledu); ostatní zůstávají na místě."""
+    i = _index(order, item_id)
+    j = _index(order, target_id)
+    lst = list(order)
+    lst[i], lst[j] = lst[j], lst[i]
+    return tuple(lst)
+
+
+def move_to(order: Sequence[str], item_id: str, target_id: str) -> tuple[str, ...]:
+    """Přesune položku na místo ``target_id`` (přetažení v náhledu); ostatní se posunou."""
+    i = _index(order, item_id)
+    j = _index(order, target_id)
+    lst = list(order)
+    lst.pop(i)
+    lst.insert(j, item_id)
+    return tuple(lst)
+
+
 def deselect(order: Sequence[str], item_id: str) -> tuple[str, ...]:
     """Odebere položku z výběru (identita výrobku tím nezaniká)."""
     _index(order, item_id)

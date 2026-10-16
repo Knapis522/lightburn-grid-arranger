@@ -8,12 +8,14 @@ description = "Grid Arranger for LightBurn — moves existing groups in .lbrn2 p
 readme = "README.md"
 requires-python = ">=3.12"
 dynamic = ["version"]
-# Jádro (domain, core) používá pouze standardní knihovnu.
-# PySide6 se přidá až s GUI (etapa GUI-00).
-dependencies = []
+# Jádro (domain, core), adaptér a úloha používají jen standardní knihovnu; PySide6 jen GUI.
+dependencies = ["PySide6>=6.8,<7"]
 
 [project.optional-dependencies]
 dev = ["pytest>=8"]
+
+[project.gui-scripts]
+GridArranger = "grid_arranger.gui.app:main"
 
 [tool.setuptools.dynamic]
 version = { attr = "grid_arranger.version.__version__" }
@@ -21,7 +23,10 @@ version = { attr = "grid_arranger.version.__version__" }
 [tool.setuptools.packages.find]
 where = ["src"]
 
+[tool.setuptools.package-data]
+grid_arranger = ["gui/help/*/*.md", "gui/translations/*.qm"]
+
 [tool.pytest.ini_options]
 testpaths = ["tests"]
-pythonpath = ["src"]
+pythonpath = ["src", "."]
 addopts = "-ra"

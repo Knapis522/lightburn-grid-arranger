@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import pytest
 
-from grid_arranger.core import arrange_to_grid, default_order, deselect, move_down, move_up, select, validate_permutation
+from grid_arranger.core import arrange_to_grid, default_order, deselect, move_down, move_to, move_up, select, swap, validate_permutation
 from grid_arranger.domain import GridError, Item, Rect
 
 from .helpers import request, scattered_items
@@ -82,3 +82,20 @@ def test_order_functions_do_not_mutate_input():
     order = ["a", "b", "c"]
     move_up(order, "b")
     assert order == ["a", "b", "c"]
+
+
+def test_move_to_drag_and_drop_semantics():
+    order = ("a", "b", "c", "d", "e")
+    assert move_to(order, "e", "b") == ("a", "e", "b", "c", "d")  # dozadu → vloží se před cíl
+    assert move_to(order, "a", "d") == ("b", "c", "d", "a", "e")  # dopředu → zaujme místo cíle
+    assert move_to(order, "c", "c") == order
+    with pytest.raises(GridError):
+        move_to(order, "a", "x")
+
+
+def test_swap_exchanges_only_two_items():
+    order = ("a", "b", "c", "d", "e")
+    assert swap(order, "e", "b") == ("a", "e", "c", "d", "b")
+    assert swap(order, "a", "a") == order
+    with pytest.raises(GridError):
+        swap(order, "a", "x")

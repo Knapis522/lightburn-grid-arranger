@@ -18,6 +18,20 @@ python -m pip install -e .[dev]
 
 Složka `.venv` je v `.gitignore` a do Gitu se nedostane.
 
+Po změně závislostí (např. přidání PySide6) příkaz `python -m pip install -e .[dev]` zopakujte.
+
+## Spuštění aplikace (okno)
+
+```bat
+.venv\Scripts\activate
+python tools\build_translations.py --no-update
+python -m grid_arranger.gui
+```
+
+- `build_translations.py` zkontroluje katalogy `translations\*.ts` a sestaví `.qm` (bez nich aplikace běží anglicky).
+- Po změně textů v GUI spusťte `python tools\build_translations.py` (bez `--no-update`) — doplní nové texty do `.ts`; chybějící český překlad zastaví sestavení. Překlady se upravují v Qt Linguist (`pyside6-linguist translations\gridarranger_cs.ts`).
+- Příručka (F1) je v `src\grid_arranger\gui\help\cs` a `…\en` (Markdown, stejná témata v obou jazycích).
+
 ## Spuštění testů
 
 ```bat

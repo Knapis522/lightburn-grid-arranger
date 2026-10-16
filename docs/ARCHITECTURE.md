@@ -1,11 +1,11 @@
 # Architektura
 
-**Aktualizováno:** 2026-10-16 (ADAPT-00). Závazný návrh: spec. kap. 11 a 25.
+**Aktualizováno:** 2026-10-16 (GUI-00). Závazný návrh: spec. kap. 11 a 25.
 
 ## Vrstvy a závislosti
 
 ```text
-ui/ (PySide6, GUI-00 — zatím neexistuje)      cli.py (vývojářský nástroj)
+gui/ (PySide6: okno, náhled, jazyk, nápověda)  cli.py (vývojářský nástroj)
   │                                              │
 application/arrange_job.py  ← načtení → plán → validace → zápis → kontrola → protokol
   │                     │
@@ -16,7 +16,7 @@ core/   (mřížka, pořadí, kolize)
 domain/ (datové typy, chyby)
 ```
 
-Závislosti směřují **pouze dovnitř**. `domain` a `core` používají jen standardní knihovnu, nesmí importovat Qt ani nic o formátu LightBurnu. Celý projekt zatím nemá žádnou externí závislost.
+Závislosti směřují **pouze dovnitř**. `domain` a `core` používají jen standardní knihovnu, nesmí importovat Qt ani nic o formátu LightBurnu. Jedinou externí závislostí je PySide6, a to jen ve vrstvě `gui/`.
 
 ## Souřadné systémy
 
@@ -45,6 +45,15 @@ Převod (ověřeno v KAL-00, spec. kap. 8): `screen_x = MirrorX ? −x : +x`, `s
 | `safety/verify.py` | `verify_output` — znovu parsuje zdroj i výstup; mimo obsah `XForm` musí být bajty shodné; změněné `XForm` jen u povolených uzlů a o přesný posun | kap. 9.3, 14.3 |
 | `application/arrange_job.py` | `make_plan`, `execute`, `run`; umístění `origin`/`center`/`manual`/`selection`, plnění `origin`/`reading`, deska u počátku s okrajem 5 mm; souřadnice od uživatele jsou souřadnice LightBurnu; JSON protokol vedle výstupu | kap. 12.3, 21.5 |
 | `cli.py`, `__main__.py` | `python -m grid_arranger info|arrange …` | kap. 11 |
+| `gui/main_window.py` | hlavní okno: projekt a laser, seznam výrobků (výběr, Nahoru/Dolů, výchozí pořadí), mřížka, umístění, deska, živý náhled, chyby/varování, Uložit (jen při platném rozložení, s potvrzením) | MVP-02…06, kap. 12 |
+| `adapters/lightburn/render.py` | `ProjectRenderer` — skutečné křivky výrobků a textů (`BackupPath`) v souřadnicích jádra pro náhled; Bézier: `c0` počátečního vrcholu, `c1` koncového | kap. 12.3 |
+| `gui/preview.py` | `PreviewView` — deska, využitelná plocha, počátek, překážky (šedě), výrobky se skutečnými motivy v barvách vrstev a s pořadím; zoom kolečkem, přepínač motivů; přetažení výrobku na místo jiného → signál `itemDropped` → `core.order.swap` (prohození); vždy světlé barvy | kap. 12.3, MVP-03 |
+| `gui/i18n.py` | `LocaleManager` (QTranslator, QLocale), `detect_system_language`, fallback do angličtiny | MVP-07, kap. 36 |
+| `gui/messages.py` | lokalizované hlášky z kódů chyb (`QT_TRANSLATE_NOOP`) | kap. 36.4 |
+| `gui/theme.py` | světlý / tmavý / automatický vzhled (styl Fusion + explicitní paleta, `setColorScheme`, sleduje změnu v systému); náhled desky vždy světlý | — |
+| `gui/settings.py` | `UserSettings` (QSettings): jazyk, vzhled, výchozí desky podle `DeviceName` | kap. 12.3, 36.3 |
+| `gui/help.py`, `gui/help/<cs|en>/*.md` | offline příručka: obsah, Zpět/Vpřed, hledání, F1, synchronizace jazyka | MVP-08, kap. 38 |
+| `gui/catalog_check.py`, `tools/build_translations.py` | kontrola úplnosti a zástupných symbolů `.ts`, sestavení `.qm` | T-I18N-14, 15 |
 | `version.py` | `__version__` — jediný zdroj verze | kap. 30.3 |
 
 ## Pravidla rozpoznání výrobku (adaptér)

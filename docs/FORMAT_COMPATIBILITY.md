@@ -78,6 +78,10 @@ Z A vytvořen `Kalibrace_C__grid_poc.lbrn2` posunem skupiny 8 o (+50, +30) metod
 4. LightBurn v L_B navíc **přegeneroval** `BackupPath` textu (jiné body, šířka 140,716 místo 140,663 mm). Pro náš zápis bez významu — u V-002 se BackupPath jen posunul, což děláme i my.
 5. **`VertID`/`PrimID` nejsou stabilní** mezi uloženími → nepoužívat jako identitu výrobků mezi soubory.
 
+## Bézierovy úseky (ověřeno vykreslením V-001, 2026-10-16)
+
+Úsek `B i j` v `PrimList` = kubická Bézierova křivka z vrcholu *i* do *j* s řídicími body **`c0` vrcholu *i*** (odchozí) a **`c1` vrcholu *j*** (příchozí); `c0x1` / `c1x1` = řídicí bod chybí (= vrchol). Ověřeno na textu „SESTAV SI SÁM“ (`BackupPath`): s tímto přiřazením je písmo hladké, s opačným lomené. Používá se jen pro náhled; AABB zůstává konzervativní (obal řídicích bodů).
+
 ### Otevřené body KAL-00
 
 - [x] Číselné potvrzení H1 a vztahu UI ↔ soubor (laser s počátkem vpravo nahoře).

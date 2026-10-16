@@ -9,9 +9,11 @@ from .tolerance import EPSILON
 from .order import (
     default_order,
     move_down,
+    move_to,
     move_up,
     select,
     deselect,
+    swap,
     validate_permutation,
 )
 
@@ -24,8 +26,10 @@ __all__ = [
     "default_order",
     "deselect",
     "move_down",
+    "move_to",
     "move_up",
     "select",
+    "swap",
     "validate_layout",
     "validate_permutation",
 ]

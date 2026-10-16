@@ -1466,7 +1466,7 @@ Pro každou funkci uvést **účel, požadované vstupy, stručný postup, oček
 
 ### 38.3 Technický návrh nápovědy
 
-- Zdrojové soubory jako **Markdown** v `docs/manual/<locale>/`, s indexem kapitol a stabilními identifikátory témat (např. `grid.spacing`, `export.validation`).
+- Zdrojové soubory jako **Markdown** v `src/grid_arranger/gui/help/<locale>/` (v1.10: přímo v balíčku aplikace, aby je sestavení EXE spolehlivě přibalilo; nahrazuje `docs/manual/<locale>/`), s indexem kapitol a stabilními identifikátory témat = názvy souborů (`index`, `prepare`, `items`, `grid`, `board`, `save`, `troubleshooting`, `about`).
 - Modulu `gui/help/` předat pouze `topic_id` a `locale`; s výpočetním jádrem ani s XML adaptérem není propojen. Při sestavení Windows ZIP zabalit ověřenou verzi manuálu **lokálně** spolu s aplikací (např. Qt resources / datové soubory zabalené PySide6 deployem).
 - Zobrazovač může být samostatné okno s `QTextBrowser`/Qt Markdown nebo jiný bezpečný lokální renderer. Nenavrhovat webový server ani vyžadovat Qt WebEngine; online nápověda může být pouze dobrovolný doplněk.
 - Minimálně **obsah kapitol, Back/Forward, odkazování mezi tématy a hledání v rámci manuálu** (index nebo fulltext dle zvolené implementace). F1 otevře nápovědu na vhodné téma podle právě aktivní obrazovky; není-li kontext známý, otevře úvod.
