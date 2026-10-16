@@ -5,7 +5,8 @@
 ## Vrstvy a závislosti
 
 ```text
-gui/ (PySide6: okno, náhled, jazyk, nápověda)  cli.py (vývojářský nástroj)
+gui/ (PySide6: okno, náhled, jazyk, nápověda, samokontrola)  cli.py (vývojářský nástroj)
+  ▲ packaging/ + tools/build_exe.py (PyInstaller → GridArranger.exe)
   │                                              │
 application/arrange_job.py  ← načtení → plán → validace → zápis → kontrola → protokol
   │                     │
@@ -48,12 +49,15 @@ Převod (ověřeno v KAL-00, spec. kap. 8): `screen_x = MirrorX ? −x : +x`, `s
 | `gui/main_window.py` | hlavní okno: projekt a laser, seznam výrobků (výběr, Nahoru/Dolů, výchozí pořadí), mřížka, umístění, deska, živý náhled, chyby/varování, Uložit (jen při platném rozložení, s potvrzením) | MVP-02…06, kap. 12 |
 | `adapters/lightburn/render.py` | `ProjectRenderer` — skutečné křivky výrobků a textů (`BackupPath`) v souřadnicích jádra pro náhled; Bézier: `c0` počátečního vrcholu, `c1` koncového | kap. 12.3 |
 | `gui/preview.py` | `PreviewView` — deska, využitelná plocha, počátek, překážky (šedě), výrobky se skutečnými motivy v barvách vrstev a s pořadím; zoom kolečkem, přepínač motivů; přetažení výrobku na místo jiného → signál `itemDropped` → `core.order.swap` (prohození); vždy světlé barvy | kap. 12.3, MVP-03 |
-| `gui/i18n.py` | `LocaleManager` (QTranslator, QLocale), `detect_system_language`, fallback do angličtiny | MVP-07, kap. 36 |
+| `gui/i18n.py` | `LocaleManager` (QTranslator, QLocale), `detect_system_language`, fallback do angličtiny; navíc katalog Qt `qtbase_<kód>` (tlačítka Ano/Ne) | MVP-07, kap. 36 |
 | `gui/messages.py` | lokalizované hlášky z kódů chyb (`QT_TRANSLATE_NOOP`) | kap. 36.4 |
 | `gui/theme.py` | světlý / tmavý / automatický vzhled (styl Fusion + explicitní paleta, `setColorScheme`, sleduje změnu v systému); náhled desky vždy světlý | — |
 | `gui/settings.py` | `UserSettings` (QSettings): jazyk, vzhled, výchozí desky podle `DeviceName` | kap. 12.3, 36.3 |
 | `gui/help.py`, `gui/help/<cs|en>/*.md` | offline příručka: obsah, Zpět/Vpřed, hledání, F1, synchronizace jazyka | MVP-08, kap. 38 |
 | `gui/catalog_check.py`, `tools/build_translations.py` | kontrola úplnosti a zástupných symbolů `.ts`, sestavení `.qm` | T-I18N-14, 15 |
+| `gui/app.py` | spuštění, ikona okna, zachycení neočekávané chyby; argumenty `<soubor.lbrn2>` a `--self-test REPORT.json` | MVP-06 |
+| `gui/selftest.py` | samokontrola sestavení bez zobrazení okna (příručka, překlady, ikona, okno, round-trip na vestavěném syntetickém projektu) → JSON, kód 0/1 | GH-05, HELP-01, T-I18N-16 |
+| `packaging/GridArranger.spec`, `tools/build_exe.py`, `tools/build_exe.bat` | PyInstaller (onedir, bez konzole, ikona, informace o verzi), zúžení Qt na Core/Gui/Widgets, samokontrola, ZIP | kap. 30, ADR-0003 |
 | `version.py` | `__version__` — jediný zdroj verze | kap. 30.3 |
 
 ## Pravidla rozpoznání výrobku (adaptér)

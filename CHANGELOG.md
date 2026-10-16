@@ -5,6 +5,9 @@ Formát podle [Keep a Changelog](https://keepachangelog.com/), verze podle SemVe
 ## [Unreleased]
 
 ### Přidáno
+- Sestavení `GridArranger.exe` jako přenosné složky a ZIPu (PyInstaller, ADR-0003): `tools\build_exe.bat` → překlady, testy, balení, samokontrola zabalené aplikace (`--self-test`), ZIP. Vlastní ikona aplikace (mřížka s počátkem laseru), informace o verzi v EXE, `README.txt` v balíčku.
+- Tlačítka standardních dialogů Qt (Ano/Ne, Storno) česky — načítá se i katalog `qtbase_cs`.
+- Příručka: spuštění z rozbaleného ZIPu, otevření projektu přetažením na EXE, upozornění Windows SmartScreen, kontrola instalace.
 - Náhled: plynulý zoom (i touchpad) s mezemi, pevná oblast posouvání, dvojklik = Přizpůsobit; neočekávaná chyba se zobrazí v okně s podrobnostmi; O aplikaci ukazuje verzi Qt/PySide6.
 - MVP-03: změna pořadí přetažením kartičky v náhledu — přetažená a cílová kartička si prohodí místa (`core.order.swap`), seznam se přečísluje.
 - Vzhled aplikace Nastavení → Vzhled: automaticky / světlý (celá aplikace světlá i při tmavém Windows) / tmavý (tmavé ovládání, náhled desky zůstává světlý); uloženo v nastavení.

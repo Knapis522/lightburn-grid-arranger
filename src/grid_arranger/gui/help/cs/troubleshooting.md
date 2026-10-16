@@ -14,6 +14,10 @@
 
 **„Původní soubor se změnil“** — projekt byl mezitím znovu uložen. Otevřete ho v aplikaci znovu.
 
+**Windows hlásí „Systém Windows ochránil váš počítač“** — aplikace zatím není digitálně podepsaná. Pokud ZIP pochází od správce aplikace, klikněte na **Další informace → Přesto spustit**. Antivirus nevypínejte.
+
+**Aplikace se nespustí nebo hlásí chybějící soubor** — nejspíš chybí složka `_internal` vedle `GridArranger.exe` (např. byl zkopírován jen samotný EXE). Rozbalte ZIP znovu celý. Kontrolu instalace provede příkaz `GridArranger.exe --self-test report.json` v příkazovém řádku; výsledek je v `report.json`.
+
 **Hlášení chyby** — pošlete protokol `.json` (obsahuje kontrolní součty a parametry, ne obsah výrobků) a popis kroků. Zákaznické projekty posílejte jen s oprávněním.
 
 [← Úvod](index.md)

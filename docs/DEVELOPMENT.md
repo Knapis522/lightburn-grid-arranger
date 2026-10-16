@@ -48,6 +48,36 @@ set GRID_ARRANGER_REAL_DATA=..\lightburn-grid-arranger-data
 python -m pytest tests\integration\test_real_projects.py
 ```
 
+## Sestavení GridArranger.exe
+
+Dvojklik na `tools\build_exe.bat` (nebo totéž z příkazového řádku ve složce projektu). Skript:
+
+1. doinstaluje do `.venv` PyInstaller (`pip install -e .[dev,build]`),
+2. sestaví překlady `.qm`,
+3. spustí všechny testy (selhání sestavení zastaví),
+4. zabalí aplikaci podle `packaging\GridArranger.spec` (PyInstaller, přenosná složka, bez konzole),
+5. spustí **samokontrolu** zabalené aplikace `GridArranger.exe --self-test` (příručka F1 cs/en, překlady včetně tlačítek Qt, ikona, okno, načtení → rozložení → zápis → kontrola na syntetickém projektu v dočasné složce),
+6. vytvoří `dist\GridArranger-v<verze>-win-x64.zip` a otevře složku `dist`.
+
+Výsledek:
+
+```text
+dist\GridArranger\GridArranger.exe     ← spustit (vedle musí zůstat složka _internal)
+dist\GridArranger\README.txt
+dist\GridArranger-v0.1.0.dev0-win-x64.zip
+dist\selftest-report.json              ← výsledek samokontroly
+```
+
+- `build\` a `dist\` jsou generované (v `.gitignore`), další sestavení je přepíše. ZIP se do Gitu nedává; později se přikládá ke GitHub Release.
+- Rychlá zkouška balení bez testů: `.venv\Scripts\python.exe tools\build_exe.py --skip-tests`.
+- PyInstaller sestavuje pro systém, na kterém běží — Windows EXE vznikne jen na Windows (na Linuxu jde jen o zkoušku balení).
+- Samokontrolu lze spustit i na cílovém počítači: `GridArranger.exe --self-test report.json` (zapíše JSON, okno nezobrazí, nastavení nemění).
+- Windows SmartScreen může nepodepsanou aplikaci zablokovat: „Další informace → Přesto spustit“. Podpis řešit až před veřejnou distribucí (spec. kap. 30).
+- Ikonu (`packaging\GridArranger.ico`, `src\grid_arranger\gui\resources\app_icon.png`) vytváří `tools\make_icon.py` (vyžaduje Pillow); běžně se negeneruje.
+- Rozhodnutí o nástroji: `docs/DECISIONS/ADR-0003-baleni-pyinstaller.md`.
+
+**Ruční test GH-05 / T-I18N-16 / HELP-01** na počítači bez Pythonu: rozbalit ZIP → spustit → přepnout jazyk cs/en → F1 → otevřít reálný projekt → uložit `__grid_NNN` → otevřít v LightBurnu (File → Open). Výsledek zapsat do `docs/TEST_PLAN.md`.
+
 ## Vývojářská příkazová řádka
 
 ```bat
@@ -71,4 +101,4 @@ python -m grid_arranger arrange "..\lightburn-grid-arranger-data\projekt.lbrn2" 
 
 - Každá změna kódu ve stejném commitu aktualizuje testy a dotčenou dokumentaci (DOC-01, spec. kap. 37.3).
 - `domain/` a `core/` nesmí importovat Qt ani adaptér.
-- Commit zprávy začínat ID požadavku (`CORE-00: …`, `MVP-04: …`).
+- Commit zprávy (Summary i Description v GitHub Desktop) psát **anglicky** a začínat ID požadavku (`CORE-00: …`, `EXE-00: …`).

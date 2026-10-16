@@ -22,9 +22,11 @@
 | Lokalizace (veřejná) | T-I18N-17 – T-I18N-22 | 36.6 | ruční | nezahájeno | — |
 | Nápověda (automatické) | T-HELP-01 – 04, 09 | 38.5 | automatický | prochází | `tests/gui/test_help.py` |
 | Nápověda (ruční / EXE) | T-HELP-05 – 08, 10 | 38.5 | ruční | nezahájeno | — |
+| Sestavení: samokontrola balíčku | GH-05 (část), HELP-01 (přibalení), T-I18N-16 (katalogy) | 34, 38, 36.6 | automatický při `tools/build_exe.py` + pytest | prochází (Linux, zkušební sestavení) | `tests/gui/test_packaging.py`, `dist/selftest-report.json` |
 | Dokumentace | T-DOC-01 – T-DOC-07 | 40.1 | kontrola | nezahájeno | — |
 | Řízení | T-PLAN-01 – T-PLAN-06 | 39.6 | kontrola | nezahájeno | — |
-| GitHub / distribuce | GH-01 – GH-16 | 34 | ruční | nezahájeno | — |
+| GitHub / distribuce | GH-01, GH-02 | 34 | ruční | prochází | protokol níže |
+| GitHub / distribuce | GH-03 – GH-16 (vč. GH-05 EXE na čistém Windows) | 34 | ruční | nezahájeno | — |
 | Verze 1.1 | T-11-01 – T-11-20 | 26.2 | — | plánováno | — |
 | Verze 2.0 | T-20-01 – T-20-19 | 26.3 | — | plánováno | — |
 
@@ -46,3 +48,5 @@
 | 2026-10-16 | T-MVP-26 / LB-13 | 2.2.00-RC-7 | test program …__grid_001.lbrn2 | ruční – ověřeno | 9 kartiček 3 × 3, mezera 5 mm; vlastník: „vše sedí“; požadavek zarovnat k počátku → spec. v1.10 |
 | 2026-10-16 | Celá sada (Windows) | — | — | prochází | Windows 11, Python 3.13.6: 221 passed, 1 skipped (POSIX); vč. regresních testů na reálných souborech a zápisu přes `os.rename` |
 | 2026-10-16 | T-MVP-26 / LB-13 (v1.10) | 2.2.00-RC-7 | test program …__grid_002.lbrn2 | ruční – ověřeno | Deska 700 × 500, okraj 5, roh počátku vpravo nahoře, plnění od počátku; vlastník: „sedí“ (shoda s ručním vzorem `-zarovnani`) |
+| 2026-10-16 | GUI-00 ruční (Windows) | — | reálný projekt | ruční – ověřeno | Vlastník: náhled motivů, prohození tažením, vzhled světlý/tmavý/automaticky, zoom — v pořádku |
+| 2026-10-16 | Zkušební sestavení (Linux) | — | syntetický | prochází | `tools/build_exe.py`: 286 testů, PyInstaller 6.22, samokontrola 5/5 v zabalené aplikaci; nejde o důkaz GH-05 (ten vyžaduje Windows) |
