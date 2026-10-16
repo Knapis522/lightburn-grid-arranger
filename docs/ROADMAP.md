@@ -18,10 +18,10 @@ V11-ACCEPT → V20-ACCEPT → FUT-01 (jen při veřejném API)
 
 | ID | Výstup | Závislost | Stav | Důkaz |
 |---|---|---|---|---|
-| GIT-00 | Soukromý GitHub repozitář, 2FA, GitHub Desktop | — | Probíhá: GH-01 splněno, GH-02 se ověřuje | repo `Knapis522/lightburn-grid-arranger` (Private), commit `55ab47e` |
-| DOC-00 | Kostra dokumentace, specifikace v repozitáři | souběžně s GIT-00 | Hotovo (čeká na formální uzavření s GIT-00) | commit `55ab47e` |
+| GIT-00 | Soukromý GitHub repozitář, 2FA, GitHub Desktop | — | **Hotovo** 2026-10-16 | repo `Knapis522/lightburn-grid-arranger` (Private); GH-01 commit `55ab47e`, GH-02 commit `5e94c06` |
+| DOC-00 | Kostra dokumentace, specifikace v repozitáři | souběžně s GIT-00 | **Hotovo** 2026-10-16 | commit `55ab47e` |
 | PLAN-00 | GitHub Projects board, Issues pro hlavní etapy | GIT-00 | Nezahájeno | — |
-| KAL-00 | Důkaz bezpečného přesunu skupiny v `.lbrn2` | GIT-00, DOC-00 | Blokováno: chybí testovací soubor | — |
+| KAL-00 | Důkaz bezpečného přesunu skupiny v `.lbrn2` | GIT-00, DOC-00 | **Hotovo** 2026-10-16 (LightBurn 2.2.00-RC-7, Mirror True/True + False/True) | `docs/FORMAT_COMPATIBILITY.md` V-001…V-003, `tools/kal00/` |
 | CORE-00 | Deterministický algoritmus mřížky + testy ALG-* | DOC-00 | Nezahájeno | — |
 | ADAPT-00 | Bezpečné čtení, identifikace skupin, zápis, diff | KAL-00 | Nezahájeno | — |
 | GUI-00 | PySide6 aplikace: výběr, pořadí, náhled, validace | CORE-00, ADAPT-00 | Nezahájeno | — |

@@ -1,6 +1,6 @@
 # Grid Arranger for LightBurn — technická specifikace
 
-**Verze dokumentu:** 1.8 (rozhodnutí před implementací: adaptivní mřížka v MVP, obrys z uzavřené cesty, text jako varování, sjednocení názvů; viz kap. 28)  
+**Verze dokumentu:** 1.9 (obecný uzavřený obrys, posun `BackupPath` textů, formát čísel — podle zjištění KAL-00; viz kap. 28)  
 **Datum:** 16. 10. 2026  
 **Název produktu:** Grid Arranger for LightBurn; spustitelný soubor `GridArranger.exe`; Python balíček `grid_arranger`; repozitář `lightburn-grid-arranger`. Neoficiální nástroj, nikoli produkt LightBurn Software.  
 **Stav:** Interní pracovní podklad; nikoli hotový nebo otestovaný plugin  
@@ -11,7 +11,7 @@
 
 **Publikační strategie:** Od zahájení implementace soukromý GitHub repozitář. Veřejné zveřejnění a kontaktování LightBurnu pouze po interním schválení; nejsou automatickým výsledkem dokončení MVP. Podrobnosti v kapitolách 29–35.
 
-**Řízení rozsahu:** Funkce jsou závazně rozděleny na **MVP**, **funkční verzi aplikace 1.1**, **verzi 2.0** a **nezávazný výhled**. Podrobnosti, závislosti, testy a akceptace funkcí jsou v kapitolách 20–26; publikační proces je v kapitolách 29–35; lokalizace v kapitole 36; průběžná dokumentace, vestavěná nápověda, harmonogram a dokončovací brány v kapitolách 37–40. Číslo verze dokumentu (1.8) není číslo vydané aplikace.
+**Řízení rozsahu:** Funkce jsou závazně rozděleny na **MVP**, **funkční verzi aplikace 1.1**, **verzi 2.0** a **nezávazný výhled**. Podrobnosti, závislosti, testy a akceptace funkcí jsou v kapitolách 20–26; publikační proces je v kapitolách 29–35; lokalizace v kapitole 36; průběžná dokumentace, vestavěná nápověda, harmonogram a dokončovací brány v kapitolách 37–40. Číslo verze dokumentu (1.9) není číslo vydané aplikace.
 
 > **Hlavní princip:** Oddělit obecný algoritmus rozmístění od adaptérů, které čtou a upravují projekty LightBurnu. Do původního souboru nikdy nezapisovat. Při jakékoli nejednoznačnosti skončit bezpečnou chybou, nikoli tichou úpravou výroby.
 
@@ -60,7 +60,7 @@ Zdrojové materiály jsou na konci dokumentu. Všechny technické závěry o zá
 
 - **MVP-08 Vestavěná nápověda a uživatelská dokumentace:** dostupná offline přes `F1` a `Nápověda → Uživatelská příručka`, nejprve kompletně `cs/en`, pro veřejné vydání všech osm jazyků, se shodou s implementovaným stavem; specifikace v kap. 38.
 
-**Omezení podporovaných geometrií:** první verze vyžaduje samostatné nejvyšší `Group` s jednoznačným osově zarovnaným vnějším obdélníkovým řezným obrysem (objekt `Rect`, nebo uzavřená cesta tvořící osově zarovnaný obdélník — kap. 5). Výrobky ve skupině mohou mít různé rozměry; mřížka je adaptivní (kap. 7.3). Pokud požadovaný projekt nesplňuje podmínky, zobrazit konkrétní důvod a neprovést export. Původní objekt nesmí být měněn mimo translaci; podrobné podmínky v kap. 5, 8–9.
+**Omezení podporovaných geometrií:** první verze vyžaduje samostatné nejvyšší `Group` s jednoznačným vnějším uzavřeným řezným obrysem, uvnitř kterého leží veškerý ostatní obsah skupiny; rozměr výrobku je AABB tohoto obrysu (kap. 5). Výrobky ve skupině mohou mít různé rozměry; mřížka je adaptivní (kap. 7.3). Pokud požadovaný projekt nesplňuje podmínky, zobrazit konkrétní důvod a neprovést export. Původní objekt nesmí být měněn mimo translaci; podrobné podmínky v kap. 5, 8–9.
 
 ### 3.2 Výslovně mimo MVP
 
@@ -79,7 +79,7 @@ Před spuštěním uživatel uloží projekt v LightBurnu. Po vytvoření novéh
 ## 4. Důležité definice
 
 - **Výrobek (item):** jedna nejvyšší skupina LightBurnu, obsahující řezný obrys i všechny její vnitřní motivy/texty.
-- **Obrys výrobku:** jedna ověřená uzavřená obdélníková řezná geometrie uvnitř skupiny (`Rect` nebo uzavřená osově zarovnaná obdélníková cesta); určuje výrobní rozměry a pozici. Ostatní obsah skupiny (texty, motivy) rozměr výrobku neurčuje.
+- **Obrys výrobku:** jedna ověřená uzavřená řezná geometrie uvnitř skupiny, která obsahuje veškerý ostatní obsah skupiny (např. obdélník, zaoblený obdélník, libovolný uzavřený tvar); výrobní rozměry a pozici určuje její AABB. Ostatní obsah skupiny (texty, motivy) rozměr výrobku neurčuje.
 - **Bounding box / AABB:** nejmenší osově rovnoběžný obdélník obklopující obrys **po všech transformacích**.
 - **Mezera:** vzdálenost mezi výrobními obrysy (nikoli mezi středovými body, nikoli rozteč gravírovacích textů).
 - **Pořadí:** explicitní uspořádaný seznam identifikátorů výrobků. **Document order** je dostupný fallback, ale před uložením musí být zřejmý.
@@ -91,13 +91,15 @@ Před spuštěním uživatel uloží projekt v LightBurnu. Po vytvoření novéh
 **MVP – režim `strict_rectangular_group`:**
 
 1. Skupina musí být nejvyšším samostatným přesouvaným objektem projektu; nevybírat zároveň ji i jejího potomka.
-2. Musí obsahovat přesně jeden jednoznačně určený vnější obrys na zvoleném řezném indexu/vrstvě. Přípustné typy obrysu (rozhodnutí 16. 10. 2026):
-   - objekt `Rect` (včetně případného zaoblení rohů — rozměr určuje vnější obdélník `W × H`);
-   - uzavřená cesta (`Path`) z právě čtyř přímých úseků, jejíž vrcholy po všech transformacích tvoří obdélník s hranami rovnoběžnými s osami X/Y v toleranci `epsilon`. Oblouky, Bézierovy úseky, více než čtyři vrcholy (kromě zdvojeného koncového bodu uzavření) nebo odchylka od pravého úhlu → nejde o podporovaný obrys.
-   Pokud je kandidátů více a nelze jednoznačně určit správný (např. vnější je ten s největší plochou, který obsahuje všechny ostatní), skupinu odmítnout a požádat o ruční volbu.
+2. Musí obsahovat přesně jeden jednoznačně určený **vnější uzavřený obrys** (rozhodnutí 16. 10. 2026 po KAL-00, nahrazuje omezení v1.8 na `Rect`/čtyřúhelník):
+   - typ `Rect`, `Ellipse` nebo uzavřená `Path` (`PrimList="LineClosed"`, nebo seznam primitiv, jehož konec navazuje na začátek); úseky mohou být přímé i Bézierovy;
+   - AABB obrysu (po všech transformacích, u Bézierových úseků přesně podle extrémů křivky, nikoli jen vrcholů) **obsahuje AABB veškerého ostatního obsahu skupiny** v toleranci `epsilon`, včetně textů měřených přes `BackupPath`;
+   - je jediný takový kandidát; pokud je jich více, zvolí se ten s největší plochou AABB a ostatní musí ležet uvnitř; jinak skupinu odmítnout a požádat o ruční volbu;
+   - řezná vrstva obrysu se zobrazí u výrobku; mají-li vybrané výrobky obrys na různých vrstvách, zobrazit varování.
+   Rozměr a poloha výrobku = AABB obrysu. U neobdélníkových obrysů (např. zaoblené rohy) je skutečná vzdálenost obrysů v rozích **větší nebo rovna** zadané mezeře, nikdy menší; GUI to uvede.
 3. Vnější obrys musí být ve výsledném souřadném systému osově zarovnaný; pro počáteční prototyp není dovolena rotace ani smyk obrysů. Případné transformace celého obrázku musí být detekovány a validovány.
 4. Každá skupina je uzamčena ve svém vnitřním uspořádání (bez úpravy vnitřních tvarů).
-5. Obsah mimo tento obrys: geometrii s **ověřitelnými** hranicemi (cesty, `Rect`, `Ellipse`, bitmapy se známým rozměrem), která přesahuje obrys, skupinu **odmítnout** — mohla by narušit bezpečný odstup. Obsah, jehož hranice nelze spolehlivě spočítat (typicky `Text`, pokud soubor neobsahuje jeho geometrii), **neblokuje**, ale vyvolá viditelné **varování** u výrobku a připomenutí kontroly v LightBurn Preview (rozhodnutí 16. 10. 2026). Pokud KAL-00 prokáže, že soubor geometrii textu obsahuje, použije se pro text ověřitelná kontrola.
+5. Obsah mimo tento obrys: geometrii s **ověřitelnými** hranicemi (cesty, `Rect`, `Ellipse`, bitmapy se známým rozměrem), která přesahuje obrys, skupinu **odmítnout** — mohla by narušit bezpečný odstup. Obsah, jehož hranice nelze spolehlivě spočítat (např. `Text` bez `BackupPath`), **neblokuje**, ale vyvolá viditelné **varování** u výrobku a připomenutí kontroly v LightBurn Preview (rozhodnutí 16. 10. 2026). KAL-00 prokázal, že LightBurn 2.2 ukládá u textu `HasBackupPath="1"` a úplnou geometrii v `BackupPath` → pro takové texty se použije ověřitelná kontrola.
 6. Zamčené skupiny, nevysvětlené odkazy a neznámé vlastnosti, které by se mohly změnit přesunem, odmítnout.
 7. Neseskupené výrobky neidentifikovat heuristikou; nabídnout uživateli jejich seskupení v LightBurnu.
 
@@ -226,6 +228,15 @@ Tím se nezmění rotace, měřítko, smyk ani lokální údaje jednotlivých po
 
 Další zásadní riziko: parametry projektu `MirrorX`, `MirrorY` a nastavení počátku mohou ovlivnit vztah mezi uloženými souřadnicemi a vizuálním směrem v LightBurnu. Přepočet zobrazené mřížky do souřadnic souboru **nesmíme natvrdo odhadnout**. V etapě 0 vytvořit kalibrační test se dvěma obdélníky, jedním posunem vpravo a jedním dolů, a ověřit chování v aktuální verzi LightBurnu.
 
+**Výsledek kalibrace KAL-00 (16. 10. 2026, LightBurn 2.2.00):** souřadnice v souboru jsou souřadnice stroje a shodují se s hodnotami X/Y v UI LightBurnu. Příznaky `MirrorX`/`MirrorY` v hlavičce určují **jen zobrazení**: přepnutí zařízení v LightBurnu změní příznak, ale žádnou souřadnici v souboru. Převod do souřadnic jádra (osa X doprava, osa Y dolů):
+
+```text
+screen_x = −x_souboru  když MirrorX="True",   jinak  +x_souboru
+screen_y = +y_souboru  když MirrorY="True",   jinak  −y_souboru
+```
+
+Ověřené kombinace: `MirrorX=True, MirrorY=True` (počátek vpravo nahoře) a `MirrorX=False, MirrorY=True` (počátek vlevo nahoře). Ostatní kombinace (`MirrorY=False`) jsou v MVP **nepodporované** a projekt se odmítne s vysvětlením, dokud nebudou ověřeny stejným kalibračním párem. Adaptér převádí posuny zpět: `dx_souboru = −dx_screen` při `MirrorX=True`, jinak `+dx_screen`; `dy_souboru = +dy_screen` při `MirrorY=True`, jinak `−dy_screen`.
+
 **Poznámka:** Ukázka formátu vychází z veřejné diskuse z roku 2021, nikoli z garantovaného veřejného schématu pro rok 2026. Podpora konkrétního `AppVersion` a `FormatVersion` je předmětem ověřovacího testu.
 
 ## 9. Čtení a bezpečný zápis projektu
@@ -242,6 +253,10 @@ Další zásadní riziko: parametry projektu `MirrorX`, `MirrorY` a nastavení p
 ### 9.2 Zápis
 
 **Tato původní kapitola specifikuje zápis pro MVP s přesuny bez kopírování.** Pro v1.1 s množstvími a v2.0 platí navíc rozšířená pravidla verzovaných invariancí a exportu v kap. 22–25.
+
+**Povinná doprovodná změna (KAL-00, 16. 10. 2026):** `XForm` uvnitř `BackupPath` u textů je uložen ve **světových souřadnicích** (`XForm(BackupPath) = XForm(skupina) ∘ XForm(text)`). LightBurn jej při přesunu skupiny posouvá o stejný vektor. Náš zápis proto u přesouvané skupiny mění translaci `XForm` skupiny **a** translaci `XForm` každého `Text/BackupPath` v jejím podstromu o stejné `(dx, dy)`. Před zápisem ověřit, že `XForm(BackupPath) ≈ XForm(skupina) ∘ XForm(text)` v toleranci; při nesouladu skupinu odmítnout.
+
+**Formát čísel:** zapisovat jako `format(v, '.8g')` (8 platných číslic, desetinná tečka), stejně jako LightBurn 2.2.
 
 **Povolená výjimka (rozhodnutí 16. 10. 2026):** případný uložený náhledový obrázek projektu (thumbnail) se neaktualizuje a po přesunu nemusí odpovídat obsahu; validátor jej porovnává jako nezměněný. Vlastní náhled si LightBurn obnoví při dalším uložení.
 
@@ -496,7 +511,7 @@ Kontrola plochy/kolizí: vyhovuje / blokováno (s důvodem)
 
 - `count(before.Shape) == count(after.Shape)`; počet skupin a textů rovněž stejný.
 - `count/contents(before.CutSetting) == count/contents(after.CutSetting)`.
-- Pro všechny přesouvané skupiny: `XForm[0:4]` nezměněno, jen přepočtená translace `XForm[4:6]`.
+- Pro všechny přesouvané skupiny: `XForm[0:4]` nezměněno, jen přepočtená translace `XForm[4:6]`; totéž a o stejný vektor pro `BackupPath/XForm` textů v podstromu skupiny.
 - Pro všechny vnitřní objekty: žádná změna obsahu elementů ani jejich lokálních transformací.
 - Pro všechny nevybrané objekty: žádná změna.
 - Množina ID před/po je totožná, pořadí podle uživatele zachováno.
@@ -680,7 +695,7 @@ for each placed_item:
 
 **Transakce:** načtení + SHA-256 → plán přesunů → vyloučení nepodporovaných struktur → patch translací nejvyšších skupin v dočasném souboru → strukturální a sémantický diff → validace zdrojového SHA-256 → znovunačtení výstupu → atomické zveřejnění nového výstupu → protokol. Pokud některý krok selže, nevznikne žádný výstup prezentovaný jako platný. Nemanipulovat s binárkami LightBurnu.
 
-**Povolené změny MVP:** pouze přesně specifikovaná `XForm` translace každé vybrané nejvyšší skupiny; počet a identita všech objektů, vrstvy `CutIndex`, `CutSetting`, texty, obrázky a nevybrané objekty beze změny. Při nemožnosti průkazného porovnání blokovat. Přidat zprávu, že samotné strukturální porovnání nenahrazuje otevření v LightBurnu.
+**Povolené změny MVP:** pouze přesně specifikovaná `XForm` translace každé vybrané nejvyšší skupiny a stejná translace `XForm` v `BackupPath` textů v jejím podstromu (kap. 9.2); počet a identita všech objektů, vrstvy `CutIndex`, `CutSetting`, texty, obrázky a nevybrané objekty beze změny. Při nemožnosti průkazného porovnání blokovat. Přidat zprávu, že samotné strukturální porovnání nenahrazuje otevření v LightBurnu.
 
 **Přijímací důkaz:** T-MVP-19 až 26 a integrační LB-01 až LB-13.
 
@@ -1008,6 +1023,7 @@ Toto jsou **ověřovací úkoly**, nikoli potvrzené technické možnosti souča
 
 ## 28. Záznam změn specifikace
 
+- **v1.9 (16. 10. 2026):** Změny podle zjištění KAL-00 (LightBurn 2.2.00-RC-7, `docs/FORMAT_COMPATIBILITY.md`). (1) Obrys výrobku: libovolný uzavřený řezný tvar, který obsahuje veškerý ostatní obsah skupiny; rozměr = jeho AABB; nahrazuje omezení v1.8 na `Rect`/čtyřúhelník — reálné kartičky mají zaoblené rohy převedené na lomenou čáru (kap. 3.1, 4, 5). (2) Při přesunu skupiny se povinně posouvá i `BackupPath/XForm` textů, protože je ve světových souřadnicích a LightBurn jej takto posouvá (kap. 9.2, 14.3, 21.5). (3) Texty s `BackupPath` jsou měřitelné. (4) Formát čísel `.8g`. (5) Ověřený převod souřadnic podle `MirrorX/MirrorY`; podporované kombinace True/True a False/True, ostatní odmítnout (kap. 8). (6) `VertID`/`PrimID` LightBurn při uložení přečísluje → nejsou stabilní identitou mezi soubory.
 - **v1.8 (16. 10. 2026):** Rozhodnutí před implementací. (1) Sjednoceny názvy: produkt *Grid Arranger for LightBurn*, `GridArranger.exe`, balíček `grid_arranger`, specifikace `docs/specification.md`, matice `docs/FORMAT_COMPATIBILITY.md`. (2) Adaptivní mřížka pro různé rozměry je povinnou součástí MVP; ALG-04 povinný; režim pevné buňky se neimplementuje (kap. 7.3, 21.1). (3) Obrys výrobku: `Rect` nebo uzavřená osově zarovnaná čtyřúhelníková cesta (kap. 4, 5). (4) Obsah s nezměřitelnými hranicemi (typicky text) uvnitř skupiny vyvolá varování, nikoli blokaci; ověřitelná geometrie přesahující obrys dál blokuje (kap. 5). (5) Jádro pracuje v systému s osou Y dolů, převod dělá adaptér podle KAL-00 (kap. 7.1). (6) `gridarranger_en.ts` povinný kvůli množnému číslu (kap. 11, 25.3, 30.1, 36.1). (7) Neaktuální thumbnail je povolená výjimka; doporučen patch přes bajtové pozice z `expat`; zákaz `os.replace` (kap. 9.2, 9.4). (8) Výchozí počátek mřížky = levý horní roh vybraných výrobků (kap. 12.3). (9) Opraveno číslování kap. 16.
 - **v1.7 (15. 10. 2026):** Závazně zvolen jediný podporovaný vstupní a výstupní formát `.lbrn2` (FMT-00). Bez větve pro starší `.lbrn`, bez implicitní konverze. Doplněna politika formátů (kap. 41), testovací brána aktuálních souborů a kompatibilitní matice. Opraven chybný odkaz v úvodu na číslo verze specifikace.
 - **v1.6 (15. 10. 2026):** Nové závazné požadavky DOC-00 / DOC-01 na průběžnou projektovou a technickou dokumentaci, MVP-08 / HELP-01 na offline uživatelskou příručku integrovanou do aplikace, PLAN-00 na harmonogram a stavový přehled. Doplněna pravidla aktualizace dokumentů s kódem, konkrétní soubory repozitáře, návaznosti, odpovědnost za údržbu, testy T-DOC / T-HELP / T-PLAN a release gate `DOC-REL-01` (kapitoly 37–40). Vytvořeny iniciační šablony roadmapy, stavu a osnovy manuálu.

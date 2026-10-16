@@ -29,4 +29,7 @@
 | Datum | Test | LightBurn | Soubor | Výsledek | Poznámka |
 |---|---|---|---|---|---|
 | 2026-10-16 | GH-01 | — | — | prochází | Repo publikováno jako Private; v commitu `55ab47e` jen 9 dokumentačních souborů, žádný `.lbrn2` |
-| 2026-10-16 | GH-02 | — | — | probíhá | Commit + push změny `docs/STATUS.md`, `ROADMAP.md`, `TEST_PLAN.md` |
+| 2026-10-16 | GH-02 | — | — | prochází | Commit `5e94c06` vytvořen v GitHub Desktop a odeslán; `origin/main` = `5e94c06` |
+| 2026-10-16 | KAL-00 / T-FMT-04 | 2.2.00-RC-7 | Kalibrace_C__grid_poc.lbrn2 | prochází | Prototyp posunul skupinu o +50/+30; změněny 2 řádky; originál beze změny |
+| 2026-10-16 | KAL-00 / T-FMT-06 | 2.2.00-RC-7 | Kalibrace_C__grid_poc.lbrn2 | ruční – ověřeno | File → Open: poloha, text, vrstvy, Preview v pořádku (vlastník) |
+| 2026-10-16 | KAL-00 / LB-06 | 2.2.00-RC-7 | Kalibrace_A/B, Kalibrace_L_A/L_B | ruční – ověřeno | Orientace pro Mirror True/True a False/True |

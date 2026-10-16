@@ -1,7 +1,7 @@
 # Stav projektu
 
 **Aktualizováno:** 2026-10-16
-**Verze specifikace:** 1.8 (`docs/specification.md`)
+**Verze specifikace:** 1.9 (`docs/specification.md`)
 **Verze aplikace:** žádná (nic není implementováno)
 
 > Tento soubor je hlavní předávací dokument. Při navázání práce: přečíst tento soubor → `ROADMAP.md` → relevantní kapitolu specifikace. Nepředpokládat, že funkce funguje jen proto, že existuje kód.
@@ -10,7 +10,7 @@
 
 | Hotovo | Probíhá | Blokováno | Další |
 |---|---|---|---|
-| Specifikace v1.8; kostra dokumentace (DOC-00); soukromý repozitář `Knapis522/lightburn-grid-arranger` publikován, první commit `55ab47e` (GH-01) | GIT-00: ověření GH-02 (commit + push této změny) | KAL-00 — čeká na testovací `.lbrn2` z aktuálního LightBurnu | Dokončit GH-02; PLAN-00; dodat testovací projekt (kap. 19) do `..\lightburn-grid-arranger-data\` |
+| Specifikace v1.8; **GIT-00 splněno** (soukromý repozitář `Knapis522/lightburn-grid-arranger`, GH-01 + GH-02, commity `55ab47e`, `5e94c06`); **DOC-00 splněno** | **KAL-00 splněno** (LightBurn 2.2.00-RC-7; oba lasery; prototyp zápisu ověřen otevřením v LightBurnu); spec. v1.9 | — | — | CORE-00 (algoritmus mřížky + testy ALG-*), poté ADAPT-00 (čtečka, zápis, diff, negativní testy) |
 
 ## Implementováno / otestováno
 
@@ -25,5 +25,6 @@
 
 ## Poslední ověřený stav / co zkusit dál
 
-- Ověřeno: nic technického.
-- Další bezpečný krok: GIT-00, poté čtecí část KAL-00 na kopii testovacího projektu.
+- Ověřeno: čtení struktury `.lbrn2` 2.2.00; převod souřadnic pro `MirrorX/MirrorY` True/True i False/True (přepnutí laseru mění jen příznak, ne souřadnice); přesun skupiny bajtovým patchem (2 řádky) odpovídá LightBurnu a výsledek se v LightBurnu otevřel správně.
+- Prototypové skripty KAL-00 jsou v `tools/kal00/` (jen diagnostika, nejsou součástí aplikace); čistá implementace vznikne v ADAPT-00.
+- Další bezpečný krok: CORE-00 — `pyproject.toml`, `src/grid_arranger/domain` + `core`, pytest ALG-01…10 a T-MVP-01…04.
