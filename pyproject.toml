@@ -1,0 +1,27 @@
+[build-system]
+requires = ["setuptools>=69"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "grid-arranger"
+description = "Grid Arranger for LightBurn — moves existing groups in .lbrn2 projects into an exact grid (unofficial tool)."
+readme = "README.md"
+requires-python = ">=3.12"
+dynamic = ["version"]
+# Jádro (domain, core) používá pouze standardní knihovnu.
+# PySide6 se přidá až s GUI (etapa GUI-00).
+dependencies = []
+
+[project.optional-dependencies]
+dev = ["pytest>=8"]
+
+[tool.setuptools.dynamic]
+version = { attr = "grid_arranger.version.__version__" }
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]
+addopts = "-ra"

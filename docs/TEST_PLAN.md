@@ -4,10 +4,13 @@
 
 | Sada | ID | Kap. spec. | Typ | Stav | Důkaz |
 |---|---|---|---|---|---|
-| Algoritmus | ALG-01 – ALG-10 | 14.1 | automatický (pytest) | nezahájeno | — |
+| Algoritmus | ALG-01 – ALG-10 | 14.1 | automatický (pytest) | prochází | `tests/unit/test_layout.py` |
+| MVP jádro: mřížka | T-MVP-01 – 04 | 26.1 | automatický | prochází | `tests/unit/test_layout.py` |
+| MVP jádro: výběr, pořadí | T-MVP-05, 06, 08 – 10 | 26.1 | automatický | prochází | `tests/unit/test_ordering.py`, `test_layout.py` |
+| MVP jádro: materiál, kolize | T-MVP-11 – 18 | 26.1 | automatický | prochází | `tests/unit/test_collision.py` |
 | Integrace `.lbrn2` | LB-01 – LB-13 | 14.2 | automatický + ruční v LightBurnu | nezahájeno | — |
 | Invariance MVP | — | 14.3 | automatický | nezahájeno | — |
-| MVP funkce | T-MVP-01 – T-MVP-26 | 26.1 | automatický / ruční (T-MVP-26) | nezahájeno | — |
+| MVP funkce (zbytek) | T-MVP-07, T-MVP-19 – T-MVP-26 | 26.1 | automatický / ruční (T-MVP-26) | nezahájeno (ADAPT-00) | — |
 | Formát | T-FMT-01 – T-FMT-07 | 41.5 | automatický / ruční | nezahájeno | — |
 | Lokalizace (interní) | T-I18N-01 – T-I18N-16 | 36.6 | automatický / ruční | nezahájeno | — |
 | Lokalizace (veřejná) | T-I18N-17 – T-I18N-22 | 36.6 | ruční | nezahájeno | — |
