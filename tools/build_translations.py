@@ -26,7 +26,8 @@ from grid_arranger.gui.catalog_check import check_catalog  # noqa: E402
 
 
 def _tool(name: str) -> str:
-    exe = shutil.which(name)
+    # Nejdřív vedle běžícího Pythonu (.venv\Scripts) — funguje i bez aktivace .venv.
+    exe = shutil.which(name, path=str(Path(sys.executable).parent)) or shutil.which(name)
     if not exe:
         sys.exit(f"Nástroj {name} nebyl nalezen — je nainstalovaný PySide6 a aktivní .venv?")
     return exe

@@ -8,7 +8,7 @@ if not exist ".venv\Scripts\python.exe" (
     pause
     exit /b 1
 )
-".venv\Scripts\python.exe" -m pip install --quiet -e .[dev,build]
+".venv\Scripts\python.exe" -m pip install --quiet --disable-pip-version-check -e .[dev,build]
 if errorlevel 1 goto failed
 ".venv\Scripts\python.exe" tools\build_exe.py %*
 if errorlevel 1 goto failed

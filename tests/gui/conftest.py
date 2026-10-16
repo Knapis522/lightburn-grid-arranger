@@ -3,6 +3,7 @@ from __future__ import annotations
 import os
 import shutil
 import subprocess
+import sys
 from pathlib import Path
 
 import pytest
@@ -26,7 +27,7 @@ def qapp():
 def qm_dir(tmp_path_factory) -> Path:
     """Sestaví .qm z translations/*.ts do dočasné složky (testy nezávisí na ručním buildu)."""
     out = tmp_path_factory.mktemp("qm")
-    lrelease = shutil.which("pyside6-lrelease")
+    lrelease = shutil.which("pyside6-lrelease", path=str(Path(sys.executable).parent)) or shutil.which("pyside6-lrelease")
     if not lrelease:
         pytest.skip("pyside6-lrelease není k dispozici")
     for ts in (ROOT / "translations").glob("gridarranger_*.ts"):

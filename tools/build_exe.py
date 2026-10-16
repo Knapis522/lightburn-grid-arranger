@@ -55,9 +55,17 @@ def step(title: str) -> None:
     print(f"\n=== {title} ===", flush=True)
 
 
-def run(cmd: list[str], **kw) -> None:
+def tool_env() -> dict:
+    """Prostředí pro podprocesy: nástroje z .venv\Scripts (pyside6-lrelease…) i bez aktivace .venv."""
+    env = dict(os.environ)
+    env["PATH"] = str(Path(sys.executable).parent) + os.pathsep + env.get("PATH", "")
+    return env
+
+
+def run(cmd: list[str]) -> None:
     print("> " + " ".join(cmd), flush=True)
-    subprocess.run(cmd, check=True, cwd=ROOT, **kw)
+    if subprocess.run(cmd, cwd=ROOT, env=tool_env()).returncode != 0:
+        sys.exit("\nKrok selhal — popis chyby je výše.")
 
 
 def version() -> str:
@@ -71,7 +79,7 @@ def self_test(exe: Path) -> dict:
     report = DIST / "selftest-report.json"
     if report.exists():
         report.unlink()
-    env = dict(os.environ)
+    env = tool_env()
     if not IS_WINDOWS and not env.get("DISPLAY") and not env.get("WAYLAND_DISPLAY"):
         env["QT_QPA_PLATFORM"] = "offscreen"  # zkouška balení na serveru bez obrazovky
     print(f"> {exe} --self-test {report}", flush=True)
