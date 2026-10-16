@@ -1,7 +1,7 @@
 # Stav projektu
 
 **Aktualizováno:** 2026-10-16
-**Verze specifikace:** 1.9 (`docs/specification.md`)
+**Verze specifikace:** 1.10 (`docs/specification.md`)
 **Verze aplikace:** žádná (nic není implementováno)
 
 > Tento soubor je hlavní předávací dokument. Při navázání práce: přečíst tento soubor → `ROADMAP.md` → relevantní kapitolu specifikace. Nepředpokládat, že funkce funguje jen proto, že existuje kód.
@@ -10,7 +10,7 @@
 
 | Hotovo | Probíhá | Blokováno | Další |
 |---|---|---|---|
-| Specifikace v1.8; **GIT-00 splněno** (soukromý repozitář `Knapis522/lightburn-grid-arranger`, GH-01 + GH-02, commity `55ab47e`, `5e94c06`); **DOC-00 splněno** | KAL-00 splněno; CORE-00 a **ADAPT-00 implementováno a automaticky otestováno** (205 testů + 3 regresní na reálných souborech); vývojářská CLI; zkušební rozmístění V-001 do mřížky 3 × 3 | Ruční kontrola zkušebního výstupu v LightBurnu (T-MVP-26) | Testy zatím neběžely na Windows (chybí Python) | Po kontrole výstupu: GUI-00 (PySide6) + MVP-07 (cs/en) + HELP-01 |
+| Specifikace v1.8; **GIT-00 splněno** (soukromý repozitář `Knapis522/lightburn-grid-arranger`, GH-01 + GH-02, commity `55ab47e`, `5e94c06`); **DOC-00 splněno** | KAL-00 splněno; CORE-00 a ADAPT-00 implementováno a otestováno; **T-MVP-26 ověřeno vlastníkem** (výstup `__grid_001` v LightBurnu v pořádku); spec. v1.10: umístění k počátku laseru, plnění od počátku, deska 5 mm okraj (219 testů) | Kontrola výstupu `__grid_002` (deska 700 × 500, roh počátku) | Testy zatím neběžely na Windows (chybí Python) | GUI-00 (PySide6) + MVP-07 (cs/en) + HELP-01; uživatelské nastavení desek podle laseru |
 
 ## Implementováno / otestováno
 
@@ -32,5 +32,6 @@
 - Ověřeno: čtení struktury `.lbrn2` 2.2.00; převod souřadnic pro `MirrorX/MirrorY` True/True i False/True (přepnutí laseru mění jen příznak, ne souřadnice); přesun skupiny bajtovým patchem (2 řádky) odpovídá LightBurnu a výsledek se v LightBurnu otevřel správně.
 - Prototypové skripty KAL-00 jsou v `tools/kal00/` (jen diagnostika, nejsou součástí aplikace); čistá implementace vznikne v ADAPT-00.
 - CORE-00: testy prošly v pracovním prostředí (Linux, Python 3.12 a 3.13); kontrolní mutace výpočtu (poloviční mezery) byla testy zachycena (114 selhání). Na Windows zatím nespuštěno — postup v `docs/DEVELOPMENT.md`.
-- ADAPT-00: zkušební výstup `test program …__grid_001.lbrn2` (9 kartiček, 3 sloupce, mezera 5 mm, změněno 18 řádků, kontrola prošla) je ve složce s daty; čeká na otevření v LightBurnu.
-- Další bezpečný krok: otevřít zkušební výstup v LightBurnu (File → Open), zkontrolovat mřížku, texty, vrstvy, Preview; potom GUI-00.
+- ADAPT-00: `…__grid_001.lbrn2` (umístění podle původní polohy) ověřen vlastníkem v LightBurnu — vše sedí; připomínka: zarovnávat k počátku laseru → spec. v1.10. Vlastníkův ruční vzor `…__grid_001-zarovnani.lbrn2` (mřížka posunuta na desku 700 × 500).
+- Desky vlastníka: červený laser (počátek vpravo nahoře) 700 × 500 mm, modrý (vlevo nahoře) 500 × 400 mm.
+- Další bezpečný krok: zkontrolovat `…__grid_002.lbrn2` (deska 700 × 500, okraj 5, roh počátku, plnění od počátku); potom GUI-00.

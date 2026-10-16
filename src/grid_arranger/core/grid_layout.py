@@ -13,7 +13,7 @@ import math
 from collections.abc import Iterable
 
 from ..domain.errors import GridError
-from ..domain.models import Align, GridRequest, Item, LayoutResult, Placement, Rect, _finite
+from ..domain.models import Align, Corner, GridRequest, Item, LayoutResult, Placement, Rect, _finite
 from .collision import find_spacing_conflicts
 from .order import validate_permutation
 from .tolerance import EPSILON
@@ -32,6 +32,8 @@ def _validate_request(req: GridRequest) -> None:
             raise GridError("invalid_start", "Počátek mřížky musí být konečné číslo.", field=name, value=v)
     if not isinstance(req.align_x, Align) or not isinstance(req.align_y, Align):
         raise GridError("invalid_alignment", "Neplatné zarovnání.")
+    if not isinstance(req.fill_from, Corner):
+        raise GridError("invalid_fill_corner", "Neplatný roh plnění.")
 
 
 def _offset(cell: float, size: float, align: Align) -> float:
@@ -73,14 +75,21 @@ def arrange_to_grid(items: Iterable[Item], request: GridRequest) -> LayoutResult
 
     col_w = [max(ordered[i].bounds.width for i in range(j, n, cols)) for j in range(cols)]
     row_h = [max(it.bounds.height for it in ordered[r * cols : (r + 1) * cols]) for r in range(rows)]
-    xs = _starts(request.start_x, col_w, request.gap_x)
+
+    # Roh plnění: TOP_LEFT = čtení (1. sloupec vlevo); TOP_RIGHT = od počátku vpravo
+    # (1. sloupec vpravo, řádky se plní doleva; zarovnání v buňce se zrcadlí k rohu plnění).
+    from_right = request.fill_from is Corner.TOP_RIGHT
+    vis_w = list(reversed(col_w)) if from_right else col_w
+    align_x = {Align.START: Align.END, Align.END: Align.START}.get(request.align_x, request.align_x) if from_right else request.align_x
+    xs = _starts(request.start_x, vis_w, request.gap_x)
     ys = _starts(request.start_y, row_h, request.gap_y)
 
     placements: list[Placement] = []
     for index, it in enumerate(ordered):
         r, c = divmod(index, cols)
+        v = cols - 1 - c if from_right else c
         w, h = it.bounds.width, it.bounds.height
-        left = xs[c] + _offset(col_w[c], w, request.align_x)
+        left = xs[v] + _offset(vis_w[v], w, align_x)
         top = ys[r] + _offset(row_h[r], h, request.align_y)
         placements.append(
             Placement(

@@ -33,7 +33,7 @@ Převod (ověřeno v KAL-00, spec. kap. 8): `screen_x = MirrorX ? −x : +x`, `s
 |---|---|---|
 | `domain/models.py` | `Rect` (AABB, validace konečnosti), `Item`, `GridRequest`, `Placement`, `LayoutResult`, `MaterialSpec`, `Obstacle`, `Align` | kap. 10, 25.1 |
 | `domain/errors.py` | `GridError(code, message, **params)` — stabilní kódy pro lokalizaci v UI | kap. 36.4 |
-| `core/grid_layout.py` | `arrange_to_grid(items, request)` — adaptivní mřížka (max. šířka sloupce / výška řádku), `fsum`, pojistka proti porušení mezer | MVP-01, kap. 7 |
+| `core/grid_layout.py` | `arrange_to_grid(items, request)` — adaptivní mřížka (max. šířka sloupce / výška řádku), roh plnění `Corner.TOP_LEFT`/`TOP_RIGHT` (zrcadlení sloupců i zarovnání), `fsum`, pojistka proti porušení mezer | MVP-01, kap. 6, 7 |
 | `core/order.py` | `default_order`, `move_up`, `move_down`, `select` (na konec), `deselect`, `validate_permutation` — čisté funkce | MVP-02, MVP-03 |
 | `core/collision.py` | `validate_layout(...)` → `ValidationReport` (chyby blokují uložení, varování ne); zametací algoritmus pro dvojice | MVP-04, kap. 21.4 |
 | `core/tolerance.py` | `EPSILON = 0.001 mm` | kap. 7.4 |
@@ -43,7 +43,7 @@ Převod (ověřeno v KAL-00, spec. kap. 8): `screen_x = MirrorX ? −x : +x`, `s
 | `adapters/lightburn/read.py` | `load_project` — brány verze/orientace/neznámých prvků, výrobky (obrys = uzavřená cesta obsahující vše ostatní), důvody blokace, varování, překážky | kap. 5, 9.1, 41 |
 | `adapters/lightburn/write.py` | `plan_patches` (XForm skupiny + BackupPath textů), `apply_patches`, `next_output_path` (`__grid_NNN`), `write_new_file` (dočasný soubor + zveřejnění bez přepisu) | kap. 9.2, 9.4 |
 | `safety/verify.py` | `verify_output` — znovu parsuje zdroj i výstup; mimo obsah `XForm` musí být bajty shodné; změněné `XForm` jen u povolených uzlů a o přesný posun | kap. 9.3, 14.3 |
-| `application/arrange_job.py` | `make_plan`, `execute`, `run`; souřadnice od uživatele jsou souřadnice LightBurnu; JSON protokol vedle výstupu | kap. 21.5 |
+| `application/arrange_job.py` | `make_plan`, `execute`, `run`; umístění `origin`/`center`/`manual`/`selection`, plnění `origin`/`reading`, deska u počátku s okrajem 5 mm; souřadnice od uživatele jsou souřadnice LightBurnu; JSON protokol vedle výstupu | kap. 12.3, 21.5 |
 | `cli.py`, `__main__.py` | `python -m grid_arranger info|arrange …` | kap. 11 |
 | `version.py` | `__version__` — jediný zdroj verze | kap. 30.3 |
 

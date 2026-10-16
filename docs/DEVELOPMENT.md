@@ -38,11 +38,12 @@ python -m pytest tests\integration\test_real_projects.py
 
 ```bat
 python -m grid_arranger info "..\lightburn-grid-arranger-data\projekt.lbrn2"
-python -m grid_arranger arrange "..\lightburn-grid-arranger-data\projekt.lbrn2" --columns 3 --gap 5 --material 0 0 1300 900 --margin 5 --dry-run
+python -m grid_arranger arrange "..\lightburn-grid-arranger-data\projekt.lbrn2" --columns 3 --gap 5 --board 700 500 --dry-run
 ```
 
-- Souřadnice `--start X Y` (levý horní roh mřížky na obrazovce) a `--material X Y Š V` jsou **hodnoty z LightBurnu**.
-- Bez `--start` začne mřížka v levém horním rohu vybraných výrobků.
+- `--board Š V` = deska u počátku laseru (`--board-at X Y` jiný roh desky), `--margin` výchozí 5 mm (jedna hodnota nebo L P H D).
+- `--anchor origin` (výchozí: roh mřížky do rohu desky u počátku), `center`, `manual` (+ `--start X Y` = roh mřížky u počátku v souřadnicích LightBurnu), `selection` (původní poloha).
+- `--fill origin` (výchozí: 1. výrobek v rohu počátku laseru) nebo `reading` (vlevo nahoře).
 - `--order G3,G1,G2` = výběr a pořadí; bez něj všechny podporované v pořadí dokumentu.
 - Bez `--dry-run` vznikne nový `…__grid_001.lbrn2` a protokol `.json` vedle originálu.
 

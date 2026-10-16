@@ -53,7 +53,7 @@ def test_v001_arrange_roundtrip(tmp_path):
     if not files:
         pytest.skip("vzorek V-001 není ve složce")
     before = hashlib.sha256(files[0].read_bytes()).hexdigest()
-    res = run(files[0], ArrangeParams(columns=3, gap_x=5, gap_y=5, material=MaterialInput(0, -500, 1300, 1000, 5, 5, 5, 5)), out_dir=tmp_path)
+    res = run(files[0], ArrangeParams(columns=3, gap_x=5, gap_y=5, material=MaterialInput(700, 500)), out_dir=tmp_path)
     assert res.problems == []
     diff = [1 for x, y in zip(files[0].read_bytes().split(b"\r\n"), res.output.read_bytes().split(b"\r\n")) if x != y]
     assert len(diff) == 18  # 9 skupin + 9 BackupPath

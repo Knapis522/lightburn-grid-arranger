@@ -1,6 +1,6 @@
 # Grid Arranger for LightBurn — technická specifikace
 
-**Verze dokumentu:** 1.9 (obecný uzavřený obrys, posun `BackupPath` textů, formát čísel — podle zjištění KAL-00; viz kap. 28)  
+**Verze dokumentu:** 1.10 (umístění mřížky k počátku laseru, plnění od počátku, deska podle laseru; viz kap. 28)  
 **Datum:** 16. 10. 2026  
 **Název produktu:** Grid Arranger for LightBurn; spustitelný soubor `GridArranger.exe`; Python balíček `grid_arranger`; repozitář `lightburn-grid-arranger`. Neoficiální nástroj, nikoli produkt LightBurn Software.  
 **Stav:** Interní pracovní podklad; nikoli hotový nebo otestovaný plugin  
@@ -11,7 +11,7 @@
 
 **Publikační strategie:** Od zahájení implementace soukromý GitHub repozitář. Veřejné zveřejnění a kontaktování LightBurnu pouze po interním schválení; nejsou automatickým výsledkem dokončení MVP. Podrobnosti v kapitolách 29–35.
 
-**Řízení rozsahu:** Funkce jsou závazně rozděleny na **MVP**, **funkční verzi aplikace 1.1**, **verzi 2.0** a **nezávazný výhled**. Podrobnosti, závislosti, testy a akceptace funkcí jsou v kapitolách 20–26; publikační proces je v kapitolách 29–35; lokalizace v kapitole 36; průběžná dokumentace, vestavěná nápověda, harmonogram a dokončovací brány v kapitolách 37–40. Číslo verze dokumentu (1.9) není číslo vydané aplikace.
+**Řízení rozsahu:** Funkce jsou závazně rozděleny na **MVP**, **funkční verzi aplikace 1.1**, **verzi 2.0** a **nezávazný výhled**. Podrobnosti, závislosti, testy a akceptace funkcí jsou v kapitolách 20–26; publikační proces je v kapitolách 29–35; lokalizace v kapitole 36; průběžná dokumentace, vestavěná nápověda, harmonogram a dokončovací brány v kapitolách 37–40. Číslo verze dokumentu (1.10) není číslo vydané aplikace.
 
 > **Hlavní princip:** Oddělit obecný algoritmus rozmístění od adaptérů, které čtou a upravují projekty LightBurnu. Do původního souboru nikdy nezapisovat. Při jakékoli nejednoznačnosti skončit bezpečnou chybou, nikoli tichou úpravou výroby.
 
@@ -115,7 +115,7 @@ Samotná geometrie neurčuje požadované výrobní pořadí. Uložení pořadí
 4. Při každé změně výběru nebo pořadí okamžitě přepočítat náhled a validaci. V nevybraných skupinách neměnit ani `XForm`, ani pořadí ve zdrojovém XML.
 5. Výpočet dostane `ordered_item_ids`, které musí tvořit **přesně permutaci** `selected_item_ids` bez duplicit. Pokud se položka ztratí, duplikuje nebo je nepodporovaná, výpočet skončí chybou.
 6. Třídění podle vizuální polohy, názvu, textu nebo data lze přidat později; pokud bude dostupné, vždy nabídne obnovení ručního pořadí.
-7. Položky se rozmísťují po řádcích zleva doprava a shora dolů. Poslední neúplný řádek začíná vlevo; nevznikají žádné nové objekty ani prázdné kopie.
+7. Položky se rozmísťují po řádcích shora dolů, **od rohu počátku laseru** (rozhodnutí 16. 10. 2026, v1.10): u laseru s počátkem vpravo nahoře je 1. výrobek vpravo nahoře a řádky se plní doleva; u počátku vlevo nahoře zleva doprava. Alternativní volba „čtení“ plní vždy zleva doprava. Poslední neúplný řádek začíná u strany počátku (resp. vlevo při „čtení“); nevznikají žádné nové objekty ani prázdné kopie. Menší výrobek v adaptivní buňce přiléhá ke straně počátku.
 
 **MVP: výběr + ruční přeřazení nejsou volitelné rozšíření.** Přesná funkční pravidla a testy jsou v kap. 21 (MVP-02/03).
 
@@ -427,17 +427,18 @@ Arrange to Grid for LightBurn
 Nastavení → Jazyk: [Automaticky / Čeština / English / Deutsch / Slovenčina / Polski / Français / Español / Italiano ▼] (plná nabídka nejpozději při veřejném v1.0.0)
 
 Soubor: [karticky.lbrn2]  [Otevřít]
+Projekt uložen pro: Červený Ruida 6445S, počátek vpravo nahoře
 Výrobky: 10 nalezeno / 8 vybráno
 Pořadí vybraných: [↑] [↓] [obnovit výchozí]
 
 Počet sloupců: [5]
 Mezera X:       [3,00] mm
 Mezera Y:       [3,00] mm
-Počátek X:      [10,00] mm
-Počátek Y:      [20,00] mm
-Zarovnání:      [vlevo nahoře ▼]
-Materiál X,Y:   [0,00] [0,00] mm
-Materiál Š,V:   [600,00] [400,00] mm
+Plnění:         [od počátku laseru ▼]   (/ čtení zleva)
+Umístění:       [roh počátku laseru ▼]  (/ střed desky / ručně / původní poloha)
+Roh u počátku:  X [5,00]  Y [5,00] mm   (jen při „ručně“, jinak vypočteno)
+Deska Š,V:      [700,00] [500,00] mm    (předvyplněno podle laseru)
+Deska X,Y:      [0,00] [0,00] mm        (roh desky u počátku)
 Okraje:         [5,00] mm (L/P/H/D)
 
 Výsledná mřížka: 512 × 123 mm
@@ -448,7 +449,13 @@ Kontrola plochy/kolizí: vyhovuje / blokováno (s důvodem)
 
 - Náhled musí barevně nebo čísly odlišit výrobky i při stejném rozměru. Nemusí vykreslovat skutečné motivy: pro MVP stačí spolehlivé vnější obrysy.
 - Při chybě náhled uvede konkrétní skupinu a důvod, ne pouze „invalid file“.
-- **Výchozí počátek mřížky (MVP, rozhodnutí 16. 10. 2026):** levý horní roh společného AABB obrysů vybraných výrobků v jejich původní poloze. Uživatel jej může přepsat ručně; tlačítko „Obnovit z výběru“ vrátí výchozí hodnotu. Při změně výběru se počátek automaticky nepřepočítá, pokud jej uživatel ručně změnil.
+- **Umístění mřížky (MVP, rozhodnutí 16. 10. 2026, v1.10 — nahrazuje dřívější „levý horní roh výběru“):** přepínač
+  1. **Roh počátku laseru** (výchozí) — roh mřížky nejbližší počátku leží v rohu využitelné plochy desky u počátku (deska u počátku + okraj);
+  2. **Střed desky** — mřížka vycentrovaná ve využitelné ploše;
+  3. **Ručně** — souřadnice LightBurnu (vzdálenost od počátku) rohu mřížky u počátku;
+  4. **Podle původní polohy** — levý horní roh (na obrazovce) vybraných výrobků.
+  Všechny souřadnice v GUI jsou hodnoty X/Y LightBurnu, aby je uživatel mohl přímo porovnat.
+- **Deska a okraje (MVP, v1.10):** deska leží u počátku laseru (roh desky = X 0, Y 0, lze změnit). Výchozí okraj **5 mm** na všech stranách. Rozměr desky se **předvyplní podle laseru** z hlavičky projektu (`DeviceName`) z uživatelského nastavení; hodnoty jsou vždy viditelné a přepsatelné, změna pro aktuální zakázku nepřepíše uložené nastavení bez potvrzení. Výchozí hodnoty vlastníka: „Červený Ruida 6445S“ (počátek vpravo nahoře) 700 × 500 mm, „Modrý Ruida 643XG“ (počátek vlevo nahoře) 500 × 400 mm. Neznámý laser → rozměr desky musí uživatel zadat. Jde o minimální předběžnou část V11-01 (profily); plné profily zůstávají ve v1.1.
 - Zapamatování posledních voleb parametrů rozmístění je volitelné, nikdy nesmí automaticky převzít špatné rozměry jiné zakázky. **Zapamatování výslovně zvoleného jazyka je však povinné** a nezávislé na projektu.
 - Uložení smí být povoleno až po kontrole výsledku a explicitním potvrzení.
 
@@ -1024,6 +1031,7 @@ Toto jsou **ověřovací úkoly**, nikoli potvrzené technické možnosti souča
 
 ## 28. Záznam změn specifikace
 
+- **v1.10 (16. 10. 2026):** Po prvním zkušebním rozmístění reálného projektu: (1) umístění mřížky přepínačem — roh počátku laseru (výchozí), střed desky, ručně, podle původní polohy; (2) plnění od rohu počátku laseru (alternativa „čtení“), menší výrobek přiléhá ke straně počátku; (3) deska leží u počátku, výchozí okraj 5 mm, rozměr desky předvyplněn podle laseru (`DeviceName`) z uživatelského nastavení (kap. 6 bod 7, 12.3).
 - **v1.9 (16. 10. 2026):** Změny podle zjištění KAL-00 (LightBurn 2.2.00-RC-7, `docs/FORMAT_COMPATIBILITY.md`). (1) Obrys výrobku: libovolný uzavřený řezný tvar, který obsahuje veškerý ostatní obsah skupiny; rozměr = jeho AABB; nahrazuje omezení v1.8 na `Rect`/čtyřúhelník — reálné kartičky mají zaoblené rohy převedené na lomenou čáru (kap. 3.1, 4, 5). (2) Při přesunu skupiny se povinně posouvá i `BackupPath/XForm` textů, protože je ve světových souřadnicích a LightBurn jej takto posouvá (kap. 9.2, 14.3, 21.5). (3) Texty s `BackupPath` jsou měřitelné. (4) Formát čísel `.8g`. (5) Ověřený převod souřadnic podle `MirrorX/MirrorY`; podporované kombinace True/True a False/True, ostatní odmítnout (kap. 8). (6) `VertID`/`PrimID` LightBurn při uložení přečísluje → nejsou stabilní identitou mezi soubory. (7) Počátek laseru se odvozuje z `MirrorX/MirrorY` a GUI zobrazuje `DeviceName` a počátek; uživatel nic nenastavuje (kap. 9.1 bod 4a). (8) Odstup přesouvaných výrobků od nepřesouvaných překážek se kontroluje stejným pravidlem jako mezi výrobky: pár je v pořádku, je-li vodorovná vzdálenost AABB ≥ `gap_x` nebo svislá ≥ `gap_y` (kap. 21.4).
 - **v1.8 (16. 10. 2026):** Rozhodnutí před implementací. (1) Sjednoceny názvy: produkt *Grid Arranger for LightBurn*, `GridArranger.exe`, balíček `grid_arranger`, specifikace `docs/specification.md`, matice `docs/FORMAT_COMPATIBILITY.md`. (2) Adaptivní mřížka pro různé rozměry je povinnou součástí MVP; ALG-04 povinný; režim pevné buňky se neimplementuje (kap. 7.3, 21.1). (3) Obrys výrobku: `Rect` nebo uzavřená osově zarovnaná čtyřúhelníková cesta (kap. 4, 5). (4) Obsah s nezměřitelnými hranicemi (typicky text) uvnitř skupiny vyvolá varování, nikoli blokaci; ověřitelná geometrie přesahující obrys dál blokuje (kap. 5). (5) Jádro pracuje v systému s osou Y dolů, převod dělá adaptér podle KAL-00 (kap. 7.1). (6) `gridarranger_en.ts` povinný kvůli množnému číslu (kap. 11, 25.3, 30.1, 36.1). (7) Neaktuální thumbnail je povolená výjimka; doporučen patch přes bajtové pozice z `expat`; zákaz `os.replace` (kap. 9.2, 9.4). (8) Výchozí počátek mřížky = levý horní roh vybraných výrobků (kap. 12.3). (9) Opraveno číslování kap. 16.
 - **v1.7 (15. 10. 2026):** Závazně zvolen jediný podporovaný vstupní a výstupní formát `.lbrn2` (FMT-00). Bez větve pro starší `.lbrn`, bez implicitní konverze. Doplněna politika formátů (kap. 41), testovací brána aktuálních souborů a kompatibilitní matice. Opraven chybný odkaz v úvodu na číslo verze specifikace.

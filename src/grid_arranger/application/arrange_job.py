@@ -1,40 +1,56 @@
 """Orchestrace úlohy MVP (spec. kap. 21.5): načtení → plán → validace → zápis → kontrola → protokol.
 
-Všechny souřadnice zadávané uživatelem (počátek mřížky, materiál) jsou
-**souřadnice LightBurnu/stroje** — tytéž hodnoty X/Y, které ukazuje LightBurn
-(KAL-00). Okraje materiálu jsou vizuální (vlevo/vpravo/nahoře/dole na obrazovce).
+Souřadnice zadávané uživatelem jsou **souřadnice LightBurnu/stroje** — tytéž hodnoty
+X/Y, které ukazuje LightBurn (KAL-00), tj. vzdálenosti od počátku laseru.
+
+Umístění mřížky (spec. v1.10, kap. 12.3):
+
+* ``origin`` (výchozí) — roh mřížky nejbližší počátku laseru leží v rohu využitelné
+  plochy desky u počátku (deska u počátku + okraj),
+* ``center`` — mřížka uprostřed využitelné plochy desky,
+* ``manual`` — roh mřížky u počátku na zadaných souřadnicích LightBurnu,
+* ``selection`` — levý horní roh (na obrazovce) původní polohy vybraných výrobků.
+
+Pořadí plnění: ``origin`` (výchozí) začíná v rohu počátku laseru, ``reading`` vlevo nahoře.
 """
 
 from __future__ import annotations
 
 import hashlib
 import json
-from dataclasses import asdict, dataclass, field
+from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from pathlib import Path
 
 from ..adapters.lightburn.read import LoadedProject, load_project
 from ..adapters.lightburn.write import apply_patches, next_output_path, plan_patches, write_new_file
 from ..core import arrange_to_grid, validate_layout
-from ..core.collision import ValidationReport
+from ..core.collision import ValidationReport, usable_area
 from ..domain.errors import GridError
-from ..domain.models import GridRequest, Item, LayoutResult, MaterialSpec, Rect
+from ..domain.models import Corner, GridRequest, Item, LayoutResult, MaterialSpec
 from ..safety.verify import verify_output
 from ..version import __version__
+
+ANCHORS = ("origin", "center", "manual", "selection")
+FILL_MODES = ("origin", "reading")
+DEFAULT_MARGIN_MM = 5.0
 
 
 @dataclass(frozen=True, slots=True)
 class MaterialInput:
-    """Materiál v souřadnicích LightBurnu: roh (x, y) a rozměry; okraje vizuálně."""
+    """Deska: rozměr a poloha jejího rohu u počátku v souřadnicích LightBurnu (obvykle 0, 0).
 
-    x: float
-    y: float
+    Okraje jsou vizuální (vlevo/vpravo/nahoře/dole na obrazovce).
+    """
+
     width: float
     height: float
-    margin_left: float = 0.0
-    margin_right: float = 0.0
-    margin_top: float = 0.0
-    margin_bottom: float = 0.0
+    x: float = 0.0
+    y: float = 0.0
+    margin_left: float = DEFAULT_MARGIN_MM
+    margin_right: float = DEFAULT_MARGIN_MM
+    margin_top: float = DEFAULT_MARGIN_MM
+    margin_bottom: float = DEFAULT_MARGIN_MM
 
 
 @dataclass(slots=True)
@@ -45,8 +61,10 @@ class ArrangeParams:
     material: MaterialInput | None
     order: tuple[str, ...] | None = None
     """Vybrané výrobky v požadovaném pořadí; None = všechny podporované v pořadí dokumentu."""
+    anchor: str = "origin"
     start: tuple[float, float] | None = None
-    """Levý horní roh mřížky (vizuálně) v souřadnicích LightBurnu; None = roh vybraných výrobků."""
+    """Pro ``anchor="manual"``: roh mřížky u počátku laseru v souřadnicích LightBurnu."""
+    fill: str = "origin"
 
 
 @dataclass(slots=True)
@@ -56,7 +74,10 @@ class Plan:
     layout: LayoutResult
     report: ValidationReport
     moves_file: dict[str, tuple[float, float]]
-    start_lightburn: tuple[float, float]
+    origin_corner_lightburn: tuple[float, float]
+    """Roh mřížky nejbližší počátku laseru v souřadnicích LightBurnu."""
+    anchor: str
+    fill: str
 
 
 @dataclass(slots=True)
@@ -68,34 +89,67 @@ class JobResult:
 
 
 def material_to_core(project: LoadedProject, m: MaterialInput) -> MaterialSpec:
-    """Převede materiál do souřadnic jádra. Neplatné rozměry nechá na validátoru (chyba invalid_material)."""
+    """Převede desku do souřadnic jádra. Neplatné rozměry nechá na validátoru (chyba invalid_material)."""
     o = project.info.orientation
     r = o.to_screen_rect((m.x, m.y, m.x + max(m.width, 0.0), m.y + max(m.height, 0.0)))
     return MaterialSpec(r.left, r.top, m.width, m.height, m.margin_left, m.margin_right, m.margin_top, m.margin_bottom)
 
 
+def _origin_on_right(project: LoadedProject) -> bool:
+    return project.info.orientation.mirror_x
+
+
 def make_plan(project: LoadedProject, params: ArrangeParams) -> Plan:
+    if params.anchor not in ANCHORS:
+        raise GridError("invalid_anchor", "Neznámý způsob umístění mřížky.", anchor=params.anchor)
+    if params.fill not in FILL_MODES:
+        raise GridError("invalid_fill_corner", "Neznámé pořadí plnění.", fill=params.fill)
     supported = [it for it in project.items if it.supported]
     order = params.order if params.order is not None else tuple(it.id for it in supported)
     for item_id in order:
         it = project.item(item_id)
         if not it.supported:
             raise GridError("item_not_supported", "Vybraný výrobek nelze přesunout.", item_id=item_id, reasons=[r.code for r in it.reasons])
-    core_items = [Item(it.id, it.screen_bounds, it.label, it.source_order) for it in supported]
+    if not order:
+        raise GridError("empty_selection", "Není vybrán žádný výrobek.")
+
     o = project.info.orientation
-    if params.start is None:
-        sel = [project.item(i).screen_bounds for i in order]
-        if not sel:
-            raise GridError("empty_selection", "Není vybrán žádný výrobek.")
-        sx, sy = min(r.left for r in sel), min(r.top for r in sel)
-    else:
-        sx, sy = o.to_screen_point(*params.start)
-    req = GridRequest(tuple(order), params.columns, params.gap_x, params.gap_y, sx, sy)
-    layout = arrange_to_grid(core_items, req)
+    right = _origin_on_right(project)
+    core_items = [Item(it.id, it.screen_bounds, it.label, it.source_order) for it in supported]
+    corner = Corner.TOP_RIGHT if (params.fill == "origin" and right) else Corner.TOP_LEFT
     material = material_to_core(project, params.material) if params.material else None
+
+    # 1. průchod: rozměr mřížky (poloha nehraje roli, výpočet je čistá translace)
+    probe = arrange_to_grid(core_items, GridRequest(tuple(order), params.columns, params.gap_x, params.gap_y, 0.0, 0.0, fill_from=corner))
+    gw, gh = probe.grid_bounds.width, probe.grid_bounds.height
+
+    # 2. levý horní roh mřížky (souřadnice jádra) podle způsobu umístění
+    if params.anchor in ("origin", "center"):
+        if material is None:
+            raise GridError("material_missing", "Pro umístění na desku je nutné zadat desku.")
+        area, issues = usable_area(material)
+        if area is None:
+            raise GridError(issues[0].code, "Deska nebo okraje jsou neplatné.", **issues[0].params)
+        if params.anchor == "origin":
+            sx, sy = (area.right - gw if right else area.left), area.top
+        else:
+            sx, sy = (area.left + area.right - gw) / 2.0, (area.top + area.bottom - gh) / 2.0
+    elif params.anchor == "manual":
+        if params.start is None:
+            raise GridError("invalid_start", "Pro ruční umístění zadejte souřadnice rohu mřížky u počátku.")
+        cx, cy = o.to_screen_point(*params.start)
+        sx, sy = (cx - gw if right else cx), cy
+    else:  # selection
+        sel = [project.item(i).screen_bounds for i in order]
+        sx, sy = min(r.left for r in sel), min(r.top for r in sel)
+
+    req = GridRequest(tuple(order), params.columns, params.gap_x, params.gap_y, sx, sy, fill_from=corner)
+    layout = arrange_to_grid(core_items, req)
     report = validate_layout(layout, req.gap_x, req.gap_y, material, project.obstacles_for(set(order)))
     moves = {p.item_id: o.to_file_delta(p.dx, p.dy) for p in layout.placements}
-    return Plan(project, req, layout, report, moves, o.to_file_point(sx, sy))
+    g = layout.grid_bounds
+    corner_screen = (g.right if right else g.left, g.top)
+    return Plan(project, req, layout, report, moves, o.to_file_point(*corner_screen), params.anchor, params.fill)
 
 
 def _protocol(plan: Plan, output: Path, out_bytes: bytes, problems: list[str]) -> dict:
@@ -111,13 +165,14 @@ def _protocol(plan: Plan, output: Path, out_bytes: bytes, problems: list[str]) -
                       "device": info.device_name, "origin": o.origin},
         "parameters": {
             "columns": plan.request.columns, "gap_x_mm": plan.request.gap_x, "gap_y_mm": plan.request.gap_y,
-            "start_lightburn_xy": plan.start_lightburn, "order": list(plan.request.ordered_item_ids),
+            "anchor": plan.anchor, "fill": plan.fill, "order": list(plan.request.ordered_item_ids),
+            "grid_corner_at_origin_lightburn_xy": plan.origin_corner_lightburn,
         },
         "grid": {"columns": plan.layout.columns, "rows": plan.layout.rows,
                  "width_mm": plan.layout.grid_bounds.width, "height_mm": plan.layout.grid_bounds.height},
         "placements": [
             {"item": pl.item_id, "label": p.item(pl.item_id).label, "index": pl.index + 1,
-             "row": pl.row + 1, "column": pl.column + 1,
+             "row": pl.row + 1, "column_from_fill_corner": pl.column + 1,
              "move_lightburn_xy_mm": plan.moves_file[pl.item_id],
              "size_mm": [pl.target_bounds.width, pl.target_bounds.height]}
             for pl in plan.layout.placements
@@ -141,7 +196,6 @@ def execute(plan: Plan, out_dir: Path | None = None) -> JobResult:
 
     tops = {it.id: it.source_order for it in project.items}
     problems = verify_output(project.data, out_bytes, {tops[k]: v for k, v in plan.moves_file.items()})
-    # znovu načíst výstup a porovnat skutečné obrysy s plánem
     if not problems:
         problems += _check_reloaded_bounds(plan, out_bytes)
     if problems:
@@ -190,3 +244,6 @@ def run(path: str | Path, params: ArrangeParams, write: bool = True, out_dir: Pa
     if not write:
         return JobResult(plan)
     return execute(plan, out_dir)
+
+
+__all__ = ["ANCHORS", "FILL_MODES", "ArrangeParams", "JobResult", "MaterialInput", "Plan", "execute", "make_plan", "run"]

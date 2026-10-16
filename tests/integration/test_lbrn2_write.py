@@ -17,7 +17,7 @@ from grid_arranger.safety.verify import verify_output
 
 from .lbrn2_builder import Group, card, project, rect
 
-BOARD = MaterialInput(-2000, -2000, 4000, 4000, 5, 5, 5, 5)
+BOARD = MaterialInput(4000, 4000, -2000, -2000)
 
 
 def four_cards():
@@ -109,20 +109,76 @@ def test_t_fmt07_deterministic_output(write_project, tmp_path):
     assert o2.read_bytes() == o1
 
 
-# --- start a orientace ----------------------------------------------------------------------
+# --- umístění a orientace (spec. v1.10) ------------------------------------------------------
+
+
+def machine_bboxes(res):
+    out = load_project(res.output)
+    return {it.id: it.file_bbox for it in out.items}
 
 
 @pytest.mark.parametrize("mx", [True, False])
-def test_start_is_in_lightburn_coordinates(write_project, mx):
+def test_manual_start_is_grid_corner_at_origin_in_lightburn_coordinates(write_project, mx):
     src = write_project(project([card(10, 20), card(300, 400)], mirror_x=mx))
-    res = run(src, ArrangeParams(columns=2, gap_x=3, gap_y=3, material=BOARD, start=(500, 10)))
-    out = load_project(res.output)
-    b1, b2 = out.items[0].file_bbox, out.items[1].file_bbox
-    assert b1[1] == pytest.approx(10) and b2[1] == pytest.approx(10)  # horní hrana = Y 10
-    if mx:  # počátek vpravo: první sloupec vpravo, X roste doleva
-        assert b1[2] == pytest.approx(500) and b2[2] == pytest.approx(500 - 103)
+    res = run(src, ArrangeParams(columns=2, gap_x=3, gap_y=3, material=BOARD, anchor="manual", start=(500, 10)))
+    b = machine_bboxes(res)
+    # pro oba lasery: roh u počátku = nejmenší X a Y stroje; G1 (plnění od počátku) leží v tomto rohu
+    assert b["G1"][0] == pytest.approx(500) and b["G1"][1] == pytest.approx(10)
+    assert b["G2"][0] == pytest.approx(603) and b["G2"][1] == pytest.approx(10)
+
+
+@pytest.mark.parametrize("mx", [True, False])
+def test_origin_anchor_puts_grid_into_board_corner_at_origin(write_project, mx):
+    src = write_project(project([card(310, 20, text="A"), card(-300, 400, text="B"), card(50, 50, text="C")], mirror_x=mx))
+    res = run(src, ArrangeParams(columns=2, gap_x=3, gap_y=3, material=MaterialInput(700, 500)))
+    b = machine_bboxes(res)
+    assert b["G1"][:2] == pytest.approx((5, 5))  # deska u počátku + okraj 5 mm
+    assert b["G2"][:2] == pytest.approx((108, 5))  # další sloupec dál od počátku
+    assert b["G3"][:2] == pytest.approx((5, 68))  # druhý řádek začíná opět u počátku
+
+
+@pytest.mark.parametrize("mx", [True, False])
+def test_reading_fill_starts_top_left_on_screen(write_project, mx):
+    src = write_project(project([card(0, 0), card(500, 0)], mirror_x=mx))
+    res = run(src, ArrangeParams(columns=2, gap_x=3, gap_y=3, material=MaterialInput(700, 500), fill="reading"))
+    b = machine_bboxes(res)
+    if mx:  # počátek vpravo → vlevo na obrazovce = větší X stroje
+        assert b["G1"][0] > b["G2"][0]
     else:
-        assert b1[0] == pytest.approx(500) and b2[0] == pytest.approx(603)
+        assert b["G1"][0] < b["G2"][0]
+
+
+def test_center_anchor_centers_grid_on_board(write_project):
+    src = write_project(project([card(0, 0), card(500, 0)]))
+    res = run(src, ArrangeParams(columns=2, gap_x=4, gap_y=3, material=MaterialInput(700, 500)), write=True, out_dir=None)
+    plan = make_plan(load_project(src), ArrangeParams(columns=2, gap_x=4, gap_y=3, material=MaterialInput(700, 500), anchor="center"))
+    g = plan.layout.grid_bounds
+    assert (g.left + g.right) / 2 == pytest.approx(-350)  # počátek vpravo: deska X 0..700 → obrazovka −700..0
+    assert (g.top + g.bottom) / 2 == pytest.approx(250)
+    assert res.output is not None
+
+
+def test_selection_anchor_keeps_grid_at_original_place(write_project):
+    src = write_project(project([card(10, 20), card(300, 400)], mirror_x=False))
+    plan = make_plan(load_project(src), ArrangeParams(columns=2, gap_x=3, gap_y=3, material=BOARD, anchor="selection", fill="reading"))
+    assert (plan.layout.grid_bounds.left, plan.layout.grid_bounds.top) == pytest.approx((10, 20))
+
+
+@pytest.mark.parametrize(
+    "params, code",
+    [
+        (ArrangeParams(columns=2, gap_x=3, gap_y=3, material=None), "material_missing"),
+        (ArrangeParams(columns=2, gap_x=3, gap_y=3, material=BOARD, anchor="nowhere"), "invalid_anchor"),
+        (ArrangeParams(columns=2, gap_x=3, gap_y=3, material=BOARD, anchor="manual"), "invalid_start"),
+        (ArrangeParams(columns=2, gap_x=3, gap_y=3, material=BOARD, fill="diagonal"), "invalid_fill_corner"),
+        (ArrangeParams(columns=2, gap_x=3, gap_y=3, material=MaterialInput(700, 500, margin_left=400, margin_right=400)), "margins_exceed_material"),
+    ],
+)
+def test_invalid_placement_parameters(write_project, params, code):
+    src = write_project(project([card(0, 0)]))
+    with pytest.raises(GridError) as e:
+        make_plan(load_project(src), params)
+    assert e.value.code == code
 
 
 # --- T-MVP-20/21: vadný writer musí kontrola zachytit ---------------------------------------
@@ -244,7 +300,7 @@ def test_t_mvp24_source_changed_after_loading_blocks(write_project):
 
 def test_invalid_layout_is_never_written(write_project):
     src = write_project(four_cards())
-    small = MaterialInput(0, 0, 150, 100)
+    small = MaterialInput(150, 100)
     plan = make_plan(load_project(src), ArrangeParams(columns=2, gap_x=3, gap_y=3, material=small))
     assert "outside_material" in plan.report.codes()
     with pytest.raises(GridError) as e:
@@ -255,7 +311,7 @@ def test_invalid_layout_is_never_written(write_project):
 
 def test_loose_object_in_grid_area_blocks(write_project):
     src = write_project(project([card(10, 20), card(300, 400), rect(0, 0, 500, 500, cut=1)]))
-    plan = make_plan(load_project(src), ArrangeParams(columns=2, gap_x=3, gap_y=3, material=BOARD, start=(400, 100)))
+    plan = make_plan(load_project(src), ArrangeParams(columns=2, gap_x=3, gap_y=3, material=BOARD, anchor="manual", start=(10, 10)))
     assert "obstacle_overlap" in plan.report.codes()
     assert not plan.report.can_save
 

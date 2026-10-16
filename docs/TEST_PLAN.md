@@ -13,7 +13,7 @@
 | Integrace v LightBurnu | LB-07, 09, 12, 13 | 14.2 | ruční | nezahájeno | — |
 | Invariance MVP | — | 14.3 | automatický | nezahájeno | — |
 | MVP: nepodporované skupiny, ukládání | T-MVP-07, T-MVP-19 – T-MVP-25 | 26.1 | automatický | prochází | `tests/integration/` |
-| MVP: kontrola v LightBurnu | T-MVP-26 | 26.1 | ruční | čeká | zkušební výstup V-001 |
+| MVP: kontrola v LightBurnu | T-MVP-26 | 26.1 | ruční | ověřeno (CLI, V-001); opakovat s GUI | protokol níže |
 | Formát | T-FMT-01 – 05, 07 | 41.5 | automatický | prochází | `tests/integration/` |
 | Formát v LightBurnu | T-FMT-06 | 41.5 | ruční | ověřeno pro prototyp (KAL-00) | protokol níže |
 | Lokalizace (interní) | T-I18N-01 – T-I18N-16 | 36.6 | automatický / ruční | nezahájeno | — |
@@ -40,3 +40,4 @@
 | 2026-10-16 | KAL-00 / T-FMT-04 | 2.2.00-RC-7 | Kalibrace_C__grid_poc.lbrn2 | prochází | Prototyp posunul skupinu o +50/+30; změněny 2 řádky; originál beze změny |
 | 2026-10-16 | KAL-00 / T-FMT-06 | 2.2.00-RC-7 | Kalibrace_C__grid_poc.lbrn2 | ruční – ověřeno | File → Open: poloha, text, vrstvy, Preview v pořádku (vlastník) |
 | 2026-10-16 | KAL-00 / LB-06 | 2.2.00-RC-7 | Kalibrace_A/B, Kalibrace_L_A/L_B | ruční – ověřeno | Orientace pro Mirror True/True a False/True |
+| 2026-10-16 | T-MVP-26 / LB-13 | 2.2.00-RC-7 | test program …__grid_001.lbrn2 | ruční – ověřeno | 9 kartiček 3 × 3, mezera 5 mm; vlastník: „vše sedí“; požadavek zarovnat k počátku → spec. v1.10 |

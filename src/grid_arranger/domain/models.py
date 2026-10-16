@@ -65,6 +65,13 @@ class Align(Enum):
     END = "end"
 
 
+class Corner(Enum):
+    """Roh, ze kterého se mřížka plní (spec. v1.10). Ověřeny jsou jen horní počátky laseru."""
+
+    TOP_LEFT = "top_left"  # čtení: 1. výrobek vlevo nahoře, řádky doprava
+    TOP_RIGHT = "top_right"  # od počátku vpravo nahoře: 1. výrobek vpravo, řádky doleva
+
+
 @dataclass(frozen=True, slots=True)
 class Item:
     """Výrobek = jedna nejvyšší skupina; ``bounds`` je AABB jejího řezného obrysu."""
@@ -91,6 +98,8 @@ class GridRequest:
     start_y: float
     align_x: Align = Align.START
     align_y: Align = Align.START
+    fill_from: Corner = Corner.TOP_LEFT
+    """``start_x/start_y`` je vždy levý horní roh mřížky; ``fill_from`` určuje jen pořadí plnění."""
 
 
 @dataclass(frozen=True, slots=True)

@@ -3,10 +3,9 @@
 Příklady::
 
     python -m grid_arranger info projekt.lbrn2
-    python -m grid_arranger arrange projekt.lbrn2 --columns 3 --gap 5 \\
-        --material 0 0 1300 900 --margin 5 --dry-run
+    python -m grid_arranger arrange projekt.lbrn2 --columns 3 --gap 5 --board 700 500 --dry-run
 
-Souřadnice (``--start``, ``--material``) jsou hodnoty X/Y z LightBurnu.
+Souřadnice (``--start``, ``--board-at``) jsou hodnoty X/Y z LightBurnu (vzdálenost od počátku laseru).
 """
 
 from __future__ import annotations
@@ -16,7 +15,7 @@ import sys
 from pathlib import Path
 
 from .adapters.lightburn.read import load_project
-from .application.arrange_job import ArrangeParams, MaterialInput, execute, make_plan
+from .application.arrange_job import ANCHORS, DEFAULT_MARGIN_MM, FILL_MODES, ArrangeParams, MaterialInput, execute, make_plan
 from .domain.errors import GridError
 from .version import display_version
 
@@ -46,22 +45,31 @@ def _cmd_info(a: argparse.Namespace) -> int:
 
 def _cmd_arrange(a: argparse.Namespace) -> int:
     project = load_project(a.file)
-    margin = a.margin or [0.0]
+    margin = a.margin if a.margin else [DEFAULT_MARGIN_MM]
     if len(margin) == 1:
         margin = margin * 4
-    material = MaterialInput(*a.material, *margin) if a.material else None
+    if len(margin) != 4:
+        raise GridError("invalid_margin", "--margin takes one value or LEFT RIGHT TOP BOTTOM")
+    material = None
+    if a.board:
+        bx, by = a.board_at if a.board_at else (0.0, 0.0)
+        material = MaterialInput(a.board[0], a.board[1], bx, by, *margin)
     params = ArrangeParams(
         columns=a.columns,
         gap_x=a.gap_x if a.gap_x is not None else a.gap,
         gap_y=a.gap_y if a.gap_y is not None else a.gap,
         material=material,
         order=tuple(a.order.split(",")) if a.order else None,
+        anchor=a.anchor,
         start=tuple(a.start) if a.start else None,
+        fill=a.fill,
     )
     plan = make_plan(project, params)
     lay = plan.layout
-    print(f"Grid: {lay.columns} columns x {lay.rows} rows, {lay.grid_bounds.width:.3f} x {lay.grid_bounds.height:.3f} mm,"
-          f" top-left corner at LightBurn X {plan.start_lightburn[0]:.3f}, Y {plan.start_lightburn[1]:.3f}")
+    cx, cy = plan.origin_corner_lightburn
+    print(f"Laser:     {project.info.device_name} — origin {ORIGIN_TEXT[project.info.orientation.origin]}")
+    print(f"Grid: {lay.columns} columns x {lay.rows} rows, {lay.grid_bounds.width:.3f} x {lay.grid_bounds.height:.3f} mm;"
+          f" anchor {plan.anchor}, fill from {plan.fill}; grid corner at origin side: LightBurn X {cx:.3f}, Y {cy:.3f}")
     for pl in lay.placements:
         dx, dy = plan.moves_file[pl.item_id]
         print(f"  {pl.index + 1:>3}. {pl.item_id:>4}  row {pl.row + 1} col {pl.column + 1}  move X {dx:+9.3f}  Y {dy:+9.3f}")
@@ -92,10 +100,12 @@ def main(argv: list[str] | None = None) -> int:
     pa.add_argument("--gap-x", type=float)
     pa.add_argument("--gap-y", type=float)
     pa.add_argument("--order", help="comma-separated item ids, e.g. G9,G2,G1 (default: all supported, document order)")
-    pa.add_argument("--start", type=float, nargs=2, metavar=("X", "Y"), help="visual top-left corner of the grid (LightBurn X Y)")
-    pa.add_argument("--material", type=float, nargs=4, metavar=("X", "Y", "W", "H"), required=True,
-                    help="material rectangle in LightBurn coordinates")
-    pa.add_argument("--margin", type=float, nargs="+", metavar="MM", help="one value or LEFT RIGHT TOP BOTTOM")
+    pa.add_argument("--board", type=float, nargs=2, metavar=("W", "H"), help="board size in mm, placed at the laser origin")
+    pa.add_argument("--board-at", type=float, nargs=2, metavar=("X", "Y"), help="board corner at the origin side (LightBurn X Y, default 0 0)")
+    pa.add_argument("--margin", type=float, nargs="+", metavar="MM", help=f"one value or LEFT RIGHT TOP BOTTOM (default {DEFAULT_MARGIN_MM:g})")
+    pa.add_argument("--anchor", choices=ANCHORS, default="origin", help="where to put the grid (default: origin corner of the board)")
+    pa.add_argument("--start", type=float, nargs=2, metavar=("X", "Y"), help="for --anchor manual: grid corner at origin side (LightBurn X Y)")
+    pa.add_argument("--fill", choices=FILL_MODES, default="origin", help="first item at the laser origin corner (default) or top-left")
     pa.add_argument("--out-dir")
     pa.add_argument("--dry-run", action="store_true")
     a = ap.parse_args(argv)

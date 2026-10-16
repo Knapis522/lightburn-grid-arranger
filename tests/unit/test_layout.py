@@ -263,3 +263,34 @@ def test_unselected_items_get_no_placement():
     items = scattered_items(8)
     lay = arrange_to_grid(items, request(items, columns=3, order=("g2", "g5", "g7")))
     assert [p.item_id for p in lay.placements] == ["g2", "g5", "g7"]
+
+
+# --- plnění od počátku vpravo (spec. v1.10) -------------------------------------------------
+
+
+def test_fill_from_top_right_mirrors_columns():
+    from grid_arranger.domain import Corner
+
+    items = scattered_items(7)
+    a = arrange_to_grid(items, request(items, columns=3))
+    b = arrange_to_grid(items, request(items, columns=3, fill_from=Corner.TOP_RIGHT))
+    assert a.grid_bounds == b.grid_bounds
+    g = b.grid_bounds
+    first = b.placement_for("g0").target_bounds
+    assert first.right == pytest.approx(g.right) and first.top == pytest.approx(g.top)  # 1. kus vpravo nahoře
+    last = b.placement_for("g6").target_bounds
+    assert last.right == pytest.approx(g.right) and last.top == pytest.approx(20 + 2 * 63)  # neúplný řádek začíná vpravo
+    for pa, pb in zip(a.placements, b.placements):  # zrcadlení v rámci mřížky
+        assert pb.target_bounds.left == pytest.approx(g.left + g.right - pa.target_bounds.right)
+
+
+def test_fill_from_top_right_mixed_sizes_aligned_toward_origin():
+    from grid_arranger.domain import Corner
+
+    items = [Item("wide", Rect.from_xywh(0, 0, 120, 40)), Item("narrow", Rect.from_xywh(0, 0, 80, 40)), Item("x", Rect.from_xywh(0, 0, 60, 40))]
+    lay = arrange_to_grid(items, request(items, columns=2, gap=(5, 5), start=(0, 0), fill_from=Corner.TOP_RIGHT))
+    # sloupec 1 (vpravo) = max(120, 60) = 120, sloupec 2 (vlevo) = 80; šířka 205
+    assert lay.grid_bounds.width == pytest.approx(205)
+    assert lay.placement_for("wide").target_bounds.right == pytest.approx(205)
+    assert lay.placement_for("x").target_bounds.right == pytest.approx(205)  # menší kus přiléhá k rohu počátku
+    assert lay.placement_for("narrow").target_bounds.left == pytest.approx(0)
