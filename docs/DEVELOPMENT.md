@@ -64,7 +64,8 @@ Výsledek:
 ```text
 dist\GridArranger\GridArranger.exe     ← spustit (vedle musí zůstat složka _internal)
 dist\GridArranger\README.txt
-dist\GridArranger-v0.1.0.dev0-win-x64.zip
+dist\GridArranger-v0.1.0-alpha.1-win-x64.zip
+dist\SHA256SUMS.txt                  ← kontrolní součet ZIPu pro GitHub Release
 dist\selftest-report.json              ← výsledek samokontroly
 ```
 
@@ -75,6 +76,8 @@ dist\selftest-report.json              ← výsledek samokontroly
 - Windows SmartScreen může nepodepsanou aplikaci zablokovat: „Další informace → Přesto spustit“. Podpis řešit až před veřejnou distribucí (spec. kap. 30).
 - Ikonu (`packaging\GridArranger.ico`, `src\grid_arranger\gui\resources\app_icon.png`) vytváří `tools\make_icon.py` (vyžaduje Pillow); běžně se negeneruje.
 - Rozhodnutí o nástroji: `docs/DECISIONS/ADR-0003-baleni-pyinstaller.md`.
+
+Vydání na GitHub (tag, Release, kontrolní součet): `docs/RELEASE_CHECKLIST.md`.
 
 **Ruční test GH-05 / T-I18N-16 / HELP-01** na počítači bez Pythonu: rozbalit ZIP → spustit → přepnout jazyk cs/en → F1 → otevřít reálný projekt → uložit `__grid_NNN` → otevřít v LightBurnu (File → Open). Výsledek zapsat do `docs/TEST_PLAN.md`.
 

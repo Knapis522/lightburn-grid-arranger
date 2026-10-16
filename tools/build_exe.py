@@ -6,6 +6,7 @@
 Na Windows vznikne:
 * ``dist/GridArranger/GridArranger.exe`` (+ složka ``_internal`` s knihovnami) — spustitelné bez Pythonu,
 * ``dist/GridArranger-v<verze>-win-x64.zip`` — totéž v jednom souboru k přenesení na jiný počítač,
+* ``dist/SHA256SUMS.txt`` — kontrolní součet ZIPu (přikládá se ke GitHub Release),
 * ``dist/selftest-report.json`` — výsledek samokontroly zabalené aplikace.
 
 PyInstaller sestavuje vždy pro systém, na kterém běží: ``.exe`` pro Windows vznikne jen na Windows.
@@ -16,6 +17,7 @@ Výstupy v ``build/`` a ``dist/`` jsou generované, do Gitu nepatří a při dal
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import os
 import platform
@@ -33,6 +35,7 @@ IS_WINDOWS = sys.platform == "win32"
 
 README = """Grid Arranger for LightBurn {version}
 =====================================
+Build: {build}
 
 CZ: Spusťte GridArranger.exe. Python ani instalace nejsou potřeba.
     Celou složku GridArranger lze zkopírovat kamkoli (např. na plochu nebo na počítač u laseru);
@@ -56,7 +59,7 @@ def step(title: str) -> None:
 
 
 def tool_env() -> dict:
-    """Prostředí pro podprocesy: nástroje z .venv\Scripts (pyside6-lrelease…) i bez aktivace .venv."""
+    """Prostředí pro podprocesy: nástroje z .venv/Scripts (pyside6-lrelease…) i bez aktivace .venv."""
     env = dict(os.environ)
     env["PATH"] = str(Path(sys.executable).parent) + os.pathsep + env.get("PATH", "")
     return env
@@ -69,10 +72,41 @@ def run(cmd: list[str]) -> None:
 
 
 def version() -> str:
+    """Verze ve tvaru SemVer (``0.1.0-alpha.1``) — stejná jako Git tag bez ``v`` a název ZIPu."""
     sys.path.insert(0, str(ROOT / "src"))
-    from grid_arranger.version import __version__
+    from grid_arranger.version import display_version
 
-    return __version__
+    return display_version()
+
+
+def _commit_from_files(root: Path) -> str | None:
+    """Commit z ``.git`` bez příkazu git (GitHub Desktop git do PATH nepřidává)."""
+    git = root / ".git"
+    try:
+        head = (git / "HEAD").read_text(encoding="ascii").strip()
+        if not head.startswith("ref: "):
+            return head[:7]
+        ref = head[5:]
+        if (git / ref).is_file():
+            return (git / ref).read_text(encoding="ascii").strip()[:7]
+        for line in (git / "packed-refs").read_text(encoding="ascii").splitlines():
+            if line.endswith(" " + ref):
+                return line.split()[0][:7]
+    except OSError:
+        pass
+    return None
+
+
+def git_state(root: Path = ROOT) -> tuple[str | None, bool | None]:
+    """(zkrácený commit, necommitnuté změny?) — ``None`` = nelze zjistit."""
+    try:
+        head = subprocess.run(["git", "rev-parse", "--short=7", "HEAD"], cwd=root, capture_output=True, text=True)
+        dirty = subprocess.run(["git", "status", "--porcelain", "--untracked-files=no"], cwd=root, capture_output=True, text=True)
+        if head.returncode == 0:
+            return head.stdout.strip(), bool(dirty.stdout.strip())
+    except OSError:
+        pass
+    return _commit_from_files(root), None
 
 
 def self_test(exe: Path) -> dict:
@@ -121,6 +155,15 @@ def main() -> int:
     step("1/5 Překlady")
     run([sys.executable, "tools/build_translations.py", "--no-update"])
 
+    commit, dirty = git_state()
+    build = f"commit {commit}" + (" + uncommitted changes" if dirty else "") if commit else "commit unknown"
+    if dirty:
+        print("Upozornění: v repozitáři jsou necommitnuté změny — ZIP nebude odpovídat žádnému commitu/tagu.\n"
+              "            Pro vydání nejdřív commitněte a sestavte znovu.")
+    elif dirty is None:
+        print(f"Poznámka: sestavuje se z {build}; necommitnuté změny nelze ověřit (git není v PATH).\n"
+              "          Pro vydání musí být v GitHub Desktop prázdný seznam Changes.")
+
     if a.skip_tests:
         step("2/5 Testy — přeskočeno (--skip-tests)")
     else:
@@ -130,18 +173,26 @@ def main() -> int:
     step("3/5 PyInstaller")
     run([sys.executable, "-m", "PyInstaller", str(SPEC), "--noconfirm", "--clean",
          "--distpath", str(DIST), "--workpath", str(BUILD)])
-    (APP_DIR / "README.txt").write_text(README.format(version=ver), encoding="utf-8-sig" if IS_WINDOWS else "utf-8")
+    enc = "utf-8-sig" if IS_WINDOWS else "utf-8"
+    (APP_DIR / "README.txt").write_text(README.format(version=ver, build=build), encoding=enc)
 
     step("4/5 Samokontrola zabalené aplikace")
     exe = APP_DIR / ("GridArranger.exe" if IS_WINDOWS else "GridArranger")
     report = self_test(exe)
+    notices = (ROOT / "packaging" / "THIRD_PARTY_NOTICES.txt").read_text(encoding="utf-8")
+    (APP_DIR / "THIRD_PARTY_NOTICES.txt").write_text(
+        notices.format(version=ver, python=report["python"], qt=report["qt"], pyside=report["pyside6"]), encoding=enc)
 
     step("5/5 ZIP")
     z = make_zip(ver)
+    digest = hashlib.sha256(z.read_bytes()).hexdigest()
+    (DIST / "SHA256SUMS.txt").write_text(f"{digest}  {z.name}\n", encoding="ascii")
     size = sum(f.stat().st_size for f in APP_DIR.rglob("*") if f.is_file())
     print(f"\nHotovo — Grid Arranger {ver} (Qt {report['qt']}, Python {report['python']})")
     print(f"  Aplikace: {exe}  (složka {size / 1e6:.0f} MB)")
     print(f"  ZIP:      {z}  ({z.stat().st_size / 1e6:.0f} MB)")
+    print(f"  SHA-256:  {digest}  (dist/SHA256SUMS.txt)")
+    print(f"  Sestaveno z: {build}")
     return 0
 
 

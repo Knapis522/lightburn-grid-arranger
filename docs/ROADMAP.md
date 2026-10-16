@@ -26,6 +26,7 @@ V11-ACCEPT → V20-ACCEPT → FUT-01 (jen při veřejném API)
 | ADAPT-00 | Bezpečné čtení, identifikace skupin, zápis, diff | KAL-00 | **Implementováno a otestováno** 2026-10-16 (automaticky); čeká ruční T-MVP-26 | `src/grid_arranger/adapters`, `safety`, `application`; `tests/integration` |
 | GUI-00 | PySide6 aplikace: výběr, pořadí, náhled, validace | CORE-00, ADAPT-00 | **Implementováno**, okno ověřeno vlastníkem na Windows 2026-10-16; sestavení EXE připraveno (PyInstaller, ADR-0003), čeká GH-05 na PC bez Pythonu | `src/grid_arranger/gui`, `tests/gui`, `packaging/`, `tools/build_exe.py` |
 | HELP-01 | Offline příručka F1, cs/en | GUI-00 | Rozpracováno: příručka cs/en a F1 hotové; samokontrola sestavení ověřuje přibalení příručky; čeká ruční ověření v EXE na Windows | `src/grid_arranger/gui/help` |
+| REL-ALPHA1 | Interní Pre-release `v0.1.0-alpha.1` (soukromý repozitář) | GUI-00, sestavení EXE | Připraveno 2026-10-16; čeká tag a GitHub Release | `docs/releases/v0.1.0-alpha.1.md`, `docs/RELEASE_CHECKLIST.md` |
 | MVP-ACCEPT | Ověření MVP-01..08, test v LightBurnu | výše | Nezahájeno | — |
 | PUBLIC-01 | Veřejné v1.0.0 | MVP-ACCEPT + REL-01, PUB-01, L10N-PUBLIC-01, DOC-REL-01 | Neschváleno | — |
 | V11-ACCEPT | Profily, množství, automatické sloupce | MVP-ACCEPT | Plánováno | — |

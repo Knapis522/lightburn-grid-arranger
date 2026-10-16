@@ -1,10 +1,15 @@
 # Changelog
 
-Formát podle [Keep a Changelog](https://keepachangelog.com/), verze podle SemVer (spec. kap. 30.3). Zatím nebylo vydáno žádné sestavení.
+Formát podle [Keep a Changelog](https://keepachangelog.com/), verze podle SemVer (spec. kap. 30.3). Popisy vydání pro GitHub (anglicky): `docs/releases/`.
 
 ## [Unreleased]
 
+## [0.1.0-alpha.1] — 2026-10-16
+
+První interní předběžné sestavení (soukromý repozitář, GitHub Pre-release). Release notes: `docs/releases/v0.1.0-alpha.1.md`.
+
 ### Přidáno
+- Číslo verze `0.1.0-alpha.1` (PEP 440 `0.1.0a1`); ZIP, okno O aplikaci a informace o EXE používají SemVer. Sestavení přikládá `SHA256SUMS.txt`, do balíčku `THIRD_PARTY_NOTICES.txt` a commit, ze kterého vzniklo.
 - Sestavení `GridArranger.exe` jako přenosné složky a ZIPu (PyInstaller, ADR-0003): `tools\build_exe.bat` → překlady, testy, balení, samokontrola zabalené aplikace (`--self-test`), ZIP. Vlastní ikona aplikace (mřížka s počátkem laseru), informace o verzi v EXE, `README.txt` v balíčku.
 - Tlačítka standardních dialogů Qt (Ano/Ne, Storno) česky — načítá se i katalog `qtbase_cs`.
 - Příručka: spuštění z rozbaleného ZIPu, otevření projektu přetažením na EXE, upozornění Windows SmartScreen, kontrola instalace.

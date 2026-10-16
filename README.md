@@ -39,6 +39,9 @@ Výstup vždy otevři v LightBurnu přes **File → Open** (ne Import), zkontrol
 | [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md) | Vývojové prostředí, testy a sestavení `GridArranger.exe` |
 | [docs/FORMAT_COMPATIBILITY.md](docs/FORMAT_COMPATIBILITY.md) | Ověřené verze LightBurnu a zjištění o formátu |
 | [docs/TRANSLATING.md](docs/TRANSLATING.md) | Překlady a terminologie |
+| [docs/RELEASE_CHECKLIST.md](docs/RELEASE_CHECKLIST.md) | Postup vydání na GitHub |
+| [docs/releases/](docs/releases/) | Popisy jednotlivých vydání (anglicky) |
+| [CHANGELOG.md](CHANGELOG.md) | Přehled změn |
 | [docs/DECISIONS/](docs/DECISIONS/) | Záznamy technických rozhodnutí (ADR) |
 
 ## Testovací data

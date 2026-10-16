@@ -58,7 +58,7 @@ Převod (ověřeno v KAL-00, spec. kap. 8): `screen_x = MirrorX ? −x : +x`, `s
 | `gui/app.py` | spuštění, ikona okna, zachycení neočekávané chyby; argumenty `<soubor.lbrn2>` a `--self-test REPORT.json` | MVP-06 |
 | `gui/selftest.py` | samokontrola sestavení bez zobrazení okna (příručka, překlady, ikona, okno, round-trip na vestavěném syntetickém projektu) → JSON, kód 0/1 | GH-05, HELP-01, T-I18N-16 |
 | `packaging/GridArranger.spec`, `tools/build_exe.py`, `tools/build_exe.bat` | PyInstaller (onedir, bez konzole, ikona, informace o verzi), zúžení Qt na Core/Gui/Widgets, samokontrola, ZIP | kap. 30, ADR-0003 |
-| `version.py` | `__version__` — jediný zdroj verze | kap. 30.3 |
+| `version.py` | `__version__` (PEP 440, např. `0.1.0a1`) — jediný zdroj verze; `display_version()` → SemVer `0.1.0-alpha.1` pro GUI, ZIP, tag a release notes | kap. 30.3 |
 
 ## Pravidla rozpoznání výrobku (adaptér)
 

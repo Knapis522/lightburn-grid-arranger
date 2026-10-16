@@ -13,7 +13,10 @@ ROOT = Path(SPECPATH).resolve().parent
 SRC = ROOT / "src"
 PKG = SRC / "grid_arranger"
 
-VERSION = re.search(r'__version__\s*=\s*"([^"]+)"', (PKG / "version.py").read_text(encoding="utf-8")).group(1)
+sys.path.insert(0, str(SRC))
+from grid_arranger.version import display_version  # noqa: E402
+
+VERSION = display_version()  # SemVer, např. 0.1.0-alpha.1
 
 # Data aplikace: příručka F1, překlady, ikona — na stejné relativní cesty jako ve zdrojích,
 # aby je kód našel přes Path(__file__) i v zabalené podobě (HELP-01).

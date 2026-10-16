@@ -1,0 +1,26 @@
+Grid Arranger for LightBurn {version} — third-party components
+=============================================================
+
+This build bundles the following third-party software in the _internal folder.
+Grid Arranger itself is an internal pre-release; its own licence has not been decided yet.
+(A complete licence review is required before any public release — spec. chapter 33, PUB-01.)
+
+Python {python}
+  Python Software Foundation License Version 2 — https://docs.python.org/3/license.html
+
+Qt {qt} (Qt6Core, Qt6Gui, Qt6Widgets, Qt6Svg, Qt6OpenGL and plugins)
+PySide6 {pyside} and Shiboken6 — Qt for Python
+  GNU Lesser General Public License v3 (LGPL-3.0) — https://www.gnu.org/licenses/lgpl-3.0.html
+  Source code: https://code.qt.io/ and https://download.qt.io/official_releases/QtForPython/
+  The Qt and PySide6 libraries are shipped as separate, unmodified dynamic libraries
+  (_internal/PySide6, _internal/shiboken6) and can be replaced by the user with compatible versions.
+
+PyInstaller bootloader (GridArranger.exe)
+  GNU General Public License v2 with the PyInstaller bootloader exception — https://pyinstaller.org/en/stable/license.html
+
+OpenSSL (libcrypto, libssl) — Apache License 2.0 — https://www.openssl.org/source/license.html
+libffi — MIT License — https://github.com/libffi/libffi/blob/master/LICENSE
+Microsoft Visual C++ runtime (VCRUNTIME140, MSVCP140, ucrtbase, api-ms-win-*) — Microsoft redistributable files
+
+"LightBurn" is a trademark of LightBurn Software, LLC. Grid Arranger is an unofficial tool and is not
+affiliated with, endorsed or supported by LightBurn Software.

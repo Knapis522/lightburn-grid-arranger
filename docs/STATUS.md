@@ -2,7 +2,7 @@
 
 **Aktualizováno:** 2026-10-16
 **Verze specifikace:** 1.10 (`docs/specification.md`)
-**Verze aplikace:** `0.1.0.dev0` (nevydaná; první sestavení EXE připraveno k ověření)
+**Verze aplikace:** `0.1.0-alpha.1` — první interní předběžné vydání připraveno (postup `docs/RELEASE_CHECKLIST.md`)
 
 > Tento soubor je hlavní předávací dokument. Při navázání práce: přečíst tento soubor → `ROADMAP.md` → relevantní kapitolu specifikace. Nepředpokládat, že funkce funguje jen proto, že existuje kód.
 
@@ -10,7 +10,7 @@
 
 | Hotovo | Probíhá | Blokováno | Další |
 |---|---|---|---|
-| GIT-00, DOC-00, KAL-00; CORE-00 a ADAPT-00 (T-MVP-26 ověřeno vlastníkem pro `__grid_001` i `__grid_002`); **GUI-00 ověřeno vlastníkem na Windows** (okno, motivy, prohození tažením, světlý/tmavý vzhled, zoom; 2026-10-16) | **EXE-00 / GH-05:** sestavení přenosné složky `GridArranger/` přes PyInstaller (`tools\build_exe.bat`) se samokontrolou; **sestaveno na Windows vlastníka** (samokontrola 5/5 v `GridArranger.exe`, ZIP 28 MB); 286 testů | — | Vlastník sestaví EXE na Windows a vyzkouší ho na PC bez Pythonu (GH-05, T-I18N-16, HELP-01) |
+| GIT-00, DOC-00, KAL-00; CORE-00 a ADAPT-00 (T-MVP-26 ověřeno vlastníkem pro `__grid_001` i `__grid_002`); **GUI-00 ověřeno vlastníkem na Windows** (okno, motivy, prohození tažením, světlý/tmavý vzhled, zoom; 2026-10-16) | **EXE-00 / GH-05:** sestavení přenosné složky `GridArranger/` přes PyInstaller (`tools\build_exe.bat`) se samokontrolou; **sestaveno na Windows vlastníka** (samokontrola 5/5 v `GridArranger.exe`, ZIP 28 MB); 286 testů | — | Vlastník vydá `v0.1.0-alpha.1` na GitHubu (Pre-release) a ZIP z GitHubu vyzkouší na PC bez Pythonu (GH-05, T-I18N-16, HELP-01) |
 
 ## Implementováno / otestováno
 
@@ -43,3 +43,4 @@
 - Podle připomínek doplněno a vlastníkem ověřeno na Windows: prohození dvou kartiček tažením, vzhled Nastavení → Vzhled (světlý = celá aplikace světlá; tmavý = tmavé ovládání, náhled světlý), plynulý zoom s mezemi.
 - EXE-00: `tools\build_exe.bat` → překlady, testy, PyInstaller, samokontrola `GridArranger --self-test` (příručka, překlady vč. tlačítek Qt, ikona, okno, načtení → rozložení → zápis → kontrola na syntetickém projektu), ZIP. Zkušebně sestaveno na Linuxu (Qt 6.12, Python 3.13): samokontrola 5/5, aplikace se spustí. Na Windows sestaveno 2026-10-16 (Windows 11, Python 3.13.6, PySide6 6.12.0): samokontrola 5/5, ZIP `GridArranger-v0.1.0.dev0-win-x64.zip` 28 MB.
 - Další bezpečný krok: vlastník spustí `tools\build_exe.bat`, ZIP rozbalí na počítači bez Pythonu (ideálně u laseru), vyzkouší F1, přepnutí jazyka a uložení reálného projektu; výsledek zapsat do TEST_PLAN (GH-05, T-I18N-16, HELP-01).
+- Vydání `v0.1.0-alpha.1`: číslo verze, `SHA256SUMS.txt`, `THIRD_PARTY_NOTICES.txt` a commit v balíčku, release notes `docs/releases/v0.1.0-alpha.1.md` (anglicky), postup `docs/RELEASE_CHECKLIST.md`. Commit/tag/Release na GitHubu provádí vlastník.
