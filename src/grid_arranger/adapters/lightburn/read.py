@@ -9,7 +9,7 @@ Konzervativní pravidla (spec. kap. 13 „neznámé = unsupported“):
 * podporovaná verze: ``AppVersion`` 2.2.x, ``FormatVersion`` 1;
 * podporovaná orientace: ``MirrorY="True"`` (ověřeno KAL-00);
 * uvnitř výrobku jsou dovoleny jen ověřené typy ``Group``, ``Path``, ``Text`` a nativní tvary
-  ``Ellipse``, ``Rect``, ``Polygon`` (:mod:`.shapes`; neověřené varianty se blokují).
+  ``Ellipse``, ``Rect``, ``Polygon`` (:mod:`.shapes`).
   Neznámý typ může nést souřadnice ve světovém systému (jako ``BackupPath``)
   a po přesunu by zůstal na místě → výrobek se blokuje.
 """
@@ -242,9 +242,6 @@ def _measure(shape: Node, parent_m: geo.Affine, ctx: _Ctx, acc: _Measure) -> Non
             acc.unmeasurable += 1
             acc.blocking.append(Reason("unreadable_shape", {"type": kind, "detail": str(e)}))
             return
-        pending = shapes.unverified(native)
-        if pending:
-            acc.blocking.append(Reason(*pending))
         acc.boxes.append((shapes.native_bbox(native, m), shape, True))
         return
 

@@ -1,20 +1,20 @@
-"""Nativní tvary LightBurnu: ``Ellipse``, ``Rect``, ``Polygon`` (spec. v1.14 kap. 5.3; KAL-02).
+"""Nativní tvary LightBurnu: ``Ellipse``, ``Rect``, ``Polygon`` (spec. v1.14 kap. 5 bod 8; KAL-02).
 
 Tyto tvary nemají seznam vrcholů — LightBurn ukládá jen rozměry a ``XForm`` (posun = střed tvaru):
 
 * ``<Shape Type="Ellipse" Rx="20" Ry="20">`` — elipsa s poloosami Rx, Ry kolem počátku;
-* ``<Shape Type="Rect" W="60" H="40" Cr="0">`` — obdélník W × H se středem v počátku, Cr = poloměr rohů;
+* ``<Shape Type="Rect" W="60" H="40" Cr="0">`` — obdélník W × H se středem v počátku, Cr = poloměr
+  rohů v mm (nejvýš polovina kratší strany); roh = čtvrtelipsa jako Bézierova křivka;
 * ``<Shape Type="Polygon" Rx="30.5" Ry="30.5" N="6">`` — pravidelný N-úhelník vepsaný do elipsy
-  Rx, Ry; vrcholy v úhlech ``2πk/N`` (první vrchol na kladné ose X).
+  Rx, Ry; vrcholy v úhlech ``90° + 180°/N + k·360°/N`` (lichý N: vrchol v ``(0, −Ry)``).
 
-Ověřeno na projektech z LightBurnu 2.2 (Test_tvary_A/L_A): elipsy včetně klíčenek ve vnořené
-skupině, obdélník s ``Cr="0"`` a šestiúhelník (``N="6"``, hrot vlevo a vpravo). Varianty, které
-ještě nikdo v LightBurnu neporovnal (jiný počet stran, zaoblené rohy), se blokují — dokud je
-neověří KAL-02 (``tools/kal02``), platí „neznámé = nepodporované“ (spec. kap. 13).
+Ověřeno: Test_tvary_A/L_A (elipsy, klíčenky ve vnořené skupině, obdélník, šestiúhelník) a KAL-02 —
+tvary převedené v LightBurnu na křivky (Convert to Path) se s výpočtem shodují na 0,0000 mm
+(mnohoúhelníky N = 3–8 včetně zrcadleného a eliptického, poloměry rohů 5, 12 a 30 mm, natočená elipsa).
 
 Tvar se převádí na ekvivalentní cestu (stejné ``Vertex`` / ``PrimList`` jako ``Path``), takže
 náhled i výpočet natočení používají stejný kód. Obdélník kolem tvaru (AABB) se počítá přesně:
-u elipsy analyticky, u obdélníku a mnohoúhelníku z rohů (zaoblený obdélník leží uvnitř ostrého).
+u elipsy analyticky, u mnohoúhelníku z vrcholů, u obdélníku z rohů vnitřního obdélníku + elipsy rohu.
 """
 
 from __future__ import annotations
@@ -33,10 +33,6 @@ _ATTRS = {
 }
 COMMON_ATTRS = frozenset({"Type", "CutIndex"})
 MAX_POLYGON_SIDES = 1000
-VERIFIED_POLYGON_SIDES = frozenset({6})
-"""Počty stran ověřené v LightBurnu; ostatní čekají na KAL-02."""
-ROUNDED_RECT_VERIFIED = False
-"""Zaoblené rohy (``Cr`` > 0) čekají na KAL-02."""
 KAPPA = 0.5522847498307936  # čtvrtkruh Bézierovou křivkou (stejné číslo používá LightBurn)
 
 
@@ -92,15 +88,6 @@ def parse_native(attrs: dict[str, str]) -> Native:
     raise geo.GeometryError(f"Neznámý tvar {kind!r}")
 
 
-def unverified(native: Native) -> tuple[str, dict] | None:
-    """Kód a parametry varianty, kterou LightBurn zatím nepotvrdil (→ blokovat), jinak ``None``."""
-    if native.kind == "Polygon" and native.n not in VERIFIED_POLYGON_SIDES:
-        return "unverified_polygon", {"sides": native.n}
-    if native.kind == "Rect" and native.cr > 0 and not ROUNDED_RECT_VERIFIED:
-        return "unverified_rounded_rect", {"radius": round(native.cr, 3)}
-    return None
-
-
 def _v(x: float, y: float, c0: tuple[float, float] | None = None, c1: tuple[float, float] | None = None) -> geo.Vertex:
     return geo.Vertex(x, y, c0, c1)
 
@@ -135,7 +122,7 @@ def _rect(w: float, h: float, cr: float) -> tuple[list[geo.Vertex], str]:
 def _polygon(rx: float, ry: float, n: int) -> tuple[list[geo.Vertex], str]:
     verts = []
     for k in range(n):
-        t = 2 * math.pi * k / n
+        t = math.pi / 2 + math.pi / n + 2 * math.pi * k / n  # jako LightBurn (KAL-02)
         verts.append(_v(rx * math.cos(t), ry * math.sin(t)))
     return verts, "LineClosed"
 
@@ -158,7 +145,12 @@ def native_bbox(native: Native, m: geo.Affine) -> geo.BBox:
         return e - hx, f - hy, e + hx, f + hy
     if native.kind == "Rect":
         x, y = native.w / 2, native.h / 2
-        pts = [geo.apply(m, sx * x, sy * y) for sx in (-1, 1) for sy in (-1, 1)]
+        r = min(native.cr, x, y)
+        hx, hy = r * math.hypot(a, c), r * math.hypot(b, d)  # elipsa rohu po transformaci
+        pts = [geo.apply(m, sx * (x - r), sy * (y - r)) for sx in (-1, 1) for sy in (-1, 1)]
+        xs = [p[0] for p in pts]
+        ys = [p[1] for p in pts]
+        return min(xs) - hx, min(ys) - hy, max(xs) + hx, max(ys) + hy
     else:
         pts = [geo.apply(m, v.x, v.y) for v in _polygon(native.rx, native.ry, native.n)[0]]
     xs = [p[0] for p in pts]

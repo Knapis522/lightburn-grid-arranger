@@ -8,8 +8,6 @@
 
 **Výrobek „nelze přesunout“** — najeďte na něj myší. Nejčastěji: skupina nemá uzavřený řezný obrys, něco z ní vyčnívá ven z obrysu, je zamčená, nebo obsahuje typ objektu, který aplikace zatím neumí bezpečně přesunout (např. bitmapu).
 
-**„Mnohoúhelník s N stranami / obdélník se zaoblenými rohy zatím nebyl ověřen“** — tyto tvary nakreslené přímo v LightBurnu aplikace zatím bezpečně nezná. V LightBurnu tvar vyberte, převeďte na křivky (*Convert to Path*) a projekt znovu uložte. Kruh, elipsa, obdélník bez zaoblení a šestiúhelník fungují přímo.
-
 **„Geometrie textu neodpovídá jeho poloze“** — otevřete projekt v LightBurnu a znovu ho uložte.
 
 **Uložení je zablokované** — přečtěte chyby (✖) pod náhledem: přesah desky, kolize, malá mezera nebo nezměřitelný objekt. Upravte sloupce, mezery, desku nebo výběr.

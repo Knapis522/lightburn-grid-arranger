@@ -8,8 +8,6 @@
 
 **Item "cannot be moved"** — hover over it. Most often: the group has no closed cut outline, something extends beyond the outline, it is locked, or it contains an object type the application cannot move safely yet (for example a bitmap).
 
-**"A polygon with N sides / a rectangle with rounded corners has not been verified yet"** — the application does not know these shapes drawn directly in LightBurn safely yet. In LightBurn select the shape, convert it to a path (*Convert to Path*) and save the project again. Circles, ellipses, rectangles without rounding and hexagons work directly.
-
 **"Text geometry does not match its position"** — open the project in LightBurn and save it again.
 
 **Saving is blocked** — read the errors (✖) under the preview: board overrun, collision, gap too small or an object that cannot be measured. Change the columns, gaps, board or selection.

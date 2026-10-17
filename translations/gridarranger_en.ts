@@ -590,221 +590,211 @@ Please send the details below when reporting the problem.</source>
     </message>
     <message>
         <location filename="../src/grid_arranger/gui/messages.py" line="33"/>
-        <source>A polygon with {sides} sides has not been verified with LightBurn yet. Convert it to a path in LightBurn (Convert to Path) and save again.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/grid_arranger/gui/messages.py" line="34"/>
-        <source>A rectangle with rounded corners ({radius} mm) has not been verified with LightBurn yet. Convert it to a path in LightBurn (Convert to Path) and save again.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <location filename="../src/grid_arranger/gui/messages.py" line="35"/>
         <source>Contains an unreadable transformation.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/messages.py" line="36"/>
+        <location filename="../src/grid_arranger/gui/messages.py" line="34"/>
         <source>Contains an unreadable curve.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/messages.py" line="37"/>
+        <location filename="../src/grid_arranger/gui/messages.py" line="35"/>
         <source>No closed cut outline was found.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/messages.py" line="38"/>
+        <location filename="../src/grid_arranger/gui/messages.py" line="36"/>
         <source>Some content extends beyond the cut outline.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/messages.py" line="39"/>
+        <location filename="../src/grid_arranger/gui/messages.py" line="37"/>
         <source>The cut outline is ambiguous ({count} candidates).</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/messages.py" line="40"/>
+        <location filename="../src/grid_arranger/gui/messages.py" line="38"/>
         <source>The cut outline has zero size.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/messages.py" line="41"/>
+        <location filename="../src/grid_arranger/gui/messages.py" line="39"/>
         <source>The group is empty.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/messages.py" line="42"/>
+        <location filename="../src/grid_arranger/gui/messages.py" line="40"/>
         <source>Text geometry does not match its position. Open and save the project in LightBurn again.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/messages.py" line="43"/>
+        <location filename="../src/grid_arranger/gui/messages.py" line="41"/>
         <source>Text “{text}” cannot be measured — check it in LightBurn Preview.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/messages.py" line="45"/>
+        <location filename="../src/grid_arranger/gui/messages.py" line="43"/>
         <source>Enter the board size.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/messages.py" line="46"/>
+        <location filename="../src/grid_arranger/gui/messages.py" line="44"/>
         <source>The board size is invalid.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/messages.py" line="47"/>
+        <location filename="../src/grid_arranger/gui/messages.py" line="45"/>
         <source>The margins are invalid.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/messages.py" line="48"/>
+        <location filename="../src/grid_arranger/gui/messages.py" line="46"/>
         <source>The margins are larger than the board.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/messages.py" line="49"/>
+        <location filename="../src/grid_arranger/gui/messages.py" line="47"/>
         <source>{a} extends beyond the usable board area.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/messages.py" line="50"/>
+        <location filename="../src/grid_arranger/gui/messages.py" line="48"/>
         <source>{a} and {b} overlap.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/messages.py" line="51"/>
+        <location filename="../src/grid_arranger/gui/messages.py" line="49"/>
         <source>{a} and {b} are closer than the gap.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/messages.py" line="52"/>
+        <location filename="../src/grid_arranger/gui/messages.py" line="50"/>
         <source>{a} collides with {b}, which is not being moved.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/messages.py" line="53"/>
+        <location filename="../src/grid_arranger/gui/messages.py" line="51"/>
         <source>{a} is too close to {b}, which is not being moved.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/messages.py" line="54"/>
+        <location filename="../src/grid_arranger/gui/messages.py" line="52"/>
         <source>The size of {a} cannot be determined, so saving is blocked.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/messages.py" line="55"/>
+        <location filename="../src/grid_arranger/gui/messages.py" line="53"/>
         <source>Zero gap: items touch each other — risky when cutting.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/messages.py" line="56"/>
+        <location filename="../src/grid_arranger/gui/messages.py" line="54"/>
         <source>Items have different sizes: the gap is a minimum, not exactly the same everywhere.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/messages.py" line="58"/>
+        <location filename="../src/grid_arranger/gui/messages.py" line="56"/>
         <source>The number of columns must be at least 1.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/messages.py" line="59"/>
+        <location filename="../src/grid_arranger/gui/messages.py" line="57"/>
         <source>The gap must be 0 or more.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/messages.py" line="60"/>
+        <location filename="../src/grid_arranger/gui/messages.py" line="58"/>
         <source>Enter the grid corner position.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/messages.py" line="61"/>
+        <location filename="../src/grid_arranger/gui/messages.py" line="59"/>
         <source>Unknown grid placement.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/messages.py" line="62"/>
+        <location filename="../src/grid_arranger/gui/messages.py" line="60"/>
         <source>Unknown fill order.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/messages.py" line="63"/>
+        <location filename="../src/grid_arranger/gui/messages.py" line="61"/>
         <source>Unknown rotation mode.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/messages.py" line="64"/>
+        <location filename="../src/grid_arranger/gui/messages.py" line="62"/>
         <source>Internal error: invalid item transformation. Nothing was saved.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/messages.py" line="65"/>
+        <location filename="../src/grid_arranger/gui/messages.py" line="63"/>
         <source>Select at least one item.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/messages.py" line="66"/>
+        <location filename="../src/grid_arranger/gui/messages.py" line="64"/>
         <source>An item is listed more than once.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/messages.py" line="67"/>
+        <location filename="../src/grid_arranger/gui/messages.py" line="65"/>
         <source>Unknown item.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/messages.py" line="68"/>
+        <location filename="../src/grid_arranger/gui/messages.py" line="66"/>
         <source>An item has zero size.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/messages.py" line="69"/>
+        <location filename="../src/grid_arranger/gui/messages.py" line="67"/>
         <source>Internal error: the grid calculation violated the gap. Nothing was saved.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/messages.py" line="70"/>
+        <location filename="../src/grid_arranger/gui/messages.py" line="68"/>
         <source>The selected item cannot be moved.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/messages.py" line="71"/>
+        <location filename="../src/grid_arranger/gui/messages.py" line="69"/>
         <source>The layout did not pass the check; nothing was saved.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/messages.py" line="72"/>
+        <location filename="../src/grid_arranger/gui/messages.py" line="70"/>
         <source>The output check failed; nothing was saved.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/messages.py" line="73"/>
+        <location filename="../src/grid_arranger/gui/messages.py" line="71"/>
         <source>The original file has changed since it was opened. Open it again.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/messages.py" line="74"/>
+        <location filename="../src/grid_arranger/gui/messages.py" line="72"/>
         <source>The file already exists (or its protocol .json does). The application never overwrites files; nothing was saved.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/messages.py" line="75"/>
+        <location filename="../src/grid_arranger/gui/messages.py" line="73"/>
         <source>The output would overwrite the original; refused.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/messages.py" line="76"/>
+        <location filename="../src/grid_arranger/gui/messages.py" line="74"/>
         <source>Saving failed: {detail}</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/messages.py" line="77"/>
+        <location filename="../src/grid_arranger/gui/messages.py" line="75"/>
         <source>There is no free name for the output file.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/messages.py" line="80"/>
+        <location filename="../src/grid_arranger/gui/messages.py" line="78"/>
         <source>Error {code}</source>
         <translation type="unfinished"></translation>
     </message>

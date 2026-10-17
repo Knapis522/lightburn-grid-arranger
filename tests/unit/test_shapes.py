@@ -52,12 +52,40 @@ def test_unknown_attributes_are_reported():
     assert shapes.unknown_attrs({"Type": "Rect", "W": "1", "H": "1", "Cr": "0", "N": "6"}) == ["N"]
 
 
-def test_only_verified_variants_pass():
-    assert shapes.unverified(shapes.Native("Ellipse", rx=3, ry=4)) is None
-    assert shapes.unverified(shapes.Native("Rect", w=3, h=4, cr=0)) is None
-    assert shapes.unverified(shapes.Native("Polygon", rx=3, ry=3, n=6)) is None
-    assert shapes.unverified(shapes.Native("Polygon", rx=3, ry=3, n=5)) == ("unverified_polygon", {"sides": 5})
-    assert shapes.unverified(shapes.Native("Rect", w=3, h=4, cr=1)) == ("unverified_rounded_rect", {"radius": 1})
+def poly_world(native, m):
+    verts, _ = shapes.native_path(native)
+    return [geo.apply(m, v.x, v.y) for v in verts]
+
+
+@pytest.mark.parametrize("n, rx, ry, lightburn", [
+    # vrcholy z LightBurnu (KAL-02: nativní tvar → Convert to Path), místní souřadnice
+    (3, 20, 20, [(17.320509, 9.999999), (0, -20), (-17.320503, 10.000008)]),
+    (4, 20, 20, [(14.142136, 14.142136), (14.142136, -14.142136), (-14.142138, -14.142133), (-14.142131, 14.14214)]),
+    (5, 20, 20, [(11.755705, 16.18034), (19.02113, -6.1803408), (0, -20), (-19.021132, -6.1803331), (-11.755706, 16.18034)]),
+    (5, 25, 14, [(14.694632, 11.326238), (23.776413, -4.3262386), (0, -14), (-23.776415, -4.3262329), (-14.694633, 11.326237)]),
+    (6, 20, 20, [(10, 17.320507), (20, 0), (9.9999962, -17.320511), (-10.000004, -17.320505), (-20, 0), (-9.9999952, 17.320511)]),
+])
+def test_polygon_vertices_match_lightburn(n, rx, ry, lightburn):
+    ours = poly_world(shapes.Native("Polygon", rx=rx, ry=ry, n=n), geo.IDENTITY)
+    assert len(ours) == n
+    for p in lightburn:  # stejná množina vrcholů (LightBurn začíná jinde a jde opačně)
+        assert min(math.hypot(p[0] - q[0], p[1] - q[1]) for q in ours) < 1e-4
+
+
+@pytest.mark.parametrize("cr, corner", [(5, (20, -17)), (12, (13, -17)), (30, (8, -17))])
+def test_rounded_rect_matches_lightburn_including_clamped_radius(cr, corner):
+    # KAL-02: obdélník 50 × 34; poloměr větší než polovina výšky (30) LightBurn omezí na 17
+    verts, _ = shapes.native_path(shapes.Native("Rect", w=50, h=34, cr=cr))
+    assert any(abs(v.x - corner[0]) < 1e-6 and abs(v.y - corner[1]) < 1e-6 for v in verts)
+
+
+@pytest.mark.parametrize("deg", [0.0, 25.0, 90.0])
+def test_rounded_rect_bbox_is_exact(deg):
+    n = shapes.Native("Rect", w=80, h=50, cr=10)
+    exact = shapes.native_bbox(n, rot(deg, 5, 7))
+    curve = curve_bbox(n, rot(deg, 5, 7))
+    for a, b in zip(exact, curve):
+        assert a == pytest.approx(b, abs=10 * 3e-4)
 
 
 @pytest.mark.parametrize("deg", [0.0, 30.0, 90.0, -17.5])
@@ -96,13 +124,6 @@ def test_rounded_rect_path_matches_lightburn_conversion():
     assert (verts[1].x, verts[1].y, verts[1].c0) == (35, -25, None)
     assert verts[1].c1 == pytest.approx((37.761424, -25))
     assert verts[2].c0 == pytest.approx((-37.761424, -25))
-
-
-def test_rounded_rect_bbox_is_conservative_sharp_rect():
-    n = shapes.Native("Rect", w=80, h=50, cr=10)
-    exact = shapes.native_bbox(n, rot(25))
-    curve = curve_bbox(n, rot(25))
-    assert exact[0] <= curve[0] and exact[1] <= curve[1] and exact[2] >= curve[2] and exact[3] >= curve[3]
 
 
 def test_native_paths_are_closed():

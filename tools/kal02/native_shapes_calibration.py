@@ -11,6 +11,9 @@
    → Uložit jako ``…_prevedeno.lbrn2``; ``--compare`` pak změří odchylku našich křivek od LightBurnu.
 
 Šablona musí mít vrstvy (CutSetting) s indexy 0 a 1.
+
+Výsledek 2026-10-17 (LightBurn 2.2.00-RC-7): všech 12 tvarů 0,0000 mm — brána KAL-02 splněna
+(``docs/FORMAT_COMPATIBILITY.md``). ``--compare`` porovnává tvary z LightBurnu s AKTUÁLNÍM výpočtem.
 """
 
 from __future__ import annotations
@@ -98,47 +101,80 @@ def build(template: bytes) -> tuple[bytes, list[str]]:
     return nl.join(out).encode("utf-8"), table
 
 
-def _points(node, m: geo.Affine, ctx: _Ctx) -> list[tuple[float, float]]:
-    """Body křivky (Path nebo nativní tvar) v souřadnicích souboru."""
-    o = Orientation(False, True)  # sx = sy = 1
-    kind = node.attrs.get("Type", "")
-    if kind == "Path":
-        verts, prims = ctx.path_geometry(node)
-    else:
-        verts, prims = shapes.native_path(shapes.parse_native(node.attrs))
-    return stroke_points([Stroke("", _path_ops(verts, prims, m, o))], 0.001)
+def _densify(pts: list[tuple[float, float]], step: float = 0.5) -> list[tuple[float, float]]:
+    out = []
+    for (x0, y0), (x1, y1) in zip(pts, pts[1:]):
+        n = max(1, int(math.hypot(x1 - x0, y1 - y0) / step))
+        out += [(x0 + (x1 - x0) * k / n, y0 + (y1 - y0) * k / n) for k in range(n)]
+    return out + pts[-1:]
+
+
+def _ops_points(verts, prims, m: geo.Affine) -> list[tuple[float, float]]:
+    o = Orientation(False, True)  # sx = sy = 1: souřadnice souboru
+    ops = _path_ops(verts, prims, m, o)
+    if ops and ops[-1][0] == "Z":
+        ops = ops[:-1] + [("L", ops[0][1])]
+    return _densify(stroke_points([Stroke("", ops)], 0.001))
+
+
+def _seg_dist(px: float, py: float, a, b) -> float:
+    (x0, y0), (x1, y1) = a, b
+    dx, dy = x1 - x0, y1 - y0
+    L = dx * dx + dy * dy
+    t = 0.0 if L == 0 else max(0.0, min(1.0, ((px - x0) * dx + (py - y0) * dy) / L))
+    return math.hypot(px - x0 - t * dx, py - y0 - t * dy)
 
 
 def _dist_to(pts_a, pts_b) -> float:
-    """Největší vzdálenost bodu z ``pts_a`` k nejbližšímu bodu ``pts_b`` (hrubě, stačí pro kalibraci)."""
+    """Největší vzdálenost bodu z ``pts_a`` od lomené čáry ``pts_b``."""
+    segs = list(zip(pts_b, pts_b[1:]))
     worst = 0.0
-    for ax, ay in pts_a[:: max(1, len(pts_a) // 400)]:
-        worst = max(worst, min(math.hypot(ax - bx, ay - by) for bx, by in pts_b))
+    for ax, ay in pts_a[:: max(1, len(pts_a) // 600)]:
+        worst = max(worst, min(_seg_dist(ax, ay, a, b) for a, b in segs))
     return worst
 
 
+def _leaves(node, parent: geo.Affine, out: list) -> None:
+    """Tvary (ne skupiny) v pořadí dokumentu se složenou transformací — Convert to Path skupiny rozpustí."""
+    m = geo.compose(parent, _xform(node))
+    if node.attrs.get("Type") == "Group":
+        kids = node.find("Children")
+        for c in kids.children if kids is not None else []:
+            if c.tag == "Shape":
+                _leaves(c, m, out)
+    else:
+        out.append((node, m))
+
+
 def compare(converted: Path) -> int:
+    """Tvary z LightBurnu (vrstva 0, po Convert to Path) proti AKTUÁLNÍMU výpočtu aplikace."""
     root = parse(converted.read_bytes())
     ctx = _Ctx(root)
-    groups = [s for s in root.findall("Shape") if s.attrs.get("Type") == "Group"]
-    worst_all = 0.0
-    for k, g in enumerate(groups):
-        gm = _xform(g)
-        kids = g.find("Children")
-        by_cut = {}
-        for c in kids.children if kids is not None else []:
-            by_cut[c.attrs.get("CutIndex")] = c
-        if "0" not in by_cut or "1" not in by_cut:
-            print(f"  {k + 1:2}. chybí tvar na vrstvě 0 nebo 1")
+    leaves: list = []
+    for s in root.findall("Shape"):
+        _leaves(s, geo.IDENTITY, leaves)
+    theirs = [x for x in leaves if x[0].attrs.get("CutIndex") == "0"]
+    worst_all, seen = 0.0, 0
+    for k, (name, kind, attrs, lin) in enumerate(CASES):
+        cx = 60.0 + PITCH * (k % PER_ROW)
+        cy = 60.0 + PITCH * (k // PER_ROW)
+        match = [(n, m) for n, m in theirs if abs(m[4] - cx) < 1e-3 and abs(m[5] - cy) < 1e-3]
+        if len(match) != 1:
+            print(f"  {k + 1:2}. {name:7} tvar na vrstvě 0 nenalezen ({len(match)})")
+            worst_all = math.inf
             continue
-        theirs = _points(by_cut["0"], geo.compose(gm, _xform(by_cut["0"])), ctx)
-        ours = _points(by_cut["1"], geo.compose(gm, _xform(by_cut["1"])), ctx)
-        d = max(_dist_to(theirs, ours), _dist_to(ours, theirs))
+        node, m = match[0]
+        if node.attrs.get("Type") == "Path":
+            pt = _ops_points(*ctx.path_geometry(node), m)
+        else:
+            pt = _ops_points(*shapes.native_path(shapes.parse_native(node.attrs)), m)
+        native = shapes.parse_native({"Type": kind, **{a: str(v) for a, v in attrs.items()}})
+        po = _ops_points(*shapes.native_path(native), (*lin, cx, cy))
+        d = max(_dist_to(pt, po), _dist_to(po, pt))
         worst_all = max(worst_all, d)
-        name = CASES[k][0] if k < len(CASES) else "?"
-        kind = by_cut["0"].attrs.get("Type")
-        print(f"  {k + 1:2}. {name:7} vrstva 0 = {kind:8} odchylka {d:.4f} mm  {'OK' if d <= 0.01 else 'NESEDÍ'}")
-    print(f"Největší odchylka: {worst_all:.4f} mm")
+        seen += 1
+        print(f"  {k + 1:2}. {name:7} {kind:8} odchylka {d:.4f} mm  {'OK' if d <= 0.01 else 'NESEDÍ'}")
+    print(f"Porovnáno {seen}/{len(CASES)}, největší odchylka: {worst_all:.4f} mm")
     return 0 if worst_all <= 0.01 else 1
 
 

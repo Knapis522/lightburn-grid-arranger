@@ -24,7 +24,7 @@
 | MVP-08 příručka F1 cs/en | ano (`gui/help.py`, `gui/help/`) | ano — T-HELP-01…04, 09 | ne (T-HELP-05…08, 10 / EXE) |
 | MVP-05 bezpečné uložení a validace | ano (`adapters/lightburn/write.py`, `safety/verify.py`, `application/arrange_job.py`) | ano — T-MVP-19…25, T-FMT-01…05, 07 | ne (čeká T-MVP-26 ruční kontrola v LightBurnu) |
 | Formát `.lbrn2` (čtení, orientace) | ano (`adapters/lightburn/read.py`, `coords.py`) | ano — LB-01…06, 08, 10, 11 | částečně (V-001 ověřen v LightBurnu přes prototyp) |
-| Nativní tvary `Ellipse` / `Rect` / `Polygon`, vnořené skupiny (v1.14) | ano (`adapters/lightburn/shapes.py`) | ano — `test_shapes.py`, `test_native_shapes.py`, vzorky C | ne (čeká kontrola výstupů v LightBurnu, KAL-02) |
+| Nativní tvary `Ellipse` / `Rect` / `Polygon`, vnořené skupiny (v1.14) | ano (`adapters/lightburn/shapes.py`) | ano — `test_shapes.py`, `test_native_shapes.py`, vzorky C | ano (vzorky C a KAL-02 ověřeny vlastníkem v LightBurnu) |
 
 ## Otevřená rozhodnutí
 
@@ -54,3 +54,4 @@
 - 2026-10-17 — vlastník otestoval celý soupis B (nové funkce okna, uložení, protokol, jednotky, sekce, natočení včetně výstupu s natočením otevřeného v LightBurnu). Čeká: soupis A (kalibrační soubory KAL-01, směr natočení) a testovací soubory C (kruh/elipsa/obdélník, klíčenky, `Kalibrace_A_rot30`).
 - 2026-10-17 — **KAL-01 splněno** (soupis A ověřen vlastníkem v LightBurnu pro oba lasery): natočení skupin i textů funguje. Zbývá: testovací soubory C (tvary přímo z LightBurnu, klíčenky), vydání `v0.1.0-alpha.3`, zkouška u laseru.
 - 2026-10-17 — spec. v1.14 (**SHAPES-00**): tvary nakreslené přímo v LightBurnu — `Ellipse`, `Rect` bez zaoblení, `Polygon` se 6 stranami — jako obrys i obsah, vnořené skupiny (klíčenky); příznak hladkého uzlu `S`. Ověřeno automaticky na vzorcích C (oba lasery, všech 8 + 8 + 8 výrobků podporováno; náš posun shodný s přesunem v LightBurnu). Natočení: použije se jen při menší mřížce, kulaté výrobky bez otočení o 90°, hezký úhel. Jiné mnohoúhelníky a zaoblené rohy blokovány do KAL-02 (`tools/kal02`). 411 testů. Čeká: kontrola výstupů vzorků C v LightBurnu, KAL-02.
+- 2026-10-17 — vlastník ověřil výstupy vzorků C v LightBurnu (v pořádku) a dodal tvary z KAL-02 převedené na křivky: vzorec vrcholů mnohoúhelníku opraven (`90° + 180°/N + k·360°/N`; dřívější platil jen pro N = 6), poloměr rohu = mm s omezením na polovinu kratší strany. Všech 12 tvarů shodných s LightBurnem (0,0000 mm) → **KAL-02 splněno**, povoleny všechny mnohoúhelníky a zaoblené rohy. 419 testů. Další krok: vydání `v0.1.0-alpha.3`.

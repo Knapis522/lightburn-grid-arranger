@@ -29,7 +29,7 @@
 | Natočení (automatické) | spec. v1.13 kap. 7.6 | 7.6 | automatický | prochází | `tests/unit/test_rotation.py`, `tests/integration/test_rotation_plan.py`, `tests/gui/test_main_window.py` |
 | Natočení v LightBurnu | KAL-01 | 7.6 | ruční | ruční – ověřeno | `docs/FORMAT_COMPATIBILITY.md`, protokol níže |
 | Nativní tvary (automatické) | spec. v1.14 kap. 5 body 8–9 | 5 | automatický | prochází | `tests/unit/test_shapes.py`, `tests/integration/test_native_shapes.py`, `tests/integration/test_real_projects.py` (vzorky C, s `GRID_ARRANGER_REAL_DATA`) |
-| Nativní tvary v LightBurnu | vzorky C (výstupy), KAL-02 | 5 | ruční | čeká | `docs/FORMAT_COMPATIBILITY.md` (vzorky C, KAL-02) |
+| Nativní tvary v LightBurnu | vzorky C (výstupy), KAL-02 | 5 | ruční | ruční – ověřeno | `docs/FORMAT_COMPATIBILITY.md` (vzorky C, KAL-02) |
 | Aktualizace (automatické) | T-UPD-01 – 06, 08 | 32.4 | automatický | prochází | `tests/unit/test_updates.py`, `tests/gui/test_updates_ui.py` |
 | Aktualizace a instalátor (ruční) | T-UPD-07, instalace / odinstalace | 32.4 | ruční (Windows, po zveřejnění) | nezahájeno | — |
 | GitHub / distribuce | GH-03 – GH-16 (vč. GH-05 EXE na čistém Windows) | 34 | ruční | nezahájeno | — |
@@ -62,4 +62,6 @@
 | 2026-10-17 | GH-06 / GH-07 (interní) | — | — | prochází | Tag `v0.1.0-alpha.2` (commit `d8c0cc9`), Pre-release s instalátorem, ZIPem a `SHA256SUMS.txt` |
 | 2026-10-17 | GUI ruční (Windows), soupis B | 2.2.00-RC-7 | Kalibrace_A, Kalibrace_A__kal01_rot → `…__kal01_rot__grid_002.lbrn2` | ruční – ověřeno | Vlastník: nástrojová lišta a titulek, uložení s volbou složky/názvu a odmítnutím existujícího souboru, protokol uložení (3 volby), jednotky mm/palce bez posunu, sbalitelné sekce, Roh X/Y, natočení (kartičky rovně, srovnání šikmých, Nenatáčet), výstup s natočením otevřen v LightBurnu — vše v pořádku |
 | 2026-10-17 | Vzorky C (automaticky) | 2.2.00-RC-7 | Test_tvary_A, Test_tvary_L_A, Test_tvary_A_posun, Test_klicenky, Kalibrace_A_rot30 | prochází | Všechny výrobky podporované (Ellipse, Rect, Polygon N=6, vnořené skupiny, příznak `S`); náš posun K1 = přesun v LightBurnu (tytéž 2 řádky, rozdíl jen v posledním řádu); klíčenky s natočením −18,5 % plochy mřížky; 411 testů + 6 na reálných datech |
+| 2026-10-17 | Vzorky C (výstupy v LightBurnu) | 2.2.00-RC-7 | `C_vystupy\` (Test_tvary_A 4 sl. bez natočení, 2 sl. libovolný úhel; Test_tvary_L_A; Test_klicenky libovolný úhel a po 90°) | ruční – ověřeno | Vlastník: v pořádku |
+| 2026-10-17 | KAL-02 | 2.2.00-RC-7 | Test_tvary_A__kal02_tvary, …_prevedeno (Convert to Path) | prochází | 12/12 tvarů odchylka 0,0000 mm po opravě vzorce mnohoúhelníku; zaoblené rohy a všechna N povolena |
 | 2026-10-17 | KAL-01 (soupis A) | 2.2.00-RC-7 | Kalibrace_A__kal01_rot, Kalibrace_L_A__kal01_rot, Kalibrace_A__kal01_rot__grid_001 | ruční – ověřeno | Natočené kartičky celé, texty natočené s nimi, Preview v pořádku pro oba lasery; srovnaný výstup aplikace odpovídá původní kalibraci |

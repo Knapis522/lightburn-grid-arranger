@@ -34,7 +34,7 @@ def _by_sha(sha: str) -> list[Path]:
 def test_every_real_project_loads_or_fails_cleanly():
     for p in _sources():
         proj = load_project(p)  # GridError by test shodil s čitelným kódem
-        assert proj.items, p.name
+        assert proj.items or "__kal" in p.name, p.name  # kalibrace převedené na křivky nemají skupiny
 
 
 def test_v001_nine_cards_supported():

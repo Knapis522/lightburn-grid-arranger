@@ -30,8 +30,6 @@ TEMPLATES: dict[str, str] = {
     "unsupported_shape_type": QT_TRANSLATE_NOOP("Messages", "Contains an unsupported object type: {type}."),
     "unknown_shape_attribute": QT_TRANSLATE_NOOP("Messages", "The shape {type} has unknown properties ({attrs}) and cannot be processed safely."),
     "unreadable_shape": QT_TRANSLATE_NOOP("Messages", "Contains a shape {type} with unreadable dimensions."),
-    "unverified_polygon": QT_TRANSLATE_NOOP("Messages", "A polygon with {sides} sides has not been verified with LightBurn yet. Convert it to a path in LightBurn (Convert to Path) and save again."),
-    "unverified_rounded_rect": QT_TRANSLATE_NOOP("Messages", "A rectangle with rounded corners ({radius} mm) has not been verified with LightBurn yet. Convert it to a path in LightBurn (Convert to Path) and save again."),
     "bad_xform": QT_TRANSLATE_NOOP("Messages", "Contains an unreadable transformation."),
     "unreadable_path": QT_TRANSLATE_NOOP("Messages", "Contains an unreadable curve."),
     "no_outline": QT_TRANSLATE_NOOP("Messages", "No closed cut outline was found."),

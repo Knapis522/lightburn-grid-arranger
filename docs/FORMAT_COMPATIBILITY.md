@@ -8,8 +8,7 @@
 |---|---|---|---|---|---|---|---|
 | Pro 2.2.00-RC-7 (Qt 6.11.2) | 1 | Top-level `Group` s `Path` + `Text` (BackupPath); `MirrorX=True, MirrorY=True` | ověřeno | ověřeno | ověřeno (prototyp) | ověřeno (File → Open) | V-001, V-002 |
 | Pro 2.2.00-RC-7 (Qt 6.11.2) | 1 | totéž; `MirrorX=False, MirrorY=True` | ověřeno | ověřeno (LightBurn) | neověřeno | neověřeno | V-003 |
-| Pro 2.2.00-RC-7 (Qt 6.11.2) | 1 | Nativní tvary `Ellipse`, `Rect` (`Cr="0"`), `Polygon` (`N="6"`) ve skupině, i ve vnořené skupině (klíčenky); oba lasery | ověřeno | ověřeno (shoda s přesunem v LightBurnu) | ověřeno (automaticky) | čeká | Test_tvary_A / L_A / _posun, Test_klicenky |
-| Pro 2.2.00-RC-7 (Qt 6.11.2) | 1 | `Polygon` s jiným počtem stran, `Rect` se zaoblenými rohy (`Cr` > 0) | — | — | — | — | **blokováno** do KAL-02 (`tools/kal02`) |
+| Pro 2.2.00-RC-7 (Qt 6.11.2) | 1 | Nativní tvary `Ellipse`, `Rect` (i se zaoblením `Cr`), `Polygon` (libovolné N) ve skupině, i ve vnořené skupině (klíčenky); oba lasery | ověřeno | ověřeno (shoda s přesunem v LightBurnu) | ověřeno | ověřeno (výstupy otevřeny vlastníkem) | Test_tvary_A / L_A / _posun, Test_klicenky, KAL-02 |
 | — | — | `MirrorY=False` (jakékoli `MirrorX`) | — | — | — | — | **nepodporováno v MVP** (neověřeno) |
 
 ## Vzorek V-001 (KAL-00, pouze čtení)
@@ -120,7 +119,7 @@ Soubory od vlastníka (mimo Git, `lightburn-grid-arranger-data`): `Test_tvary_A.
 1. **Nativní tvary nemají `VertList`** — jen rozměry v atributech a `XForm`, jehož posun je **střed** tvaru:
    - `<Shape Type="Ellipse" Rx="20" Ry="20">` — elipsa s poloosami Rx, Ry;
    - `<Shape Type="Rect" W="59.999996" H="40" Cr="0">` — obdélník se středem v počátku (ověřeno podle středu textu na něm);
-   - `<Shape Type="Polygon" Rx="30.5" Ry="30.5" N="6">` s `XForm` `-1 0 0 1 …` — šestiúhelník: podle náhledu v souboru hrot vlevo a vpravo, rovná strana nahoře → vrcholy v úhlech `2πk/N` od kladné osy X (pro N = 6 shodné i se zrcadlením).
+   - `<Shape Type="Polygon" Rx="30.5" Ry="30.5" N="6">` s `XForm` `-1 0 0 1 …` — šestiúhelník: podle náhledu v souboru hrot vlevo a vpravo, rovná strana nahoře. Obecné pravidlo pro vrcholy určila až KAL-02 (níže).
 2. **Klíčenky** = nejvyšší skupina bez `CutIndex` → vnořená skupina (`Ellipse` Rx 20 = obrys + `Ellipse` Rx 2,5 = otvor) + `Text`. Čtení prochází vnořené skupiny; obrysem je velký kruh.
 3. **Elipsa natočená v LightBurnu** (E2): natočení je v `XForm` skupiny, `BackupPath` textu = skupina ∘ text (stejně jako KAL-01). AABB 54,08 × 39,69 mm = elipsa 60 × 30 natočená o 30°.
 4. **Přesun v LightBurnu** (`_posun`): změnily se přesně dva řádky — `XForm` nejvyšší skupiny (`1 0 0 1 50.000076 30.000229`) a `XForm` v `BackupPath` textu. Náš zápis stejného posunu dá **tytéž dva řádky**; liší se jen poslední řád (`254.68969` vs `254.68968`, LightBurn počítá v jednoduché přesnosti) a náhled (`Thumbnail`). Vnitřní kruhy se nemění — potvrzuje pravidlo „měnit jen nejvyšší skupinu a BackupPath“ i pro vnořené skupiny.
@@ -130,15 +129,22 @@ Soubory od vlastníka (mimo Git, `lightburn-grid-arranger-data`): `Test_tvary_A.
 
 ### Zpracování v aplikaci (spec. v1.14 kap. 5)
 
-- Obrys z nativního tvaru: AABB **přesně** (elipsa analyticky `hx = √((a·Rx)² + (c·Ry)²)`, obdélník a mnohoúhelník z rohů; zaoblený obdélník konzervativně z ostrých rohů).
+- Obrys z nativního tvaru: AABB **přesně** (elipsa analyticky `hx = √((a·Rx)² + (c·Ry)²)`, mnohoúhelník z vrcholů, zaoblený obdélník z rohů vnitřního obdélníku + elipsy rohu).
 - Náhled a výpočet natočení: tvar převedený na ekvivalentní cestu (elipsa 4 Bézierovy úseky, `Rect` s `Cr` jako výše, mnohoúhelník lomená čára).
-- Neznámé atributy nebo prvky v nativním tvaru, nečitelné rozměry → výrobek blokován. Neověřené varianty (jiný počet stran než 6, `Cr` > 0) → blokovány s návodem „Převést na křivky“ v LightBurnu, dokud je nepotvrdí KAL-02.
+- Neznámé atributy nebo prvky v nativním tvaru, nečitelné rozměry → výrobek blokován.
 - Výsledky na vzorcích: Test_tvary_A / L_A — všech 8 výrobků podporováno; Test_klicenky — 8/8 podporováno, s natočením *Libovolný úhel* (4 sloupce, mezera 3 mm) mřížka 174,8 × 86,8 mm místo 187,5 × 99,2 mm (**−18,5 % plochy**).
 
-### KAL-02 — ověření dalších nativních tvarů (čeká)
+### KAL-02 — ověření dalších nativních tvarů (2026-10-17, ověřeno vlastníkem)
 
-Nástroj `tools/kal02/native_shapes_calibration.py <šablona.lbrn2>` vytvoří `…__kal02_tvary.lbrn2`: 12 skupin, v každé nativní tvar (vrstva 0) a náš výpočet téhož tvaru jako křivka (vrstva 1) — mnohoúhelníky N = 3, 4, 5, 5 zrcadlený, 7, 8, 5 eliptický, 6 (kontrola), obdélníky s poloměrem 5, 12 a 30 (větší než polovina výšky), elipsa natočená o 30°.
+Nástroj `tools/kal02/native_shapes_calibration.py <šablona.lbrn2>` vytvořil `Test_tvary_A__kal02_tvary.lbrn2`: 12 skupin, v každé nativní tvar (vrstva 0) a výpočet aplikace jako křivka (vrstva 1) — mnohoúhelníky N = 3, 4, 5, 5 zrcadlený, 7, 8, 5 eliptický (25 × 14), 6; obdélníky 50 × 34 s poloměrem 5, 12 a 30; elipsa natočená o 30°.
 
-- [ ] Otevřít v LightBurnu: u každého tvaru musí obě čáry ležet přesně na sobě (zapsat čísla, která nesedí).
-- [ ] Vybrat vše na vrstvě 0 → Převést na křivky → Uložit jako `…_prevedeno.lbrn2`; `--compare` změří odchylku (požadavek ≤ 0,01 mm).
-- [ ] Po potvrzení rozšířit `VERIFIED_POLYGON_SIDES` / `ROUNDED_RECT_VERIFIED` v `adapters/lightburn/shapes.py` a doplnit testy.
+- [x] Otevřeno v LightBurnu — v pořádku (vlastník).
+- [x] Vlastník převedl tvary na vrstvě 0 na křivky (Convert to Path) a uložil `Test_tvary_A__kal02_tvary_prevedeno.lbrn2`. Zjištění:
+  - **Mnohoúhelník:** vrcholy v úhlech `90° + 180°/N + k·360°/N` na elipse Rx, Ry (lichý N: vrchol v `(0, −Ry)`; N = 6 → vrchol na ose X, shodně s Test_tvary_A). Původní předpoklad `2πk/N` platil jen pro N = 6 — blokace neověřených N byla oprávněná (odchylka až 15 mm u N = 4).
+  - **Zaoblený obdélník:** `Cr` = poloměr rohu v mm, roh = čtvrtkruh z kubické Bézierovy křivky (0,5523 · r); poloměr větší než polovina kratší strany LightBurn omezí (Cr 30 u výšky 34 → 17).
+  - **Elipsa:** 4 Bézierovy úseky (opačný směr než naše cesta — geometrie shodná).
+  - Convert to Path rozpustí skupiny, sdílí `VertID`/`PrimID` u stejných tvarů a přidá příznak `S`.
+- [x] `--compare` (výpočet aplikace proti tvarům z LightBurnu): **všech 12 tvarů odchylka 0,0000 mm**.
+- [x] Povoleny všechny počty stran a zaoblené rohy; testy s čísly z LightBurnu (`test_polygon_vertices_match_lightburn`, `test_rounded_rect_matches_lightburn_including_clamped_radius`).
+
+**Stav brány KAL-02: SPLNĚNO 2026-10-17** (LightBurn 2.2.00-RC-7).

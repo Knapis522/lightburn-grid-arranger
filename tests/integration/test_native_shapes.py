@@ -64,15 +64,24 @@ def test_rect_and_hexagon_outlines(tmp_path):
 
 
 @pytest.mark.parametrize("shape, code", [
-    (Native("Polygon", {"Rx": 20, "Ry": 20, "N": 5}), "unverified_polygon"),
-    (Native("Rect", {"W": 60, "H": 40, "Cr": 5}), "unverified_rounded_rect"),
     (Native("Ellipse", {"Rx": 20, "Ry": 20, "Start": 0}), "unknown_shape_attribute"),
     (Native("Ellipse", {"Rx": 20}), "unreadable_shape"),
     (Native("Ellipse", {"Rx": 20, "Ry": 20}, children="<Extra/>"), "unknown_element"),
 ])
-def test_unverified_or_unknown_native_shapes_are_blocked(tmp_path, shape, code):
+def test_unknown_native_shapes_are_blocked(tmp_path, shape, code):
     p = load_project(write(tmp_path, project([Group([shape, Text("X", (-5, -5, 10, 10))])])))
     assert not p.items[0].supported and code in codes(p.items[0])
+
+
+def test_polygons_and_rounded_rects_are_supported(tmp_path):
+    pent = Group([Native("Polygon", {"Rx": 20, "Ry": 20, "N": 5}, xform=(1, 0, 0, 1, 100, 100)), Text("P", (95, 95, 10, 10))])
+    rounded = Group([Native("Rect", {"W": 60, "H": 40, "Cr": 5}, xform=(1, 0, 0, 1, 300, 100)), Text("R", (295, 95, 10, 10))])
+    p = load_project(write(tmp_path, project([pent, rounded])))
+    assert [it.supported for it in p.items] == [True, True]
+    x0, y0, x1, y1 = p.items[0].file_bbox
+    # pětiúhelník: vrchol v (0, −20), šířka 2·20·cos 18°, výška 20 + 20·cos 36°
+    assert (x1 - x0, y0, y1) == pytest.approx((40 * math.cos(math.radians(18)), 80, 100 + 20 * math.cos(math.radians(36))))
+    assert p.items[1].file_bbox == pytest.approx((270, 80, 330, 120))
 
 
 def test_native_shapes_are_drawn_in_preview(tmp_path):
