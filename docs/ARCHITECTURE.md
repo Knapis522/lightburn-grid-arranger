@@ -52,10 +52,13 @@ Převod (ověřeno v KAL-00, spec. kap. 8): `screen_x = MirrorX ? −x : +x`, `s
 | `gui/i18n.py` | `LocaleManager` (QTranslator, QLocale), `detect_system_language`, fallback do angličtiny; navíc katalog Qt `qtbase_<kód>` (tlačítka Ano/Ne) | MVP-07, kap. 36 |
 | `gui/messages.py` | lokalizované hlášky z kódů chyb (`QT_TRANSLATE_NOOP`) | kap. 36.4 |
 | `gui/theme.py` | světlý / tmavý / automatický vzhled (styl Fusion + explicitní paleta, `setColorScheme`, sleduje změnu v systému); náhled desky vždy světlý | — |
-| `gui/settings.py` | `UserSettings` (QSettings): jazyk, vzhled, výchozí desky podle `DeviceName` | kap. 12.3, 36.3 |
+| `gui/settings.py` | `UserSettings` (QSettings): jazyk, vzhled, výchozí desky podle `DeviceName`, aktualizace (automaticky, předběžné verze, přeskočená verze, čas poslední kontroly) | kap. 12.3, 36.3, 32 |
 | `gui/help.py`, `gui/help/<cs|en>/*.md` | offline příručka: obsah, Zpět/Vpřed, hledání, F1, synchronizace jazyka | MVP-08, kap. 38 |
 | `gui/catalog_check.py`, `tools/build_translations.py` | kontrola úplnosti a zástupných symbolů `.ts`, sestavení `.qm` | T-I18N-14, 15 |
 | `gui/app.py` | spuštění, ikona okna, zachycení neočekávané chyby; argumenty `<soubor.lbrn2>` a `--self-test REPORT.json` | MVP-06 |
+| `updates.py` | aktualizace bez Qt: `SemVer` (SemVer 2.0), `parse_releases`, `find_update` (vždy nejnovější), `should_offer_automatically` (přeskočená verze), `auto_check_due`, `fetch_releases` (GitHub API, urllib), `download_installer` (ověření `SHA256SUMS.txt`), `installer_command` | spec. v1.11 kap. 32, ADR-0004 |
+| `gui/updates_ui.py` | `UpdateController` (kontrola na pozadí, nabídka, stažení s průběhem, spuštění instalátoru a ukončení aplikace), `UpdateDialog` | kap. 32 |
+| `packaging/GridArranger.iss` | instalátor Inno Setup (per-user, stálé `AppId`, smazání `_internal` před instalací, znovuspuštění po tiché aktualizaci) | kap. 31.2, ADR-0004 |
 | `gui/selftest.py` | samokontrola sestavení bez zobrazení okna (příručka, překlady, ikona, okno, round-trip na vestavěném syntetickém projektu) → JSON, kód 0/1 | GH-05, HELP-01, T-I18N-16 |
 | `packaging/GridArranger.spec`, `tools/build_exe.py`, `tools/build_exe.bat` | PyInstaller (onedir, bez konzole, ikona, informace o verzi), zúžení Qt na Core/Gui/Widgets, samokontrola, ZIP | kap. 30, ADR-0003 |
 | `version.py` | `__version__` (PEP 440, např. `0.1.0a1`) — jediný zdroj verze; `display_version()` → SemVer `0.1.0-alpha.1` pro GUI, ZIP, tag a release notes | kap. 30.3 |
@@ -109,4 +112,5 @@ Převod (ověřeno v KAL-00, spec. kap. 8): `screen_x = MirrorX ? −x : +x`, `s
 | `unknown_group_attribute`, `unsupported_shape_type`, `unknown_element`, `bad_xform`, `unreadable_path` | výrobek | blokace výrobku |
 | `no_outline`, `content_outside_outline`, `ambiguous_outline`, `degenerate_outline`, `empty_group`, `text_backup_mismatch` | výrobek | blokace výrobku |
 | `text_unmeasurable` | výrobek | varování |
+| `network`, `not_found`, `rate_limited`, `bad_response`, `no_installer`, `checksum_missing`, `checksum_mismatch`, `cancelled` | aktualizace | `UpdateError` — jen hláška, výroba pokračuje |
 | `item_not_supported`, `validation_failed`, `verification_failed`, `source_changed`, `output_exists`, `would_overwrite_source`, `write_failed`, `no_free_output_name` | úloha | nic se neuloží |

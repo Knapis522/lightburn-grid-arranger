@@ -1,8 +1,8 @@
 # Stav projektu
 
-**Aktualizováno:** 2026-10-16
-**Verze specifikace:** 1.10 (`docs/specification.md`)
-**Verze aplikace:** `0.1.0-alpha.1` — první interní předběžné vydání připraveno (postup `docs/RELEASE_CHECKLIST.md`)
+**Aktualizováno:** 2026-10-17
+**Verze specifikace:** 1.11 (`docs/specification.md`)
+**Verze aplikace:** `0.1.0-alpha.1` — první interní předběžné vydání **zveřejněno** 2026-10-16 jako GitHub Pre-release (tag `v0.1.0-alpha.1`, commit `64a5d00`)
 
 > Tento soubor je hlavní předávací dokument. Při navázání práce: přečíst tento soubor → `ROADMAP.md` → relevantní kapitolu specifikace. Nepředpokládat, že funkce funguje jen proto, že existuje kód.
 
@@ -10,7 +10,7 @@
 
 | Hotovo | Probíhá | Blokováno | Další |
 |---|---|---|---|
-| GIT-00, DOC-00, KAL-00; CORE-00 a ADAPT-00 (T-MVP-26 ověřeno vlastníkem pro `__grid_001` i `__grid_002`); **GUI-00 ověřeno vlastníkem na Windows** (okno, motivy, prohození tažením, světlý/tmavý vzhled, zoom; 2026-10-16) | **EXE-00 / GH-05:** sestavení přenosné složky `GridArranger/` přes PyInstaller (`tools\build_exe.bat`) se samokontrolou; **sestaveno na Windows vlastníka** (samokontrola 5/5 v `GridArranger.exe`, ZIP 28 MB); 286 testů | — | Vlastník vydá `v0.1.0-alpha.1` na GitHubu (Pre-release) a ZIP z GitHubu vyzkouší na PC bez Pythonu (GH-05, T-I18N-16, HELP-01) |
+| GIT-00, DOC-00, KAL-00; CORE-00 a ADAPT-00 (T-MVP-26 ověřeno vlastníkem pro `__grid_001` i `__grid_002`); **GUI-00 ověřeno vlastníkem na Windows** (okno, motivy, prohození tažením, světlý/tmavý vzhled, zoom; 2026-10-16) | **EXE-00 / GH-05:** sestavení přenosné složky `GridArranger/` přes PyInstaller (`tools\build_exe.bat`) se samokontrolou; **sestaveno na Windows vlastníka** (samokontrola 5/5 v `GridArranger.exe`, ZIP 28 MB); 286 testů | — | Commit + vydání `v0.1.0-alpha.2` (instalátor, ZIP, SHA256SUMS); instalátor u laseru bez Pythonu (GH-05, T-I18N-16, HELP-01); pak ostrý provoz → MVP-ACCEPT |
 
 ## Implementováno / otestováno
 
@@ -43,4 +43,5 @@
 - Podle připomínek doplněno a vlastníkem ověřeno na Windows: prohození dvou kartiček tažením, vzhled Nastavení → Vzhled (světlý = celá aplikace světlá; tmavý = tmavé ovládání, náhled světlý), plynulý zoom s mezemi.
 - EXE-00: `tools\build_exe.bat` → překlady, testy, PyInstaller, samokontrola `GridArranger --self-test` (příručka, překlady vč. tlačítek Qt, ikona, okno, načtení → rozložení → zápis → kontrola na syntetickém projektu), ZIP. Zkušebně sestaveno na Linuxu (Qt 6.12, Python 3.13): samokontrola 5/5, aplikace se spustí. Na Windows sestaveno 2026-10-16 (Windows 11, Python 3.13.6, PySide6 6.12.0): samokontrola 5/5, ZIP `GridArranger-v0.1.0.dev0-win-x64.zip` 28 MB.
 - Další bezpečný krok: vlastník spustí `tools\build_exe.bat`, ZIP rozbalí na počítači bez Pythonu (ideálně u laseru), vyzkouší F1, přepnutí jazyka a uložení reálného projektu; výsledek zapsat do TEST_PLAN (GH-05, T-I18N-16, HELP-01).
-- Vydání `v0.1.0-alpha.1`: číslo verze, `SHA256SUMS.txt`, `THIRD_PARTY_NOTICES.txt` a commit v balíčku, release notes `docs/releases/v0.1.0-alpha.1.md` (anglicky), postup `docs/RELEASE_CHECKLIST.md`. Commit/tag/Release na GitHubu provádí vlastník.
+- Vydání `v0.1.0-alpha.1`: číslo verze, `SHA256SUMS.txt`, `THIRD_PARTY_NOTICES.txt` a commit v balíčku, release notes `docs/releases/v0.1.0-alpha.1.md` (anglicky), postup `docs/RELEASE_CHECKLIST.md`. Zveřejněno vlastníkem 2026-10-16: tag `v0.1.0-alpha.1` na commitu `64a5d00`, Pre-release se ZIPem a `SHA256SUMS.txt` (https://github.com/Knapis522/lightburn-grid-arranger/releases). Předběžné verze se nezobrazují v pravém sloupci repozitáře — odkaz Releases nebo nadpis „Releases“.
+- 2026-10-17 — spec. v1.11, ADR-0004 (požadavek vlastníka): **instalátor** Inno Setup (per-user, bez práv správce, ZIP jako záloha) a **aktualizace z GitHub Releases** — Nastavení → Aktualizace (automaticky, předběžné verze), Nápověda → Zkontrolovat aktualizace; vždy nejnovější verze, Přeskočit / Později / Nainstalovat, ověření SHA-256, tichá instalace jen po souhlasu a znovuspuštění. Verze `0.1.0-alpha.2` (nevydaná). 340 testů (logika bez sítě, GUI s falešným GitHubem, end-to-end přes lokální HTTP server). Instalátor sestaven na Windows vlastníka 2026-10-17; instalace i odinstalace ověřena vlastníkem. Kontrola aktualizací začne fungovat po zveřejnění repozitáře; do té doby hlásí „žádná veřejná vydání“.

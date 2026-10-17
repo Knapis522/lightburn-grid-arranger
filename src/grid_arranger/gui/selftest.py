@@ -121,6 +121,17 @@ def _check_roundtrip(work: Path) -> str:
     return f"{res.output.name} ({len(res.plan.layout.placements)} items)"
 
 
+def _check_https() -> str:
+    """Kontrola aktualizací potřebuje HTTPS: modul ssl v balíčku a certifikáty systému (bez síťového spojení)."""
+    import ssl
+    import urllib.request  # noqa: F401 — musí být v balíčku
+
+    certs = len(ssl.create_default_context().get_ca_certs())
+    if sys.platform == "win32" and certs == 0:
+        raise AssertionError("no CA certificates loaded from the Windows store")
+    return f"{ssl.OPENSSL_VERSION}, {certs} CA certificates"
+
+
 def run_self_test(app, report_path: str | Path) -> int:
     checks: list[dict] = []
 
@@ -137,6 +148,7 @@ def run_self_test(app, report_path: str | Path) -> int:
         check("icon", lambda: _check_icon(app))
         check("window", lambda: _check_window(app, work / "settings.ini"))
         check("roundtrip", lambda: _check_roundtrip(work))
+        check("https", _check_https)
 
     ok = all(c["ok"] for c in checks)
     report = {

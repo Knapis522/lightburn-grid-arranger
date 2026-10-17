@@ -1,7 +1,7 @@
 # Grid Arranger for LightBurn — technická specifikace
 
-**Verze dokumentu:** 1.10 (umístění mřížky k počátku laseru, plnění od počátku, deska podle laseru; viz kap. 28)  
-**Datum:** 16. 10. 2026  
+**Verze dokumentu:** 1.11 (instalátor a nabízené aktualizace z GitHub Releases; viz kap. 28)  
+**Datum:** 17. 10. 2026  
 **Název produktu:** Grid Arranger for LightBurn; spustitelný soubor `GridArranger.exe`; Python balíček `grid_arranger`; repozitář `lightburn-grid-arranger`. Neoficiální nástroj, nikoli produkt LightBurn Software.  
 **Stav:** Interní pracovní podklad; nikoli hotový nebo otestovaný plugin  
 **Záměr:** Nejprve funkční soukromý prototyp, následně ověřování v reálné výrobě; teprve potom případně zveřejnění.  
@@ -403,7 +403,7 @@ Závislosti směrem dovnitř: `UI -> adaptér -> domain/grid engine`, nikdy opa�
 - **Typ:** běžná **Windows desktopová aplikace (`.exe`)**, bez potřeby prohlížeče, serveru, registrace, cloudu a internetového připojení; grafické rozhraní v **PySide6/Qt**. **Interní MVP:** čeština a angličtina. **První veřejné vydání:** osm jazyků `cs/en/de/sk/pl/fr/es/it`; všechny přidatelné překladovými katalogy bez úprav výpočetního jádra (kap. 36).
 - **Oddělení od LightBurnu:** v první verzi běží jako samostatný proces. Nenabízí položku v menu LightBurnu, nepřijímá aktuální výběr jeho objektů a nemění otevřený projekt za běhu.
 - **Uživatel nepotřebuje Python ani příkazovou řádku.** CLI existuje jen jako vývojářská pomůcka a pro automatické testování.
-- **Distribuce:** první výrobně ověřovaná verze jako přenosný adresář `GridArranger/` s `GridArranger.exe` a závislostmi; případné jednoborové `.exe` až po samostatné validaci balení. Cílit na Windows 10/11 x64.
+- **Distribuce (v1.11):** hlavní podoba je **instalátor** `GridArranger-Setup-v<verze>-win-x64.exe` (instalace pro aktuálního uživatele bez práv správce, nabídka Start, odinstalace, nová verze se instaluje přes starou); záložní podoba je přenosný ZIP se složkou `GridArranger/`. Jednosouborové `.exe` se nepoužívá (rozbaluje se při každém spuštění, častější plané poplachy antiviru). Cílit na Windows 10/11 x64. Aktualizace viz kap. 32.
 - **Bezpečnost:** zapisovat výhradně nový `.lbrn2`, nikdy originál. Nemanipulovat se strojem, negenerovat ani neposílat laserové úlohy.
 
 ### 12.2 Uživatelský průchod aplikací (happy path)
@@ -1031,6 +1031,7 @@ Toto jsou **ověřovací úkoly**, nikoli potvrzené technické možnosti souča
 
 ## 28. Záznam změn specifikace
 
+- **v1.11 (17. 10. 2026):** Na přání vlastníka: (1) hlavní distribucí je instalátor (Inno Setup, per-user, bez práv správce), ZIP zůstává jako záloha, jednosouborové EXE se nepoužívá (kap. 12.1, 31.2); (2) kontrola aktualizací z GitHub Releases — automatická (volitelná, výchozí zapnutá) i ruční, nabídka vždy nejnovější verze s možností zůstat u staré nebo verzi přeskočit, stažení s ověřením SHA-256 a instalace jen po souhlasu (kap. 32, nahrazuje „mimo scope“ z v1.3); (3) verze aplikace `0.1.0-alpha.N` pro interní předběžná vydání.
 - **v1.10 (16. 10. 2026):** Po prvním zkušebním rozmístění reálného projektu: (1) umístění mřížky přepínačem — roh počátku laseru (výchozí), střed desky, ručně, podle původní polohy; (2) plnění od rohu počátku laseru (alternativa „čtení“), menší výrobek přiléhá ke straně počátku; (3) deska leží u počátku, výchozí okraj 5 mm, rozměr desky předvyplněn podle laseru (`DeviceName`) z uživatelského nastavení (kap. 6 bod 7, 12.3).
 - **v1.9 (16. 10. 2026):** Změny podle zjištění KAL-00 (LightBurn 2.2.00-RC-7, `docs/FORMAT_COMPATIBILITY.md`). (1) Obrys výrobku: libovolný uzavřený řezný tvar, který obsahuje veškerý ostatní obsah skupiny; rozměr = jeho AABB; nahrazuje omezení v1.8 na `Rect`/čtyřúhelník — reálné kartičky mají zaoblené rohy převedené na lomenou čáru (kap. 3.1, 4, 5). (2) Při přesunu skupiny se povinně posouvá i `BackupPath/XForm` textů, protože je ve světových souřadnicích a LightBurn jej takto posouvá (kap. 9.2, 14.3, 21.5). (3) Texty s `BackupPath` jsou měřitelné. (4) Formát čísel `.8g`. (5) Ověřený převod souřadnic podle `MirrorX/MirrorY`; podporované kombinace True/True a False/True, ostatní odmítnout (kap. 8). (6) `VertID`/`PrimID` LightBurn při uložení přečísluje → nejsou stabilní identitou mezi soubory. (7) Počátek laseru se odvozuje z `MirrorX/MirrorY` a GUI zobrazuje `DeviceName` a počátek; uživatel nic nenastavuje (kap. 9.1 bod 4a). (8) Odstup přesouvaných výrobků od nepřesouvaných překážek se kontroluje stejným pravidlem jako mezi výrobky: pár je v pořádku, je-li vodorovná vzdálenost AABB ≥ `gap_x` nebo svislá ≥ `gap_y` (kap. 21.4).
 - **v1.8 (16. 10. 2026):** Rozhodnutí před implementací. (1) Sjednoceny názvy: produkt *Grid Arranger for LightBurn*, `GridArranger.exe`, balíček `grid_arranger`, specifikace `docs/specification.md`, matice `docs/FORMAT_COMPATIBILITY.md`. (2) Adaptivní mřížka pro různé rozměry je povinnou součástí MVP; ALG-04 povinný; režim pevné buňky se neimplementuje (kap. 7.3, 21.1). (3) Obrys výrobku: `Rect` nebo uzavřená osově zarovnaná čtyřúhelníková cesta (kap. 4, 5). (4) Obsah s nezměřitelnými hranicemi (typicky text) uvnitř skupiny vyvolá varování, nikoli blokaci; ověřitelná geometrie přesahující obrys dál blokuje (kap. 5). (5) Jádro pracuje v systému s osou Y dolů, převod dělá adaptér podle KAL-00 (kap. 7.1). (6) `gridarranger_en.ts` povinný kvůli množnému číslu (kap. 11, 25.3, 30.1, 36.1). (7) Neaktuální thumbnail je povolená výjimka; doporučen patch přes bajtové pozice z `expat`; zákaz `os.replace` (kap. 9.2, 9.4). (8) Výchozí počátek mřížky = levý horní roh vybraných výrobků (kap. 12.3). (9) Opraveno číslování kap. 16.
@@ -1047,7 +1048,7 @@ Toto jsou **ověřovací úkoly**, nikoli potvrzené technické možnosti souča
 
 ### 29.1 Cíl a zásady
 
-- GitHub slouží jako **repozitář zdrojového kódu**, historie změn a technické dokumentace. Není to současně automatický aktualizační systém aplikace.
+- GitHub slouží jako **repozitář zdrojového kódu**, historie změn a technické dokumentace. Od v1.11 slouží GitHub Releases zároveň jako zdroj nabízených aktualizací (kap. 32); nic se neinstaluje bez souhlasu uživatele.
 - Repoziář se zakládá jako **Private** a zůstává neveřejný během vývoje i interních testů. Žádné veřejné sliby, vývojové termíny či žádost o začlenění do LightBurnu nejsou podmínkou vydání.
 - Veřejný přístup (**Public**) smí vlastník zapnout pouze explicitním rozhodnutím po úspěchu publikační brány PUB-01 (kap. 33). Zveřejnění historie a artefaktů je třeba předem prověřit.
 - GitHub účet a historie projektu jsou vlastnictvím autora. Vydání nové verze se provádí **vědomým potvrzením** po testování, ne automaticky po každém uložení kódu.
@@ -1161,7 +1162,7 @@ Používat princip Semantic Versioning (MAJOR.MINOR.PATCH), předběžné verze 
 
 ### 31.2 Formát distribuce
 
-**První doporučený výstup:** přenosný ZIP obsahující exe a všechny potřebné knihovny, např. `GridArranger-v1.0.0-win-x64.zip`. Nemusí vyžadovat instalaci Pythonu ani administrátorská oprávnění. Později lze dodat `onefile` EXE či klasický instalátor, až bude ověřena kompatibilita balení a licenčních požadavků PySide6/Qt.
+**Výstupy každého vydání (v1.11):** (1) instalátor `GridArranger-Setup-v1.0.0-win-x64.exe` (Inno Setup; per-user, bez práv správce, stálé `AppId`, před instalací odstraní `_internal` předchozí verze, uživatelské nastavení v registru HKCU zůstává), (2) záložní přenosný ZIP `GridArranger-v1.0.0-win-x64.zip`, (3) `SHA256SUMS.txt` se součty obou. Žádný výstup nevyžaduje Python ani administrátorská oprávnění. `onefile` EXE se nepoužívá. Licenční povinnosti PySide6/Qt (LGPL) splňuje oddělené umístění knihoven v `_internal` a `THIRD_PARTY_NOTICES.txt`; před veřejným vydáním ověřit v rámci PUB-01.
 
 - Pro PySide6 lze použít `pyside6-deploy` (Qt uvádí tento nástroj jako doporučenou možnost) nebo jiný ověřený balicí nástroj; volbu uzamknout až po experimentálním build testu.
 - BIN soubory `dist/` neukládat do hlavní větve; **distribuční ZIP přikládat až k GitHub Release**.
@@ -1194,21 +1195,41 @@ Bezpečnost: výstup vždy ověřit v LightBurnu před výrobou
 
 ## 32. Uživatelské aktualizace programu
 
-### 32.1 MVP a první veřejná verze
+### 32.1 Zásady (v1.11)
 
-- **Žádné automatické tiché aktualizace.** Novou verzi si uživatel stáhne z GitHub Releases, rozbalí do nové složky a původní může dočasně ponechat.
-- Uživatelská data/profily se nesmějí ukládat pouze uvnitř složky aplikace, protože by při výměně ZIPu došlo ke ztrátě. Před zavedením profilů (v1.1) určit oddělené umístění a formát verzovaných nastavení.
-- V menu `Nápověda → O aplikaci` zobrazovat číslo verze a odkazy na dokumentaci/zdrojový kód.
-- Při každém vydání uvést, zda se mění formát uživatelských profilů či podporované typy `.lbrn2`.
+- **Žádné tiché aktualizace.** Aplikace novou verzi pouze **nabídne**; stažení i instalace proběhnou až po výslovném souhlasu uživatele. Uživatel může zůstat u stávající verze.
+- Uživatelská nastavení se ukládají mimo složku aplikace (registr HKCU přes `QSettings`), takže přežijí aktualizaci, přeinstalaci i výměnu ZIPu. Při každém vydání uvést, zda se mění formát nastavení či podporované typy `.lbrn2`.
+- V menu `Nápověda → O aplikaci` zobrazovat číslo verze.
+- Výrobní funkce nesmějí být nikdy omezeny nedostupností sítě nebo GitHubu.
 
-### 32.2 Budoucí volitelná kontrola aktualizací
+### 32.2 Kontrola aktualizací
 
-Návrh pro verzi po stabilním MVP: `Nápověda → Zkontrolovat aktualizace` (uživatelem vyvolaná akce; tedy bez skrytého síťového provozu). Je-li projekt veřejný, načíst metadata posledního stabilního GitHub Release z oficiálního GitHub API, porovnat Semantic Version, zobrazit číslo, změny a nabídnout **Otevřít stránku ke stažení**. Pro předběžné verze může existovat samostatný opt-in kanál.
+- **Nastavení → Aktualizace:** „Automaticky kontrolovat aktualizace“ (výchozí zapnuto) a „Nabízet i předběžné verze“ (výchozí zapnuto, pokud je běžící verze předběžná). **Nápověda → Zkontrolovat aktualizace…** kdykoli ručně.
+- Automatická kontrola proběhne na pozadí po spuštění, nejvýš jednou za ~20 hodin; chyby sítě/API zaznamená bez rušení uživatele. Ruční kontrola chybu srozumitelně oznámí (offline, GitHub nedostupný, omezení počtu dotazů, žádná veřejná vydání).
+- Zdroj: oficiální GitHub API `GET /repos/Knapis522/lightburn-grid-arranger/releases`, anonymně (bez tokenu v aplikaci). Funguje až po zveřejnění repozitáře (PUB-01); do té doby ruční kontrola oznámí, že vydání nejsou veřejná. Koncepty (draft) se ignorují; předběžné verze jen při zapnutém kanálu.
+- Porovnání podle Semantic Versioning 2.0 včetně předběžných verzí (`-alpha.N` < `-beta.N` < `-rc.N` < vydání).
+- **Vždy se nabízí nejnovější vydání**; každý instalátor obsahuje celou aplikaci, mezilehlé verze se neinstalují. Dialog ukáže přehled změn všech vydání novějších než nainstalovaná verze a volby **Stáhnout a nainstalovat** / **Připomenout později** / **Přeskočit tuto verzi**. Přeskočená verze se při automatické kontrole znovu nenabízí, novější ano; ruční kontrola ukáže i přeskočenou.
+- Odesílaná data: jen běžný HTTPS dotaz s hlavičkou `User-Agent: GridArranger/<verze>`; žádné údaje o projektech, souborech ani uživateli.
 
-- Při chybě internetu nebo API zobrazit srozumitelnou informaci; offline výrobní funkce nesmějí být omezené.
-- Neupravovat běžící EXE, nevyžadovat práva správce, nestahovat a nespouštět soubory bez vědomí uživatele.
-- Automatické stažení, ověřování podpisů a vlastní aktualizační klient zatím **mimo scope**.
-- Až po vyřešení licencí a zabezpečení lze případně implementovat bezpečný updatovací mechanismus. Zdroj aktualizací musí být explicitně důvěryhodný a ověřený.
+### 32.3 Stažení a instalace
+
+- Automaticky instalovat lze jen kopii nainstalovanou instalátorem (vedle EXE je `unins000.exe`). Kopie ze ZIPu a vývojové spuštění nabídnou jen **Otevřít stránku ke stažení**.
+- Instalátor se stáhne do nové dočasné složky a ověří proti `SHA256SUMS.txt` téhož vydání; při chybějícím součtu nebo neshodě se smaže a **nespustí**. Stahování lze zrušit.
+- Po ověření se aplikace ukončí a spustí instalátor (`/SILENT`, bez dotazů, s ukazatelem průběhu, bez práv správce); instalátor nahradí soubory a aplikaci znovu spustí. Běžící EXE se nikdy nepřepisuje za běhu.
+- Digitální podpis instalátoru zvážit před pravidelnou veřejnou distribucí (SmartScreen); do té doby je integrita chráněna HTTPS a SHA-256 z téhož GitHub Release.
+
+### 32.4 Testy aktualizací
+
+| ID | Scénář | Očekávaný výsledek |
+|---|---|---|
+| T-UPD-01 | Porovnání verzí včetně předběžných | Pořadí podle SemVer 2.0 |
+| T-UPD-02 | Více novějších vydání, uživatel dříve odmítl | Nabídne se jen nejnovější, přehled změn obsahuje všechna novější |
+| T-UPD-03 | Přeskočená verze | Automatická kontrola ji nenabídne, novější ano, ruční ji ukáže |
+| T-UPD-04 | Offline / 404 / 403 / neplatná odpověď | Automatická kontrola mlčí, ruční srozumitelně oznámí; práce s projekty pokračuje |
+| T-UPD-05 | Poškozený instalátor nebo chybějící součet | Nic se nespustí, soubor se smaže |
+| T-UPD-06 | Kopie ze ZIPu | Nabídne jen stránku ke stažení |
+| T-UPD-07 | Aktualizace nainstalované verze na Windows | Aplikace se zavře, nainstaluje se nová verze do stejné složky, znovu se spustí, nastavení zůstane |
+| T-UPD-08 | Automatická kontrola vypnuta | Žádný síťový dotaz |
 
 ## 33. Brány pro zveřejnění a pravidla bezpečnosti
 
@@ -1223,7 +1244,7 @@ Návrh pro verzi po stabilním MVP: `Nápověda → Zkontrolovat aktualizace` (u
 - Původní testovací soubor zůstává byte-identický. Výstup lze otevřít v ověřené verzi LightBurnu; Preview zkontrolováno.
 - Zůstává blokován každý typ projektu, který adaptér neumí bezpečně zpracovat.
 - Distribuce je otestována na Windows **bez instalovaného Pythonu**.
-- `APP_VERSION`, Git tag, název ZIP a release notes odpovídají stejné verzi.
+- `APP_VERSION`, Git tag, názvy instalátoru a ZIPu a release notes odpovídají stejné verzi; ke Release je přiložen `SHA256SUMS.txt` se součty obou (bez něj aplikace aktualizaci neinstaluje).
 - Kontrolní součet SHA-256 staženého artefaktu byl porovnán s vypočteným po sestavení.
 - Je připravena srozumitelná upozornění na známá omezení a na potřebu kontroly v LightBurnu před řezáním.
 
@@ -1269,7 +1290,7 @@ Návrh pro verzi po stabilním MVP: `Nápověda → Zkontrolovat aktualizace` (u
 - **Po úspěchu KAL-00 a před MVP:** zahrnout `MVP-07` (základ i18n), Qt katalogy a testy T-I18N; GitHub Actions pro automatické testy; volitelně jednoduché pracovní větve; lokální balení Windows ZIP a samostatné testování.
 - **Před soukromým kandidátem na vydání:** reprodukovatelný build, kontrolní součet, draft interního GitHub Release, `COMPATIBILITY.md` a protokol o ručním testování v LightBurnu.
 - **Před veřejným vydáním:** PUB-01 + `L10N-PUBLIC-01` pro všech osm jazyků (včetně italštiny), licence a třetí strany, bezpečnostní a historický audit, návod a release notes; poté teprve přepnout viditelnost.
-- **Po stabilním veřejném MVP:** volitelná položka `Zkontrolovat aktualizace`; automatická instalace aktualizací se neplánuje bez další bezpečnostní analýzy.
+- **Od v1.11 (interně, funkční po zveřejnění vydání):** automatická i ruční kontrola aktualizací, instalace jen po souhlasu uživatele a ověření SHA-256 (kap. 32); tichá automatická instalace se neplánuje.
 
 ### Referenční zdroje pro GitHub proces
 

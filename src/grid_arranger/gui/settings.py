@@ -5,6 +5,7 @@ aplikace — přežije přesun i výměnu ZIPu. Nic z toho se nezapisuje do `.lb
 
 * ``ui/language`` — ``auto`` | ``cs`` | ``en``
 * ``boards/<laser>/…`` — výchozí deska pro laser podle ``DeviceName`` z projektu
+* ``updates/…`` — automatická kontrola aktualizací, předběžné verze, přeskočená verze, čas poslední kontroly
 """
 
 from __future__ import annotations
@@ -32,6 +33,16 @@ class BoardPreset:
     height: float
     margins: tuple[float, float, float, float] = (DEFAULT_MARGIN,) * 4
     """Vlevo, vpravo, nahoře, dole (vizuálně na obrazovce)."""
+
+
+def _bool(value: object, default: bool) -> bool:
+    if isinstance(value, bool):
+        return value
+    if isinstance(value, str) and value.lower() in ("true", "1", "false", "0"):
+        return value.lower() in ("true", "1")
+    if isinstance(value, int):
+        return bool(value)
+    return default
 
 
 def _key(device: str) -> str:
@@ -89,4 +100,37 @@ class UserSettings:
         self._s.setValue(k + "/height", preset.height)
         for side, v in zip(("left", "right", "top", "bottom"), preset.margins):
             self._s.setValue(f"{k}/margin_{side}", v)
+        self._s.sync()
+
+    # --- aktualizace (spec. v1.11 kap. 32) ---------------------------------------------------
+    def update_auto(self) -> bool:
+        """Automaticky kontrolovat při spuštění (nejvýš jednou denně). Výchozí: ano."""
+        return _bool(self._s.value("updates/auto", True), True)
+
+    def set_update_auto(self, value: bool) -> None:
+        self._s.setValue("updates/auto", bool(value))
+        self._s.sync()
+
+    def update_prerelease(self) -> bool:
+        """Nabízet i předběžné verze. Výchozí: ano, pokud sama běžící verze je předběžná."""
+        from ..updates import current_version
+
+        return _bool(self._s.value("updates/prerelease", current_version().is_prerelease), current_version().is_prerelease)
+
+    def set_update_prerelease(self, value: bool) -> None:
+        self._s.setValue("updates/prerelease", bool(value))
+        self._s.sync()
+
+    def skipped_version(self) -> str:
+        return str(self._s.value("updates/skipped", "") or "")
+
+    def set_skipped_version(self, tag: str) -> None:
+        self._s.setValue("updates/skipped", tag)
+        self._s.sync()
+
+    def last_update_check(self) -> str:
+        return str(self._s.value("updates/last_check", "") or "")
+
+    def set_last_update_check(self, iso: str) -> None:
+        self._s.setValue("updates/last_check", iso)
         self._s.sync()

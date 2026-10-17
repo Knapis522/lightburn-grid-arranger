@@ -10,7 +10,7 @@ import sys
 import traceback
 from pathlib import Path
 
-from PySide6.QtCore import QCoreApplication
+from PySide6.QtCore import QCoreApplication, QTimer
 from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import QApplication, QMessageBox
 
@@ -52,6 +52,7 @@ def main(argv: list[str] | None = None) -> int:
     locale.apply(settings.language())
     win = MainWindow(settings, locale)
     win.show()
+    QTimer.singleShot(3000, win.updates.maybe_auto_check)  # automatická kontrola aktualizací (lze vypnout)
     if args and args[0].lower().endswith((".lbrn2", ".lbrn")):
         win.open_project(args[0])
     return app.exec()

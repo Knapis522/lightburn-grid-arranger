@@ -18,5 +18,7 @@ def test_invalid_version_rejected():
         display_version("1.0")
 
 
-def test_current_version_is_first_alpha():
-    assert display_version(__version__) == "0.1.0-alpha.1"
+def test_current_version_is_semver():
+    from grid_arranger.updates import SemVer
+
+    assert SemVer.parse(display_version(__version__)) is not None

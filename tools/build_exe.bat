@@ -13,7 +13,7 @@ if errorlevel 1 goto failed
 ".venv\Scripts\python.exe" tools\build_exe.py %*
 if errorlevel 1 goto failed
 echo.
-echo HOTOVO. Slozka dist se ted otevre.
+echo HOTOVO. Slozka dist se ted otevre - vystupy jsou ve slozce s cislem verze.
 start "" "%cd%\dist"
 pause
 exit /b 0

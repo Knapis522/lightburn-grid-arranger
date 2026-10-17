@@ -4,6 +4,15 @@ Formát podle [Keep a Changelog](https://keepachangelog.com/), verze podle SemVe
 
 ## [Unreleased]
 
+## [0.1.0-alpha.2] — nevydáno
+
+### Přidáno
+- Instalátor `GridArranger-Setup-v<verze>-win-x64.exe` (Inno Setup): instalace pro aktuálního uživatele bez práv správce, nabídka Start, volitelně ikona na ploše, odinstalace, nová verze přes starou se zachováním nastavení. ZIP zůstává jako záloha; `SHA256SUMS.txt` obsahuje oba.
+- Aktualizace z GitHub Releases: Nastavení → Aktualizace (automatická kontrola, předběžné verze), Nápověda → Zkontrolovat aktualizace. Nabízí vždy nejnovější verzi s přehledem změn od nainstalované; Stáhnout a nainstalovat / Připomenout později / Přeskočit tuto verzi. Instalace jen po souhlasu a po ověření SHA-256; aplikace se po aktualizaci sama znovu spustí. Funguje po zveřejnění repozitáře.
+- Samokontrola sestavení ověřuje i HTTPS (modul ssl a certifikáty Windows).
+- Výstupy sestavení pro každou verzi pohromadě v `dist\v<verze>\` (instalátor, ZIP, `SHA256SUMS.txt`, `RELEASE_NOTES.md`, rozbalená aplikace, samokontrola); skript předem ohlásí aplikaci spuštěnou z `dist`, která by blokovala sestavení.
+- Specifikace v1.11, ADR-0004.
+
 ## [0.1.0-alpha.1] — 2026-10-16
 
 První interní předběžné sestavení (soukromý repozitář, GitHub Pre-release). Release notes: `docs/releases/v0.1.0-alpha.1.md`.

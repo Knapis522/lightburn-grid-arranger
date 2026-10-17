@@ -2,11 +2,12 @@
 
 - Číslo verze aplikace: **Nápověda → O aplikaci**.
 - Ověřeno s: LightBurn 2.2.00, projekty `.lbrn2`, lasery s počátkem vlevo nahoře a vpravo nahoře.
-- Aplikace pracuje **offline**, nic neodesílá a neovládá laser.
+- Aplikace pracuje **offline** a neovládá laser. Jediné spojení s internetem je kontrola aktualizací na GitHubu (bez jakýchkoli údajů o projektech); lze ji vypnout v **Nastavení → Aktualizace**.
 - Vzhled aplikace: **Nastavení → Vzhled** (automaticky podle Windows; světlý = celá aplikace světlá; tmavý = tmavé ovládání, náhled desky zůstává světlý).
 - Nastavení (jazyk, vzhled, výchozí desky podle laseru) se ukládá do uživatelského profilu Windows, ne do projektu.
-- Instalace není potřeba: rozbalte ZIP a spusťte `GridArranger.exe`. Složku `GridArranger` lze přesunout kamkoli; `GridArranger.exe` musí zůstat vedle složky `_internal`.
+- Instalace: spusťte `GridArranger-Setup-….exe` (nepotřebuje práva správce; aplikace se objeví v nabídce Start). Záložní varianta bez instalace: rozbalte ZIP a spusťte `GridArranger.exe` — musí zůstat vedle složky `_internal`.
+- **Aktualizace:** při zapnuté automatické kontrole (**Nastavení → Aktualizace**) aplikace po spuštění nabídne novou verzi; kdykoli také **Nápověda → Zkontrolovat aktualizace**. Vždy se nabízí nejnovější verze s přehledem změn. Můžete ji nainstalovat (aplikace se zavře, nainstaluje novou verzi a znovu se spustí), připomenout později, nebo verzi přeskočit — novější vám aplikace nabídne znovu. Nic se neinstaluje bez vašeho souhlasu; stažený instalátor se před spuštěním ověří kontrolním součtem. Předběžné (testovací) verze se nabízejí jen při zapnuté volbě „Nabízet i předběžné verze“.
 - Projekt lze otevřít i přetažením souboru `.lbrn2` na `GridArranger.exe`.
-- Aktualizace: novou verzi rozbalte do nové složky; nastavení se zachová.
+- Kopii ze ZIPu aktualizujete ručně: novou verzi rozbalte do nové složky; nastavení se zachová.
 
 [← Úvod](index.md)

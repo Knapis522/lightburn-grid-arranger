@@ -26,6 +26,8 @@
 | Dokumentace | T-DOC-01 – T-DOC-07 | 40.1 | kontrola | nezahájeno | — |
 | Řízení | T-PLAN-01 – T-PLAN-06 | 39.6 | kontrola | nezahájeno | — |
 | GitHub / distribuce | GH-01, GH-02 | 34 | ruční | prochází | protokol níže |
+| Aktualizace (automatické) | T-UPD-01 – 06, 08 | 32.4 | automatický | prochází | `tests/unit/test_updates.py`, `tests/gui/test_updates_ui.py` |
+| Aktualizace a instalátor (ruční) | T-UPD-07, instalace / odinstalace | 32.4 | ruční (Windows, po zveřejnění) | nezahájeno | — |
 | GitHub / distribuce | GH-03 – GH-16 (vč. GH-05 EXE na čistém Windows) | 34 | ruční | nezahájeno | — |
 | Verze 1.1 | T-11-01 – T-11-20 | 26.2 | — | plánováno | — |
 | Verze 2.0 | T-20-01 – T-20-19 | 26.3 | — | plánováno | — |
@@ -51,3 +53,5 @@
 | 2026-10-16 | GUI-00 ruční (Windows) | — | reálný projekt | ruční – ověřeno | Vlastník: náhled motivů, prohození tažením, vzhled světlý/tmavý/automaticky, zoom — v pořádku |
 | 2026-10-16 | Zkušební sestavení (Linux) | — | syntetický | prochází | `tools/build_exe.py`: 286 testů, PyInstaller 6.22, samokontrola 5/5 v zabalené aplikaci; nejde o důkaz GH-05 (ten vyžaduje Windows) |
 | 2026-10-16 | Sestavení EXE (Windows) | — | syntetický | prochází | Windows 11 (26200), Python 3.13.6, PySide6 6.12.0: `tools\build_exe.bat` — testy, PyInstaller, samokontrola 5/5 v `GridArranger.exe` (frozen), ZIP 28 MB. GH-05 ruční test na PC bez Pythonu čeká |
+| 2026-10-16 | GH-06 / GH-07 (interní) | — | — | prochází | Tag `v0.1.0-alpha.1` (commit `64a5d00`), GitHub Pre-release se ZIPem `GridArranger-v0.1.0-alpha.1-win-x64.zip` a `SHA256SUMS.txt` v soukromém repozitáři |
+| 2026-10-17 | Instalátor (Windows) | — | — | ruční – ověřeno | Windows 11, Inno Setup 6: `dist\v0.1.0-alpha.2\` s instalátorem (22 MB), ZIP, `SHA256SUMS.txt` (součet instalátoru ověřen), `RELEASE_NOTES.md`; samokontrola 6/6 (HTTPS: 43 certifikátů Windows); instalace i odinstalace funguje (vlastník) |

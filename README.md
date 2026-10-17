@@ -2,7 +2,7 @@
 
 Offline desktopová aplikace pro Windows, která **přesune již existující, navzájem odlišné skupiny** v projektu LightBurn `.lbrn2` do přesné mřížky s nastavitelnými mezerami — bez kopírování a bez změny obsahu skupin. Výsledkem je vždy **nový soubor**; originál se nikdy nepřepisuje.
 
-> **Stav projektu:** ve vývoji, nepoužitelné pro výrobu. Hotové a automaticky otestované je výpočetní jádro (mřížka, pořadí, kontrola kolizí) a čtení/zápis `.lbrn2` s nezávislou kontrolou výstupu a okno aplikace v češtině a angličtině s nápovědou F1 (samostatné `GridArranger.exe` se sestavuje skriptem `tools\build_exe.bat`, viz `docs/DEVELOPMENT.md`; ověření na počítači bez Pythonu zatím čeká). Aktuální ověřený stav je v [docs/STATUS.md](docs/STATUS.md).
+> **Stav projektu:** ve vývoji, nepoužitelné pro výrobu. Hotové a automaticky otestované je výpočetní jádro (mřížka, pořadí, kontrola kolizí) a čtení/zápis `.lbrn2` s nezávislou kontrolou výstupu a okno aplikace v češtině a angličtině s nápovědou F1 (instalátor `GridArranger-Setup-….exe` a záložní ZIP se sestavují skriptem `tools\build_exe.bat`, viz `docs/DEVELOPMENT.md`; vydání na GitHub Releases, aplikace umí nabídnout aktualizaci; ověření na počítači bez Pythonu zatím čeká). Aktuální ověřený stav je v [docs/STATUS.md](docs/STATUS.md).
 
 > **Neoficiální nástroj.** Není produktem společnosti LightBurn Software a není jí podporován. Formát `.lbrn2` není veřejné stabilní rozhraní; podpora platí jen pro výslovně otestované verze (viz `docs/FORMAT_COMPATIBILITY.md`, vznikne v etapě KAL-00).
 

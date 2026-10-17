@@ -44,6 +44,7 @@ from .messages import issue_text, message
 from .preview import PreviewView
 from .settings import BoardPreset, UserSettings
 from .theme import THEMES, apply_theme
+from .updates_ui import UpdateController
 
 ANCHOR_KEYS = ("origin", "center", "manual", "selection")
 FILL_KEYS = ("origin", "reading")
@@ -70,6 +71,7 @@ class MainWindow(QMainWindow):
         self.plan: Plan | None = None
         self.plan_error: GridError | None = None
         self._rebuilding = False
+        self.updates = UpdateController(self, settings)
         self._build_ui()
         self.retranslate()
         self._apply_number_locale()
@@ -113,6 +115,14 @@ class MainWindow(QMainWindow):
             self.theme_group.addAction(a)
             self.theme_actions[key] = a
         self.theme_actions[self.settings.theme()].setChecked(True)
+        self.act_update_auto = QAction(self, checkable=True)
+        self.act_update_auto.setChecked(self.settings.update_auto())
+        self.act_update_auto.toggled.connect(self.settings.set_update_auto)
+        self.act_update_pre = QAction(self, checkable=True)
+        self.act_update_pre.setChecked(self.settings.update_prerelease())
+        self.act_update_pre.toggled.connect(self.settings.set_update_prerelease)
+        self.act_check_updates = QAction(self)
+        self.act_check_updates.triggered.connect(lambda: self.updates.check(manual=True))
 
         mb = self.menuBar()
         self.menu_file = mb.addMenu("")
@@ -124,8 +134,10 @@ class MainWindow(QMainWindow):
         self.menu_lang.addActions(list(self.lang_actions.values()))
         self.menu_theme = self.menu_settings.addMenu("")
         self.menu_theme.addActions(list(self.theme_actions.values()))
+        self.menu_updates = self.menu_settings.addMenu("")
+        self.menu_updates.addActions([self.act_update_auto, self.act_update_pre])
         self.menu_help = mb.addMenu("")
-        self.menu_help.addActions([self.act_help, self.act_about])
+        self.menu_help.addActions([self.act_help, self.act_check_updates, self.act_about])
 
         # --- levý panel
         left = QWidget()
@@ -274,8 +286,12 @@ class MainWindow(QMainWindow):
         self.theme_actions["auto"].setText(self.tr("Automatic (system)"))
         self.theme_actions["light"].setText(self.tr("Light"))
         self.theme_actions["dark"].setText(self.tr("Dark"))
+        self.menu_updates.setTitle(self.tr("&Updates"))
+        self.act_update_auto.setText(self.tr("Check for updates &automatically"))
+        self.act_update_pre.setText(self.tr("Include &pre-release versions"))
         self.menu_help.setTitle(self.tr("&Help"))
         self.act_help.setText(self.tr("User &guide"))
+        self.act_check_updates.setText(self.tr("Check for &updates…"))
         self.act_about.setText(self.tr("&About"))
 
         self.box_project.setTitle(self.tr("Project"))

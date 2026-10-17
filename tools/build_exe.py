@@ -1,13 +1,17 @@
 """Sestavení přenosné aplikace GridArranger (GH-05; spec. kap. 30).
 
-    python tools/build_exe.py               # překlady → testy → PyInstaller → samokontrola → ZIP
-    python tools/build_exe.py --skip-tests  # bez pytest (jen pro rychlé zkoušky balení)
+    python tools/build_exe.py                 # překlady → testy → PyInstaller → samokontrola → ZIP → instalátor
+    python tools/build_exe.py --skip-tests    # bez pytest (jen pro rychlé zkoušky balení)
+    python tools/build_exe.py --no-installer  # bez instalátoru (není-li nainstalovaný Inno Setup)
 
-Na Windows vznikne:
-* ``dist/GridArranger/GridArranger.exe`` (+ složka ``_internal`` s knihovnami) — spustitelné bez Pythonu,
-* ``dist/GridArranger-v<verze>-win-x64.zip`` — totéž v jednom souboru k přenesení na jiný počítač,
-* ``dist/SHA256SUMS.txt`` — kontrolní součet ZIPu (přikládá se ke GitHub Release),
-* ``dist/selftest-report.json`` — výsledek samokontroly zabalené aplikace.
+Vše pro jednu verzi vznikne pohromadě ve složce ``dist/v<verze>/`` (starší verze zůstanou vedle):
+* ``GridArranger-Setup-v<verze>-win-x64.exe`` — instalátor (Inno Setup 6.3+), hlavní podoba distribuce,
+* ``GridArranger-v<verze>-win-x64.zip`` — záložní přenosná verze,
+* ``SHA256SUMS.txt`` — kontrolní součty instalátoru a ZIPu (přikládá se ke GitHub Release;
+  podle něj aplikace ověřuje staženou aktualizaci),
+* ``RELEASE_NOTES.md`` — kopie ``docs/releases/v<verze>.md`` (text pro GitHub Release),
+* ``GridArranger/GridArranger.exe`` — rozbalená aplikace (spustitelná bez Pythonu),
+* ``selftest-report.json`` — výsledek samokontroly zabalené aplikace.
 
 PyInstaller sestavuje vždy pro systém, na kterém běží: ``.exe`` pro Windows vznikne jen na Windows.
 Na Linuxu skript slouží ke zkoušce balení (vznikne linuxová složka a ZIP ``-linux-x64``).
@@ -27,10 +31,19 @@ import zipfile
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-DIST = ROOT / "dist"
+DIST_ROOT = ROOT / "dist"
 BUILD = ROOT / "build" / "pyinstaller"
+# Výstupy každé verze pohromadě v dist/v<verze>/ (nastaví set_output_dir podle čísla verze)
+DIST = DIST_ROOT / "dev"
 APP_DIR = DIST / "GridArranger"
+
+
+def set_output_dir(ver: str) -> None:
+    global DIST, APP_DIR
+    DIST = DIST_ROOT / f"v{ver}"
+    APP_DIR = DIST / "GridArranger"
 SPEC = ROOT / "packaging" / "GridArranger.spec"
+ISS = ROOT / "packaging" / "GridArranger.iss"
 IS_WINDOWS = sys.platform == "win32"
 
 README = """Grid Arranger for LightBurn {version}
@@ -128,6 +141,49 @@ def self_test(exe: Path) -> dict:
     return data
 
 
+def ensure_not_running() -> None:
+    """Spuštěná aplikace z dist/ drží zamčené DLL a PyInstaller by spadl uprostřed — zjistit předem."""
+    if not APP_DIR.exists():
+        return
+    probe = APP_DIR.with_name(APP_DIR.name + ".lockcheck")
+    try:
+        APP_DIR.rename(probe)  # na Windows selže, pokud je některý soubor ve složce otevřený
+        probe.rename(APP_DIR)
+    except OSError:
+        sys.exit(f"Složku {APP_DIR} nelze přepsat — nejspíš z ní běží GridArranger.exe.\n"
+                 "Zavřete všechna okna Grid Arrangeru (případně ve Správci úloh ukončete GridArranger.exe) a spusťte sestavení znovu.")
+
+
+def find_iscc() -> Path | None:
+    """Kompilátor Inno Setup: PATH nebo obvyklá místa instalace (i per-user instalace přes winget)."""
+    import shutil
+
+    found = shutil.which("ISCC") or shutil.which("iscc")
+    if found:
+        return Path(found)
+    for base in (os.environ.get("ProgramFiles(x86)"), os.environ.get("ProgramFiles"),
+                 os.path.join(os.environ.get("LOCALAPPDATA", ""), "Programs")):
+        if base:
+            p = Path(base) / "Inno Setup 6" / "ISCC.exe"
+            if p.is_file():
+                return p
+    return None
+
+
+def make_installer(iscc: Path, ver: str) -> Path:
+    import re
+
+    numeric = ".".join(re.findall(r"\d+", ver)[:3]) + ".0"
+    target = DIST / f"GridArranger-Setup-v{ver}-win-x64.exe"
+    if target.exists():
+        target.unlink()
+    run([str(iscc), "/Q", f"/DAppVersion={ver}", f"/DVersionNumeric={numeric}",
+         f"/DSourceDir={APP_DIR}", f"/DOutputDir={DIST}", str(ISS)])
+    if not target.is_file():
+        sys.exit(f"Inno Setup nevytvořil {target.name}.")
+    return target
+
+
 def make_zip(ver: str) -> Path:
     arch = "x64" if platform.machine().lower() in ("amd64", "x86_64") else platform.machine().lower()
     target = DIST / f"GridArranger-v{ver}-{'win' if IS_WINDOWS else 'linux'}-{arch}.zip"
@@ -143,6 +199,7 @@ def make_zip(ver: str) -> Path:
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--skip-tests", action="store_true", help="nespouštět pytest")
+    ap.add_argument("--no-installer", action="store_true", help="nevytvářet instalátor (jen ZIP)")
     a = ap.parse_args()
     try:
         import PyInstaller  # noqa: F401
@@ -151,8 +208,16 @@ def main() -> int:
     if not IS_WINDOWS:
         print("Upozornění: nejde o Windows — vznikne jen zkušební linuxové sestavení, ne GridArranger.exe.")
     ver = version()
+    set_output_dir(ver)
+    iscc = None
+    if IS_WINDOWS and not a.no_installer:
+        iscc = find_iscc()
+        if iscc is None:
+            sys.exit("Nebyl nalezen Inno Setup 6 (ISCC.exe), potřebný pro instalátor.\n"
+                     "Nainstalujte ho jednou příkazem:  winget install JRSoftware.InnoSetup\n"
+                     "nebo z https://jrsoftware.org/isdl.php  — případně sestavte jen ZIP: build_exe.bat --no-installer")
 
-    step("1/5 Překlady")
+    step("1/6 Překlady")
     run([sys.executable, "tools/build_translations.py", "--no-update"])
 
     commit, dirty = git_state()
@@ -165,33 +230,48 @@ def main() -> int:
               "          Pro vydání musí být v GitHub Desktop prázdný seznam Changes.")
 
     if a.skip_tests:
-        step("2/5 Testy — přeskočeno (--skip-tests)")
+        step("2/6 Testy — přeskočeno (--skip-tests)")
     else:
-        step("2/5 Testy")
+        step("2/6 Testy")
         run([sys.executable, "-m", "pytest", "-q", "-p", "no:cacheprovider"])
 
-    step("3/5 PyInstaller")
+    step("3/6 PyInstaller")
+    ensure_not_running()
     run([sys.executable, "-m", "PyInstaller", str(SPEC), "--noconfirm", "--clean",
          "--distpath", str(DIST), "--workpath", str(BUILD)])
     enc = "utf-8-sig" if IS_WINDOWS else "utf-8"
     (APP_DIR / "README.txt").write_text(README.format(version=ver, build=build), encoding=enc)
 
-    step("4/5 Samokontrola zabalené aplikace")
+    step("4/6 Samokontrola zabalené aplikace")
     exe = APP_DIR / ("GridArranger.exe" if IS_WINDOWS else "GridArranger")
     report = self_test(exe)
     notices = (ROOT / "packaging" / "THIRD_PARTY_NOTICES.txt").read_text(encoding="utf-8")
     (APP_DIR / "THIRD_PARTY_NOTICES.txt").write_text(
         notices.format(version=ver, python=report["python"], qt=report["qt"], pyside=report["pyside6"]), encoding=enc)
 
-    step("5/5 ZIP")
+    step("5/6 ZIP")
     z = make_zip(ver)
-    digest = hashlib.sha256(z.read_bytes()).hexdigest()
-    (DIST / "SHA256SUMS.txt").write_text(f"{digest}  {z.name}\n", encoding="ascii")
+    artifacts = [z]
+    if iscc is not None:
+        step("6/6 Instalátor (Inno Setup)")
+        artifacts.insert(0, make_installer(iscc, ver))
+    else:
+        step("6/6 Instalátor — přeskočeno" + (" (--no-installer)" if a.no_installer else " (jen na Windows)"))
+    sums = {f.name: hashlib.sha256(f.read_bytes()).hexdigest() for f in artifacts}
+    (DIST / "SHA256SUMS.txt").write_text("".join(f"{h}  {n}\n" for n, h in sums.items()), encoding="ascii")
+    notes_src = ROOT / "docs" / "releases" / f"v{ver}.md"
+    if notes_src.is_file():
+        (DIST / "RELEASE_NOTES.md").write_text(notes_src.read_text(encoding="utf-8"), encoding="utf-8")
+    else:
+        print(f"Upozornění: chybí popis vydání docs/releases/v{ver}.md (potřebný pro GitHub Release).")
     size = sum(f.stat().st_size for f in APP_DIR.rglob("*") if f.is_file())
     print(f"\nHotovo — Grid Arranger {ver} (Qt {report['qt']}, Python {report['python']})")
+    print(f"  Složka verze: {DIST}")
     print(f"  Aplikace: {exe}  (složka {size / 1e6:.0f} MB)")
     print(f"  ZIP:      {z}  ({z.stat().st_size / 1e6:.0f} MB)")
-    print(f"  SHA-256:  {digest}  (dist/SHA256SUMS.txt)")
+    for f in artifacts[:-1]:
+        print(f"  Instalátor: {f}  ({f.stat().st_size / 1e6:.0f} MB)")
+    print(f"  SHA-256:  {DIST / 'SHA256SUMS.txt'} ({len(sums)} soubory)")
     print(f"  Sestaveno z: {build}")
     return 0
 
