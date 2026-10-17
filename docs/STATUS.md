@@ -29,7 +29,7 @@
 ## Otevřená rozhodnutí
 
 - Žádná. Rozhodnutí z 16. 10. 2026 zapsána ve specifikaci v1.8 (kap. 28).
-- Balicí nástroj: zvolen PyInstaller (ADR-0003); definitivně potvrdit po úspěšném GH-05 na Windows.
+- Balicí nástroj: PyInstaller (ADR-0003) — potvrzen úspěšným GH-05 (PC bez Pythonu, 2026-10-17).
 
 ## Poslední ověřený stav / co zkusit dál
 
@@ -43,7 +43,7 @@
 - GUI-00: okno ověřeno automaticky (offscreen) a na snímcích (cs/en, blokace při přesahu desky, příručka). Na Windows: 268 testů prošlo, okno spuštěno vlastníkem. Podle jeho připomínek doplněno: náhled se skutečnými motivy v barvách vrstev, přeskládání kartiček tažením v náhledu.
 - Podle připomínek doplněno a vlastníkem ověřeno na Windows: prohození dvou kartiček tažením, vzhled Nastavení → Vzhled (světlý = celá aplikace světlá; tmavý = tmavé ovládání, náhled světlý), plynulý zoom s mezemi.
 - EXE-00: `tools\build_exe.bat` → překlady, testy, PyInstaller, samokontrola `GridArranger --self-test` (příručka, překlady vč. tlačítek Qt, ikona, okno, načtení → rozložení → zápis → kontrola na syntetickém projektu), ZIP. Zkušebně sestaveno na Linuxu (Qt 6.12, Python 3.13): samokontrola 5/5, aplikace se spustí. Na Windows sestaveno 2026-10-16 (Windows 11, Python 3.13.6, PySide6 6.12.0): samokontrola 5/5, ZIP `GridArranger-v0.1.0.dev0-win-x64.zip` 28 MB.
-- Další bezpečný krok: vlastník spustí `tools\build_exe.bat`, ZIP rozbalí na počítači bez Pythonu (ideálně u laseru), vyzkouší F1, přepnutí jazyka a uložení reálného projektu; výsledek zapsat do TEST_PLAN (GH-05, T-I18N-16, HELP-01).
+- **GH-05 splněno 2026-10-17:** vlastník ověřil, že sestavená aplikace funguje na PC u laseru bez Pythonu.
 - Vydání `v0.1.0-alpha.1`: číslo verze, `SHA256SUMS.txt`, `THIRD_PARTY_NOTICES.txt` a commit v balíčku, release notes `docs/releases/v0.1.0-alpha.1.md` (anglicky), postup `docs/RELEASE_CHECKLIST.md`. Zveřejněno vlastníkem 2026-10-16: tag `v0.1.0-alpha.1` na commitu `64a5d00`, Pre-release se ZIPem a `SHA256SUMS.txt` (https://github.com/Knapis522/lightburn-grid-arranger/releases). Předběžné verze se nezobrazují v pravém sloupci repozitáře — odkaz Releases nebo nadpis „Releases“.
 - 2026-10-17 — spec. v1.11, ADR-0004 (požadavek vlastníka): **instalátor** Inno Setup (per-user, bez práv správce, ZIP jako záloha) a **aktualizace z GitHub Releases** — Nastavení → Aktualizace (automaticky, předběžné verze), Nápověda → Zkontrolovat aktualizace; vždy nejnovější verze, Přeskočit / Později / Nainstalovat, ověření SHA-256, tichá instalace jen po souhlasu a znovuspuštění. Verze `0.1.0-alpha.2` (nevydaná). 340 testů (logika bez sítě, GUI s falešným GitHubem, end-to-end přes lokální HTTP server). Instalátor sestaven na Windows vlastníka 2026-10-17; instalace i odinstalace ověřena vlastníkem. Kontrola aktualizací začne fungovat po zveřejnění repozitáře; do té doby hlásí „žádná veřejná vydání“.
 - 2026-10-17 — podle připomínky vlastníka: nástrojová lišta s ikonami (Otevřít, Uložit jako nový, Příručka; vlastní SVG ikony podle vzhledu) a název projektu v titulku okna jako v LightBurnu. Rozpracovaná verze `0.1.0-alpha.3` (nevydaná); 343 testů.
@@ -58,3 +58,4 @@
 - 2026-10-17 — vlastník nahlásil příliš velký rámeček klíčenky G5 (Test_klicenky): AABB cest byl obal řídicích bodů Bézierových křivek (u šikmo nakreslených kruhů až o 1,9 mm na každé straně). Nyní přesně podle extrémů křivky (spec. kap. 5 bod 2); G5 40 × 40 mm místo 43,75 × 43,75; ostatní vzorky beze změny (kartičky V-001, KAL-01). 423 testů.
 - 2026-10-17 — spec. v1.15 (přání vlastníka): **výběr výrobku kliknutím v náhledu** (Ctrl+klik přidá, oranžový rámeček, propojeno se seznamem) a **ruční natočení** vybraných výrobků — Úhel vybraných, ↺ 90° / ↻ 90°, Nenatáčet (= 0°), Automaticky; ruční úhel má přednost a platí i v režimu Nenatáčet; CLI `--angle`. 430 testů. Čeká ruční vyzkoušení vlastníkem.
 - 2026-10-17 — spec. v1.16 (přání vlastníka): **kopie výrobků** (V11-02 předsunuto) — Ctrl+C / Ctrl+V, Vytvořit kopie… (ikona na liště, Ctrl+D, počet kopií), Odebrat kopie (Delete), menu Úpravy; zápis kopií jako nových skupin se sdílenou geometrií, nezávislá kontrola kopií; CLI `--copies`. 440 testů. **Čeká KAL-03** (kalibrační výstupy `…__kal03_kopie.lbrn2` v datové složce otevřít v LightBurnu).
+- 2026-10-17 — **GH-05 splněno:** vlastník ověřil běh sestavené aplikace na PC bez Pythonu (u laseru).

@@ -35,7 +35,8 @@
 | Nativní tvary v LightBurnu | vzorky C (výstupy), KAL-02 | 5 | ruční | ruční – ověřeno | `docs/FORMAT_COMPATIBILITY.md` (vzorky C, KAL-02) |
 | Aktualizace (automatické) | T-UPD-01 – 06, 08 | 32.4 | automatický | prochází | `tests/unit/test_updates.py`, `tests/gui/test_updates_ui.py` |
 | Aktualizace a instalátor (ruční) | T-UPD-07, instalace / odinstalace | 32.4 | ruční (Windows, po zveřejnění) | nezahájeno | — |
-| GitHub / distribuce | GH-03 – GH-16 (vč. GH-05 EXE na čistém Windows) | 34 | ruční | nezahájeno | — |
+| GitHub / distribuce | GH-05 EXE na PC bez Pythonu | 34 | ruční | ruční – ověřeno | protokol níže (2026-10-17) |
+| GitHub / distribuce | GH-03, GH-04, GH-08 – GH-16 | 34 | ruční | nezahájeno | — |
 | Verze 1.1 | T-11-01 – T-11-20 | 26.2 | — | plánováno | — |
 | Verze 2.0 | T-20-01 – T-20-19 | 26.3 | — | plánováno | — |
 
@@ -67,4 +68,5 @@
 | 2026-10-17 | Vzorky C (automaticky) | 2.2.00-RC-7 | Test_tvary_A, Test_tvary_L_A, Test_tvary_A_posun, Test_klicenky, Kalibrace_A_rot30 | prochází | Všechny výrobky podporované (Ellipse, Rect, Polygon N=6, vnořené skupiny, příznak `S`); náš posun K1 = přesun v LightBurnu (tytéž 2 řádky, rozdíl jen v posledním řádu); klíčenky s natočením −18,5 % plochy mřížky; 411 testů + 6 na reálných datech |
 | 2026-10-17 | Vzorky C (výstupy v LightBurnu) | 2.2.00-RC-7 | `C_vystupy\` (Test_tvary_A 4 sl. bez natočení, 2 sl. libovolný úhel; Test_tvary_L_A; Test_klicenky libovolný úhel a po 90°) | ruční – ověřeno | Vlastník: v pořádku |
 | 2026-10-17 | KAL-02 | 2.2.00-RC-7 | Test_tvary_A__kal02_tvary, …_prevedeno (Convert to Path) | prochází | 12/12 tvarů odchylka 0,0000 mm po opravě vzorce mnohoúhelníku; zaoblené rohy a všechna N povolena |
+| 2026-10-17 | GH-05 (PC bez Pythonu) | — | — | ruční – ověřeno | Vlastník: sestavená aplikace funguje na PC u laseru bez instalovaného Pythonu |
 | 2026-10-17 | KAL-01 (soupis A) | 2.2.00-RC-7 | Kalibrace_A__kal01_rot, Kalibrace_L_A__kal01_rot, Kalibrace_A__kal01_rot__grid_001 | ruční – ověřeno | Natočené kartičky celé, texty natočené s nimi, Preview v pořádku pro oba lasery; srovnaný výstup aplikace odpovídá původní kalibraci |
