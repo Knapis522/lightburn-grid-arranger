@@ -18,6 +18,8 @@ Pořadí: **chyťte kartičku v náhledu myší a přetáhněte ji na místo jin
 
 Ručně zadaný úhel je v seznamu označen „(ručně)“, aplikace ho nemění a platí i při volbě Natočení *Nenatáčet*. Úhel se počítá od polohy v původním projektu. Po otevření jiného projektu se ruční úhly zruší. Viz [mřížka](grid.md).
 
+**Kopie (vyplnění desky):** vyberte výrobky a stiskněte **Ctrl+C** a **Ctrl+V** — přidá se jedna kopie každého. Více kopií najednou: ikona **Vytvořit kopie** na nástrojové liště (nebo **Ctrl+D**, menu Úpravy) a zadejte počet, např. 5. Kopie se přidají na konec pořadí, jsou v seznamu označené „(kopie G5)“, převezmou ruční úhel a dají se natáčet a přesouvat jako ostatní výrobky. Kopii odeberete klávesou **Delete** nebo odškrtnutím. Do uloženého projektu se kopie zapíšou jako nové skupiny; originál projektu se nemění.
+
 Číslo **1** se umístí do rohu mřížky podle volby *Pořadí plnění* (viz [mřížka](grid.md)).
 
 [← Příprava](prepare.md) · [Další: mřížka →](grid.md)

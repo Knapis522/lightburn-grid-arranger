@@ -299,7 +299,7 @@ def test_title_shows_project_like_lightburn(make_window, tmp_path):
 def test_toolbar_open_save_help_with_icons(make_window, tmp_path):
     w = make_window("en")
     acts = [a for a in w.toolbar.actions() if not a.isSeparator()]
-    assert acts == [w.act_open, w.act_save, w.act_fit, w.act_help]
+    assert acts == [w.act_open, w.act_save, w.act_fit, w.act_duplicate, w.act_help]
     assert w.act_fit.toolTip() == "Fit view (Ctrl+0)"
     assert all(not a.icon().isNull() for a in acts)
     assert w.act_open.toolTip() == "Open project (Ctrl+O)"
@@ -604,3 +604,53 @@ def test_fit_on_toolbar_and_artwork_toggle_in_items_header(make_window, tmp_path
     assert w.chk_art.isVisibleTo(w.box_items)  # zůstává vidět i u sbalené sekce
     w.chk_art.setChecked(False)
     assert all(len(g) == 2 for g in w.preview._graphics.values())  # jen obdélník + popisek, bez kresby
+
+
+def test_check_for_updates_is_also_in_settings_menu(make_window):
+    w = make_window("en")
+    assert w.act_check_updates in w.menu_updates.actions()
+    assert w.act_check_updates in w.menu_help.actions()
+
+
+def test_copy_paste_and_duplicate_dialog_fill_the_board(make_window, tmp_path):
+    from grid_arranger.adapters.lightburn.read import load_project
+
+    w = make_window("en")
+    w.combo_rotation.setCurrentIndex(w.combo_rotation.findData("none"))
+    w.open_project(write(tmp_path, project([card(0, 0), card(200, 0)])))
+    assert not w.act_paste.isEnabled()
+    w.preview.itemClicked.emit("G2", False)
+    w.act_copy.trigger()
+    w.act_paste.trigger()
+    assert w.copies == {"G2+1": "G2"} and w.order == ("G1", "G2", "G2+1")
+    assert w.selected_ids() == {"G2+1"} and "(copy of G2)" in _row(w, "G2+1").text()
+    w._ask_int = lambda *a: 3
+    w.preview.itemClicked.emit("G1", False)
+    w.act_duplicate.trigger()
+    assert w.order == ("G1", "G2", "G2+1", "G1+1", "G1+2", "G1+3")
+    assert len(w.plan.layout.placements) == 6 and w.plan.report.can_save
+    # odebrat: Delete na vybrané kopii; odškrtnutí kopie ji také odebere
+    w._select_ids({"G1+2"})
+    w.act_remove_copies.trigger()
+    assert "G1+2" not in w.copies and "G1+2" not in w.order
+    _row(w, "G1+3").setCheckState(Qt.CheckState.Unchecked)
+    assert set(w.copies) == {"G2+1", "G1+1"}
+    out = tmp_path / "copies.lbrn2"
+    w._save_answers = [out]
+    w.save_new_project()
+    q = load_project(out)
+    assert len(q.items) == 4 and all(it.supported for it in q.items)
+
+
+def test_copy_inherits_manual_angle_and_new_project_clears_copies(make_window, tmp_path):
+    from tests.integration.test_rotation_plan import tilted
+
+    w = make_window("en")
+    w.open_project(write(tmp_path, project([tilted(0, 0), tilted(300, 0)])))
+    w.preview.itemClicked.emit("G1", False)
+    w.spin_angle.setValue(15.0)
+    w.act_copy.trigger()
+    w.act_paste.trigger()
+    assert w.manual_angles["G1+1"] == 15.0 and w.plan.rotations["G1+1"] == 15.0
+    w.open_project(write(tmp_path, project([tilted(0, 0)]), "other.lbrn2"))
+    assert w.copies == {} and not w.act_paste.isEnabled()

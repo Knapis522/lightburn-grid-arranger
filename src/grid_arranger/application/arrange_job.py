@@ -24,12 +24,12 @@ from __future__ import annotations
 import hashlib
 import json
 import math
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from datetime import datetime, timezone
 from pathlib import Path
 
 from ..adapters.lightburn.read import LoadedProject, load_project
-from ..adapters.lightburn.write import apply_patches, next_output_path, plan_patches, write_new_file
+from ..adapters.lightburn.write import apply_with_copies, next_output_path, plan_patches, write_new_file
 from ..core import arrange_to_grid, validate_layout
 from ..core.rotation import min_area_angle, rotated_bounds
 from ..core.collision import ValidationReport, usable_area
@@ -82,6 +82,9 @@ class ArrangeParams:
     angles: dict[str, float] = field(default_factory=dict)
     """Ruční natočení výrobků ve stupních (jádro, kladně po směru hodin) — přednost před automatikou,
     platí i v režimu ``none`` (spec. v1.15 kap. 7.6)."""
+    copies: dict[str, str] = field(default_factory=dict)
+    """Kopie výrobků: ``{id kopie: id zdrojového výrobku}`` (spec. v1.16). Kopie se rozmisťuje jako
+    samostatný výrobek, jen pokud je v ``order``; do výstupu se zapíše jako nová skupina."""
 
 
 class ItemGeometry:
@@ -93,8 +96,11 @@ class ItemGeometry:
         self._renderer = ProjectRenderer(project)
         self._hull: dict[str, list[tuple[float, float]]] = {}
         self._angle: dict[str, float] = {}
+        self.aliases: dict[str, str] = {}
+        """Kopie → zdrojový výrobek (stejné křivky)."""
 
     def hull(self, item_id: str) -> list[tuple[float, float]]:
+        item_id = self.aliases.get(item_id, item_id)
         if item_id not in self._hull:
             from ..adapters.lightburn.render import stroke_points
             from ..core.rotation import convex_hull
@@ -103,6 +109,7 @@ class ItemGeometry:
         return self._hull[item_id]
 
     def min_angle(self, item_id: str) -> float:
+        item_id = self.aliases.get(item_id, item_id)
         if item_id not in self._angle:
             pts = self.hull(item_id)
             self._angle[item_id] = min_area_angle(pts) if len(pts) >= 3 else 0.0
@@ -219,6 +226,8 @@ class Plan:
     rotation_mode: str = "none"
     manual: frozenset[str] = frozenset()
     """Výrobky s ručně zadaným úhlem."""
+    copies: dict[str, str] = field(default_factory=dict)
+    """Rozmístěné kopie ``{id kopie: zdroj}`` v pořadí zápisu do výstupu."""
 
 
 @dataclass(slots=True)
@@ -249,8 +258,13 @@ def make_plan(project: LoadedProject, params: ArrangeParams, geometry: ItemGeome
         raise GridError("invalid_rotation", "Neznámý režim natočení.", rotation=params.rotation)
     if not all(math.isfinite(a) for a in params.angles.values()):
         raise GridError("invalid_rotation", "Neplatný úhel natočení.")
+    order = params.order if params.order is not None else tuple(it.id for it in project.items if it.supported)
+    copies = {cid: src for cid, src in params.copies.items() if cid in order}
+    if copies:
+        project = _with_copies(project, copies)
+        if geometry is not None:
+            geometry.aliases.update(copies)
     supported = [it for it in project.items if it.supported]
-    order = params.order if params.order is not None else tuple(it.id for it in supported)
     for item_id in order:
         it = project.item(item_id)
         if not it.supported:
@@ -265,7 +279,9 @@ def make_plan(project: LoadedProject, params: ArrangeParams, geometry: ItemGeome
 
     rotations: dict[str, float] = {}
     if params.rotation != "none" or params.angles:
-        geometry = geometry or ItemGeometry(project)
+        if geometry is None:
+            geometry = ItemGeometry(project)
+            geometry.aliases.update(copies)
         fit = None
         if material is not None and params.anchor in ("origin", "center"):
             area, _ = usable_area(material)
@@ -318,7 +334,21 @@ def make_plan(project: LoadedProject, params: ArrangeParams, geometry: ItemGeome
     corner_screen = (g.right if right else g.left, g.top)
     return Plan(project, req, layout, report, moves, o.to_file_point(*corner_screen), params.anchor, params.fill,
                 {k: v for k, v in rotations.items() if k in moves}, pivots, params.rotation,
-                frozenset(k for k in params.angles if k in moves))
+                frozenset(k for k in params.angles if k in moves),
+                {cid: copies[cid] for cid in order if cid in copies})
+
+
+def _with_copies(project: LoadedProject, copies: dict[str, str]) -> LoadedProject:
+    """Projekt doplněný o kopie výrobků (stejný uzel, rozměry i poloha jako zdroj, vlastní id)."""
+    extra = []
+    for cid, src in copies.items():
+        if cid in {it.id for it in project.items}:
+            raise GridError("duplicate_item", "Kopie má stejné označení jako existující výrobek.", item_id=cid)
+        it = project.item(src)
+        if not it.supported:
+            raise GridError("item_not_supported", "Nepodporovaný výrobek nelze kopírovat.", item_id=src)
+        extra.append(replace(it, id=cid, reasons=list(it.reasons), warnings=list(it.warnings)))
+    return replace(project, items=[*project.items, *extra])
 
 
 def _move_xy(m: tuple[float, ...]) -> tuple[float, float]:
@@ -350,6 +380,7 @@ def _protocol(plan: Plan, output: Path, out_bytes: bytes, problems: list[str]) -
                  "width_mm": plan.layout.grid_bounds.width, "height_mm": plan.layout.grid_bounds.height},
         "placements": [
             {"item": pl.item_id, "label": p.item(pl.item_id).label, "index": pl.index + 1,
+             "copy_of": plan.copies.get(pl.item_id),
              "row": pl.row + 1, "column_from_fill_corner": pl.column + 1,
              "move_lightburn_xy_mm": _move_xy(plan.moves_file[pl.item_id]),
              "rotation_deg_screen_clockwise": plan.rotations.get(pl.item_id, 0.0),
@@ -411,11 +442,14 @@ def execute(plan: Plan, out_dir: Path | None = None, output: Path | None = None,
     project = plan.project
     src_path = project.info.path
 
-    ops = plan_patches(project, plan.moves_file)
-    out_bytes = apply_patches(project.data, ops)
+    originals = {k: v for k, v in plan.moves_file.items() if k not in plan.copies}
+    copy_moves = [(src, plan.moves_file[cid]) for cid, src in plan.copies.items()]
+    ops = plan_patches(project, originals)
+    out_bytes = apply_with_copies(project, ops, copy_moves)
 
-    tops = {it.id: it.source_order for it in project.items}
-    problems = verify_output(project.data, out_bytes, {tops[k]: v for k, v in plan.moves_file.items()})
+    tops = {it.id: it.source_order for it in project.items if it.id not in plan.copies}
+    problems = verify_output(project.data, out_bytes, {tops[k]: v for k, v in originals.items()},
+                             [(tops[src], move) for src, move in copy_moves])
     if not problems:
         problems += _check_reloaded_bounds(plan, out_bytes)
     if problems:
@@ -447,28 +481,33 @@ def _check_reloaded_bounds(plan: Plan, out_bytes: bytes) -> list[str]:
         reloaded = rd.load_project(tmp)
     problems = []
     geo_out = None
+    n_top = len(plan.project.root.findall("Shape"))
+    reload_id = {cid: f"G{n_top + k}" for k, cid in enumerate(plan.copies, start=1)}
+    if len(reloaded.items) != len([it for it in plan.project.items if it.id not in plan.copies]) + len(plan.copies):
+        return ["copy_count_mismatch"]
     for pl in plan.layout.placements:
         exp = pl.target_bounds
+        rid = reload_id.get(pl.item_id, pl.item_id)
         if pl.item_id in plan.rotations:
             # natočený výrobek: skutečné křivky znovu načteného výstupu musí ležet v cílovém obdélníku
             if geo_out is None:
                 geo_out = ItemGeometry(reloaded)
-            pts = geo_out.hull(pl.item_id)
+            pts = geo_out.hull(rid)
             q = round(plan.rotations[pl.item_id] / 90.0)
             if abs(plan.rotations[pl.item_id] - 90.0 * q) < 1e-9:
-                got = reloaded.item(pl.item_id).screen_bounds
+                got = reloaded.item(rid).screen_bounds
             else:
                 got = Rect(min(x for x, _ in pts), min(y for _, y in pts), max(x for x, _ in pts), max(y for _, y in pts))
                 got = Rect(got.left - GEOMETRY_TOL, got.top - GEOMETRY_TOL, got.right + GEOMETRY_TOL, got.bottom + GEOMETRY_TOL)
             tol = 1e-3 if abs(plan.rotations[pl.item_id] - 90.0 * q) < 1e-9 else 0.02
         else:
-            got = reloaded.item(pl.item_id).screen_bounds
+            got = reloaded.item(rid).screen_bounds
             tol = 1e-3
         if got is None or max(abs(got.left - exp.left), abs(got.top - exp.top),
                               abs(got.right - exp.right), abs(got.bottom - exp.bottom)) > tol:
             problems.append(f"outline_not_at_target: {pl.item_id}")
     for it in plan.project.items:
-        if it.id not in plan.moves_file and it.supported:
+        if it.id not in plan.moves_file and it.supported and it.id not in plan.copies:
             if reloaded.item(it.id).file_bbox != it.file_bbox:
                 problems.append(f"unselected_moved: {it.id}")
     return problems

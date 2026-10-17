@@ -60,6 +60,7 @@ TEMPLATES: dict[str, str] = {
     "invalid_fill_corner": QT_TRANSLATE_NOOP("Messages", "Unknown fill order."),
     "invalid_rotation": QT_TRANSLATE_NOOP("Messages", "Unknown rotation mode."),
     "bad_transform": QT_TRANSLATE_NOOP("Messages", "Internal error: invalid item transformation. Nothing was saved."),
+    "empty_project": QT_TRANSLATE_NOOP("Messages", "The project contains no shapes."),
     "empty_selection": QT_TRANSLATE_NOOP("Messages", "Select at least one item."),
     "duplicate_item": QT_TRANSLATE_NOOP("Messages", "An item is listed more than once."),
     "unknown_item": QT_TRANSLATE_NOOP("Messages", "Unknown item."),

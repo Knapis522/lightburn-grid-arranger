@@ -24,6 +24,18 @@ from .version import display_version
 ORIGIN_TEXT = {"top_right": "top right", "top_left": "top left", "bottom_left": "bottom left", "bottom_right": "bottom right"}
 
 
+def _copies(specs: list[str]) -> dict[str, str]:
+    out: dict[str, str] = {}
+    for spec in specs:
+        iid, sep, n = spec.partition("=")
+        if not sep or not iid.strip() or not n.strip().isdigit():
+            raise SystemExit(f"--copies: expected ID=N, got {spec!r}")
+        iid = iid.strip()
+        for k in range(1, int(n) + 1):
+            out[f"{iid}+{k}"] = iid
+    return out
+
+
 def _angles(specs: list[str]) -> dict[str, float]:
     out: dict[str, float] = {}
     for spec in specs:
@@ -69,18 +81,24 @@ def _cmd_arrange(a: argparse.Namespace) -> int:
     if a.board:
         bx, by = a.board_at if a.board_at else (0.0, 0.0)
         material = MaterialInput(a.board[0], a.board[1], bx, by, *margin)
+    copies = _copies(a.copies)
+    order = tuple(a.order.split(",")) if a.order else None
+    if copies:  # kopie za ostatní výrobky
+        base = order if order is not None else tuple(it.id for it in project.items if it.supported)
+        order = base + tuple(c for c in copies if c not in base)
     params = ArrangeParams(
         columns=a.columns,
         gap_x=a.gap_x if a.gap_x is not None else a.gap,
         gap_y=a.gap_y if a.gap_y is not None else a.gap,
         material=material,
-        order=tuple(a.order.split(",")) if a.order else None,
+        order=order,
         anchor=a.anchor,
         start=tuple(a.start) if a.start else None,
         fill=a.fill,
         rotation=a.rotate,
         no_rotate=frozenset(a.no_rotate.split(",")) if a.no_rotate else frozenset(),
         angles=_angles(a.angle),
+        copies=copies,
     )
     plan = make_plan(project, params)
     lay = plan.layout
@@ -129,6 +147,8 @@ def main(argv: list[str] | None = None) -> int:
     pa.add_argument("--rotate", choices=ROTATION_MODES, default="none",
                     help="rotate items to save material: none (default), 90 (in 90° steps), any (smallest bounding box)")
     pa.add_argument("--no-rotate", help="comma-separated item ids that must never be rotated")
+    pa.add_argument("--copies", action="append", default=[], metavar="ID=N",
+                    help="add N copies of an item, placed after the other items (e.g. G5=4); repeatable")
     pa.add_argument("--angle", action="append", default=[], metavar="ID=DEG",
                     help="manual rotation of one item in degrees, clockwise on screen (e.g. G3=90); repeatable")
     pa.add_argument("--out-dir")

@@ -21,6 +21,9 @@ _PATHS: dict[str, str] = {
     # rohy výřezu kolem obdélníku = přizpůsobit náhled
     "fit": '<path d="M4 9V5.5A1.5 1.5 0 0 1 5.5 4H9M15 4h3.5A1.5 1.5 0 0 1 20 5.5V9M20 15v3.5a1.5 1.5 0 0 1-1.5 1.5H15M9 20H5.5A1.5 1.5 0 0 1 4 18.5V15"/>'
            '<rect x="8.5" y="9.5" width="7" height="5" rx="0.8"/>',
+    # dva překryté výrobky se znaménkem plus = vytvořit kopie
+    "copies": '<path d="M15.5 5.5V4.8A1.3 1.3 0 0 0 14.2 3.5H4.8A1.3 1.3 0 0 0 3.5 4.8v9.4a1.3 1.3 0 0 0 1.3 1.3h.7"/>'
+              '<rect x="8.5" y="8.5" width="12" height="12" rx="1.3"/><path d="M14.5 11.5v6M11.5 14.5h6"/>',
     # otazník v kruhu = příručka
     "help": '<circle cx="12" cy="12" r="8.5"/><path d="M9.6 9.4a2.5 2.5 0 0 1 4.8 1c0 1.7-2.4 2.2-2.4 3.6"/>'
             '<path d="M12 17.2v.1"/>',

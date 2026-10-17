@@ -1,6 +1,6 @@
 # Grid Arranger for LightBurn — technická specifikace
 
-**Verze dokumentu:** 1.15 (ruční natočení výrobků, výběr kliknutím v náhledu; viz kap. 28)  
+**Verze dokumentu:** 1.16 (kopie výrobků V11-02 předsunuty; viz kap. 22.2 a 28)  
 **Datum:** 17. 10. 2026  
 **Název produktu:** Grid Arranger for LightBurn; spustitelný soubor `GridArranger.exe`; Python balíček `grid_arranger`; repozitář `lightburn-grid-arranger`. Neoficiální nástroj, nikoli produkt LightBurn Software.  
 **Stav:** Interní pracovní podklad; nikoli hotový nebo otestovaný plugin  
@@ -747,6 +747,13 @@ MVP je **splněné až po současném úspěchu** testů MVP-01 až MVP-07 (vče
 
 **Bezpečnostní brána:** nejprve vytvořit test s jednou zdrojovou skupinou a dvěma kopiemi, otevřít v LightBurnu, ověřit editovatelnost, vrstvy i Preview. Pokud nelze bezpečně prokázat identitu kopií nebo interní odkazy, funkci neoznačit za hotovou a zůstat u MVP bez násobení.
 
+**Implementace (v1.16, 17. 10. 2026 — na přání vlastníka předsunuto do `0.1.0-alpha.3`, brána KAL-03):**
+- *Model:* kopie = `PlacementInstance` s id `G5+1`, `G5+2`… a vazbou na zdroj (`ArrangeParams.copies`); rozmisťuje se jako samostatný výrobek (vlastní pořadí, ruční úhel, automatické natočení podle zdroje). Kopie, která není vybraná k rozmístění, se nezapíše.
+- *Ovládání:* výběr v seznamu nebo kliknutím v náhledu; **Ctrl+C** zapamatuje vybrané, **Ctrl+V** přidá po jedné kopii, **Vytvořit kopie…** (ikona na liště, Ctrl+D, menu Úpravy) přidá zadaný počet kopií každého vybraného (1–999), **Delete** / odškrtnutí kopii odebere. Kopie se přidávají na konec pořadí a převezmou ruční úhel kopírovaného výrobku. Kopie platí do otevření jiného projektu.
+- *Zápis:* bajtová kopie elementu nejvyšší skupiny vložená za poslední nejvyšší `Shape` (pořadí a identita původních výrobků se nemění); v kopii se mění jen `XForm` skupiny a `BackupPath` textů (`T ∘ XForm`) a vynechá se `VertList`/`PrimList` tvarů se sdíleným `VertID`/`PrimID` — kopie odkazuje na ID definované v originálu, stejně jako to LightBurn dělá sám u opakovaných tvarů (KAL-02). Tím nevznikají duplicitní ID.
+- *Kontrola:* nezávislý ověřovač: počet nových nejvyšších tvarů = počet kopií; každá kopie bajtově shodná se zdrojem mimo `XForm` a vynechanou sdílenou geometrii, odkazovaná ID existují, `XForm` = `T ∘ původní`; po odebrání kopií musí výstup splnit všechny dosavadní kontroly přesunu; po znovunačtení leží obrysy kopií v cílových obdélnících.
+- *Brána KAL-03:* výstupy s kopiemi (klíčenky, nativní tvary, natočené kopie, oba lasery) otevřít v LightBurnu — kopie celé, editovatelné, správné vrstvy, Preview; do splnění neoznačovat za výrobně ověřené.
+
 **Testy T-11-06 až 13:** např. A=4, B=2, C=0 → 6 výrobních instancí; přesná multiplicita, správné zachování textu každé varianty, žádné neplánované kopie, determinismus, maximální limit, bezpečné odmítnutí nepodporovaných interních odkazů, validace vrstev po uložení.
 
 ### 22.3 V11-03 — automatický výběr počtu řad a sloupců
@@ -1045,6 +1052,7 @@ Toto jsou **ověřovací úkoly**, nikoli potvrzené technické možnosti souča
 
 ## 28. Záznam změn specifikace
 
+- **v1.16 (17. 10. 2026):** Na přání vlastníka předsunuty kopie výrobků (V11-02, kap. 22.2): Ctrl+C / Ctrl+V, Vytvořit kopie… (počet), Odebrat kopie; zápis kopií jako nových skupin se sdílenou geometrií přes `VertID`/`PrimID`, nezávislá kontrola kopií; brána KAL-03.
 - **v1.15 (17. 10. 2026):** Na přání vlastníka ruční natočení vybraných výrobků (úhel, ±90°, Automaticky) a výběr výrobku kliknutím v náhledu (kap. 7.6) — např. aby všechny klíčenky měly očko stejně. Rozměr výrobku podle skutečných extrémů Bézierových křivek (kap. 5 bod 2; dříve obal řídicích bodů).
 - **v1.14 (17. 10. 2026):** Nativní tvary LightBurnu `Ellipse`, `Rect`, `Polygon` jako obrys i obsah výrobku, včetně vnořených skupin (klíčenky); ověřeno na vzorcích C pro oba lasery, náš přesun je shodný s přesunem v LightBurnu. Brána KAL-02 (mnohoúhelníky N = 3–8, zaoblené rohy, natočená elipsa) splněna — výpočet shodný s LightBurnem na 0,0000 mm. Příznak hladkého uzlu `S` ve `VertList` (kap. 5 body 8–9). Natočení: varianta „nenatáčet nic“ jako výchozí srovnání, čtvercové výrobky bez otočení o 90°, zaokrouhlení na hezký úhel (kap. 7.6).
 - **v1.13 (17. 10. 2026):** Na přání vlastníka natočení výrobků pro úsporu materiálu: libovolný úhel (výchozí) / po 90° / nenatáčet, výjimky jednotlivých výrobků, společná orientace podle nejmenší mřížky, zápis `T ∘ XForm` skupiny i `BackupPath` textů s nezávislou kontrolou celé matice (kap. 7.6, ADR-0005); brána KAL-01. Podpora kruhu/elipsy/obdélníku nakreslených přímo v LightBurnu (typy `Ellipse`, `Rect`) čeká na kalibrační soubor.

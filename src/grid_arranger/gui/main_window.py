@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from dataclasses import replace
 from pathlib import Path
 
 from PySide6 import __version__ as pyside_version
@@ -14,6 +15,7 @@ from PySide6.QtWidgets import (
     QAbstractItemView,
     QDoubleSpinBox,
     QFileDialog,
+    QInputDialog,
     QGridLayout,
     QHBoxLayout,
     QLabel,
@@ -66,6 +68,9 @@ class MainWindow(QMainWindow):
         self._rebuilding = False
         self._geometry = None
         self.manual_angles: dict[str, float] = {}
+        self.copies: dict[str, str] = {}
+        """Kopie výrobků ``{id kopie: zdroj}`` v pořadí vytvoření (spec. v1.16)."""
+        self._clipboard: list[str] = []
         """Ruční natočení výrobků (°, po směru hodin); 0 = nenatáčet."""
         self.updates = UpdateController(self, settings)
         self._build_ui()
@@ -137,12 +142,30 @@ class MainWindow(QMainWindow):
         self.unit_actions[self.settings.units()].setChecked(True)
         self.act_check_updates = QAction(self)
         self.act_check_updates.triggered.connect(lambda: self.updates.check(manual=True))
+        # Úpravy: kopie výrobků (Ctrl+C / Ctrl+V, Vytvořit kopie… Ctrl+D jako v LightBurnu), Esc = zrušit výběr
+        self.act_copy = QAction(self)
+        self.act_copy.setShortcut(QKeySequence(QKeySequence.StandardKey.Copy))
+        self.act_copy.triggered.connect(self.copy_selection)
+        self.act_paste = QAction(self)
+        self.act_paste.setShortcut(QKeySequence(QKeySequence.StandardKey.Paste))
+        self.act_paste.triggered.connect(self.paste_copies)
+        self.act_duplicate = QAction(self)
+        self.act_duplicate.setShortcut(QKeySequence("Ctrl+D"))
+        self.act_duplicate.triggered.connect(self.duplicate_dialog)
+        self.act_remove_copies = QAction(self)
+        self.act_remove_copies.setShortcut(QKeySequence(QKeySequence.StandardKey.Delete))
+        self.act_remove_copies.triggered.connect(self.remove_selected_copies)
+        for a in (self.act_copy, self.act_paste, self.act_duplicate, self.act_remove_copies):
+            a.setShortcutContext(Qt.ShortcutContext.WindowShortcut)
 
         mb = self.menuBar()
         self.menu_file = mb.addMenu("")
         self.menu_file.addActions([self.act_open, self.act_save])
         self.menu_file.addSeparator()
         self.menu_file.addAction(self.act_quit)
+        self.menu_edit = mb.addMenu("")
+        self.menu_edit.addActions([self.act_copy, self.act_paste, self.act_duplicate, self.act_remove_copies])
+        self.menu_edit.addSeparator()
         self.menu_settings = mb.addMenu("")
         self.menu_lang = self.menu_settings.addMenu("")
         self.menu_lang.addActions(list(self.lang_actions.values()))
@@ -155,6 +178,8 @@ class MainWindow(QMainWindow):
         self.menu_protocol.addSeparator()
         self.menu_protocol.addAction(self.act_open_protocols)
         self.menu_updates = self.menu_settings.addMenu("")
+        self.menu_updates.addAction(self.act_check_updates)  # i v Nápovědě
+        self.menu_updates.addSeparator()
         self.menu_updates.addActions([self.act_update_auto, self.act_update_pre])
         self.menu_help = mb.addMenu("")
         self.menu_help.addActions([self.act_help, self.act_check_updates, self.act_about])
@@ -170,16 +195,19 @@ class MainWindow(QMainWindow):
         self.toolbar.addActions([self.act_open, self.act_save])
         self.toolbar.addSeparator()
         self.toolbar.addAction(self.act_fit)
+        self.toolbar.addAction(self.act_duplicate)
         self.toolbar.addSeparator()
         self.toolbar.addAction(self.act_help)
         self.addToolBar(Qt.ToolBarArea.TopToolBarArea, self.toolbar)
-        self._toolbar_icons = {self.act_open: "open", self.act_save: "save_new", self.act_fit: "fit", self.act_help: "help"}
+        self._toolbar_icons = {self.act_open: "open", self.act_save: "save_new", self.act_fit: "fit", self.act_help: "help",
+                               self.act_duplicate: "copies"}
         # Esc = zrušit výběr výrobků (v seznamu i v náhledu)
         self.act_clear_selection = QAction(self)
         self.act_clear_selection.setShortcut(QKeySequence(Qt.Key.Key_Escape))
         self.act_clear_selection.setShortcutContext(Qt.ShortcutContext.WindowShortcut)
         self.act_clear_selection.triggered.connect(self.clear_selection)
         self.addAction(self.act_clear_selection)
+        self.menu_edit.addAction(self.act_clear_selection)
 
         # --- levý panel: sbalitelné sekce (stav se pamatuje), kompaktní mřížka polí
         left = QWidget()
@@ -401,6 +429,12 @@ class MainWindow(QMainWindow):
         self.act_check_updates.setText(self.tr("Check for &updates…"))
         self.act_about.setText(self.tr("&About"))
         self.act_fit.setText(self.tr("Fit view"))
+        self.menu_edit.setTitle(self.tr("&Edit"))
+        self.act_copy.setText(self.tr("&Copy items"))
+        self.act_paste.setText(self.tr("&Paste copies"))
+        self.act_duplicate.setText(self.tr("Create &copies…"))
+        self.act_remove_copies.setText(self.tr("&Remove copies"))
+        self.act_clear_selection.setText(self.tr("Clear &selection"))
         self.toolbar.setWindowTitle(self.tr("Toolbar"))
         for act in self._toolbar_icons:
             tip = act.text().replace("&", "").rstrip("…")
@@ -566,6 +600,8 @@ class MainWindow(QMainWindow):
         self.renderer = ProjectRenderer(project)
         self._geometry = ItemGeometry(project)
         self.manual_angles = {}
+        self.copies = {}
+        self._clipboard = []
         self.preview.set_selection(set())
         self.preview.clear_cache()
         self._refit = True
@@ -602,7 +638,7 @@ class MainWindow(QMainWindow):
             self.lbl_count.setText("")
             self._rebuilding = False
             return
-        items = {it.id: it for it in self.project.items}
+        items = {it.id: it for it in self.project.items} | {cid: self._lookup(cid) for cid in self.copies}
         rows = [items[i] for i in self.order]
         rows += [it for it in self.project.items if it.supported and it.id not in self.order]
         rows += [it for it in self.project.items if not it.supported]
@@ -637,7 +673,8 @@ class MainWindow(QMainWindow):
             b = it.file_bbox
             size = self.tr("{w} × {h} {unit}").format(w=self._len(b[2] - b[0], short=True), h=self._len(b[3] - b[1], short=True),
                                                     unit=self.unit.suffix)
-            text = f"{num}{it.id}  {it.label}  —  {size}"
+            label = f"{it.label}  " + self.tr("(copy of {src})").format(src=self.copies[it.id]) if it.id in self.copies else it.label
+            text = f"{num}{it.id}  {label}  —  {size}"
             angle = self.plan.rotations.get(it.id) if self.plan is not None else None
             manual = it.id in self.manual_angles
             if manual and not self.manual_angles[it.id]:
@@ -660,13 +697,19 @@ class MainWindow(QMainWindow):
         self._rebuilding = True
         for i in range(self.list_items.count()):
             li = self.list_items.item(i)
-            li.setText(self._item_text(self.project.item(li.data(Qt.ItemDataRole.UserRole))))
+            li.setText(self._item_text(self._lookup(li.data(Qt.ItemDataRole.UserRole))))
         self._rebuilding = False
         self._sync_no_rotate_button()
 
     def _current_item_id(self) -> str | None:
         li = self.list_items.currentItem()
         return li.data(Qt.ItemDataRole.UserRole) if li is not None else None
+
+    def _lookup(self, iid: str):
+        """Výrobek podle id — u kopie zdrojový výrobek s id kopie."""
+        if iid in self.copies:
+            return replace(self.project.item(self.copies[iid]), id=iid)
+        return self.project.item(iid)
 
     def selected_ids(self) -> set[str]:
         return {li.data(Qt.ItemDataRole.UserRole) for li in self.list_items.selectedItems()}
@@ -685,6 +728,94 @@ class MainWindow(QMainWindow):
             return
         self.preview.set_selection(self.selected_ids() & set(self.order))
         self._sync_no_rotate_button()
+
+    # --- kopie výrobků (spec. v1.16) --------------------------------------------------------------
+    MAX_COPIES = 999
+
+    def _new_copy_id(self, src: str) -> str:
+        k = 1
+        while f"{src}+{k}" in self.copies:
+            k += 1
+        return f"{src}+{k}"
+
+    def add_copies(self, ids: list[str], count: int) -> list[str]:
+        """Přidá ``count`` kopií každého výrobku z ``ids`` na konec pořadí; kopie převezme ruční úhel."""
+        if self.project is None or count < 1:
+            return []
+        new: list[str] = []
+        for iid in ids:
+            src = self.copies.get(iid, iid)
+            if src not in {it.id for it in self.project.items} or not self.project.item(src).supported:
+                continue
+            for _ in range(count):
+                if len(self.copies) >= self.MAX_COPIES:
+                    break
+                cid = self._new_copy_id(src)
+                self.copies[cid] = src
+                if iid in self.manual_angles:
+                    self.manual_angles[cid] = self.manual_angles[iid]
+                new.append(cid)
+        if new:
+            self.order = self.order + tuple(new)
+            self._rebuild_item_list()
+            self._select_ids(set(new))
+            self.recompute()
+            self.statusBar().showMessage(self.tr("Added %n copies.", "", len(new)), 5000)
+        return new
+
+    def _select_ids(self, ids: set[str]) -> None:
+        self.list_items.blockSignals(True)
+        self.list_items.clearSelection()
+        last = None
+        for i in range(self.list_items.count()):
+            li = self.list_items.item(i)
+            if li.data(Qt.ItemDataRole.UserRole) in ids:
+                li.setSelected(True)
+                last = li
+        if last is not None:
+            self.list_items.setCurrentItem(last, QItemSelectionModel.SelectionFlag.NoUpdate)
+            self.list_items.scrollToItem(last)
+        self.list_items.blockSignals(False)
+        self._on_list_selection()
+
+    def copy_selection(self) -> None:
+        ids = self._rotatable_selection()
+        if ids:
+            self._clipboard = ids
+            self.statusBar().showMessage(self.tr("Copied %n item(s). Paste with Ctrl+V.", "", len(ids)), 5000)
+            self._sync_no_rotate_button()
+
+    def paste_copies(self) -> None:
+        self.add_copies(list(self._clipboard), 1)
+
+    def duplicate_dialog(self) -> None:
+        ids = self._rotatable_selection()
+        if not ids:
+            self._info(self.tr("First select the items to copy — in the list or by clicking them in the preview."))
+            return
+        n = self._ask_int(self.tr("Create copies"),
+                          self.tr("Number of copies of each selected item (%n selected):", "", len(ids)), 1, 1, self.MAX_COPIES)
+        if n:
+            self.add_copies(ids, n)
+
+    def _ask_int(self, title: str, label: str, value: int, lo: int, hi: int) -> int | None:
+        n, ok = QInputDialog.getInt(self, title, label, value, lo, hi)
+        return n if ok else None
+
+    def _remove_copies(self, ids: list[str]) -> None:
+        gone = [i for i in ids if i in self.copies]
+        if not gone:
+            return
+        for cid in gone:
+            del self.copies[cid]
+            self.manual_angles.pop(cid, None)
+        self.order = tuple(i for i in self.order if i not in gone)
+        self._clipboard = [i for i in self._clipboard if i not in gone]
+        self._rebuild_item_list()
+        self.recompute()
+
+    def remove_selected_copies(self) -> None:
+        self._remove_copies([i for i in self.order if i in self.selected_ids()])
 
     def clear_selection(self) -> None:
         self.list_items.clearSelection()
@@ -718,6 +849,10 @@ class MainWindow(QMainWindow):
         for w in (self.spin_angle, self.btn_rot_ccw, self.btn_rot_cw):
             w.setEnabled(ok)
         self.btn_rot_auto.setEnabled(ok and any(i in self.manual_angles for i in ids))
+        self.act_copy.setEnabled(ok)
+        self.act_duplicate.setEnabled(self.project is not None)
+        self.act_paste.setEnabled(self.project is not None and bool(self._clipboard))
+        self.act_remove_copies.setEnabled(any(i in self.copies for i in ids))
         self.spin_angle.blockSignals(True)
         self.spin_angle.setValue(self._effective_angle(ids[0]) if ok else 0.0)
         self.spin_angle.blockSignals(False)
@@ -762,6 +897,9 @@ class MainWindow(QMainWindow):
             return
         iid = li.data(Qt.ItemDataRole.UserRole)
         checked = li.checkState() == Qt.CheckState.Checked
+        if not checked and iid in self.copies:  # kopie bez zaškrtnutí nemá smysl → odebrat
+            self._remove_copies([iid])
+            return
         if checked and iid not in self.order:
             self.order = select(self.order, iid)
         elif not checked and iid in self.order:
@@ -791,7 +929,7 @@ class MainWindow(QMainWindow):
     def _reset_order(self) -> None:
         if self.project:
             sel = set(self.order)
-            self.order = default_order(it for it in self.project.items if it.id in sel)
+            self.order = default_order(it for it in self.project.items if it.id in sel) + tuple(c for c in self.copies if c in sel)
             self._rebuild_item_list()
             self.recompute()
 
@@ -803,6 +941,9 @@ class MainWindow(QMainWindow):
 
     def _select_none(self) -> None:
         self.order = ()
+        for cid in self.copies:
+            self.manual_angles.pop(cid, None)
+        self.copies = {}
         self._rebuild_item_list()
         self.recompute()
 
@@ -836,6 +977,7 @@ class MainWindow(QMainWindow):
             fill=self.combo_fill.currentData() or "origin",
             rotation=self.combo_rotation.currentData() or "none",
             angles={k: v for k, v in self.manual_angles.items() if k in self.order},
+            copies={k: v for k, v in self.copies.items() if k in self.order},
         )
 
     def recompute(self) -> None:
@@ -870,14 +1012,14 @@ class MainWindow(QMainWindow):
                      for ob in proj.obstacles_for(sel) if ob.bounds is not None]
         problems: set[str] = set()
         if self.plan is not None:
-            items = [(pl.item_id, pl.index + 1, pl.target_bounds, self.renderer.strokes(pl.item_id) if show else [], pl.dx, pl.dy,
+            items = [(pl.item_id, pl.index + 1, pl.target_bounds, self.renderer.strokes(self.copies.get(pl.item_id, pl.item_id)) if show else [], pl.dx, pl.dy,
                       self.plan.rotations.get(pl.item_id, 0.0), self.plan.pivots.get(pl.item_id, (0.0, 0.0)))
                      for pl in self.plan.layout.placements]
             for i in self.plan.report.errors:
                 problems.update(i.item_ids)
         else:
-            items = [(i, n + 1, proj.item(i).screen_bounds, self.renderer.strokes(i) if show else [], 0.0, 0.0)
-                     for n, i in enumerate(self.order) if proj.item(i).screen_bounds]
+            items = [(i, n + 1, self._lookup(i).screen_bounds, self.renderer.strokes(self.copies.get(i, i)) if show else [], 0.0, 0.0)
+                     for n, i in enumerate(self.order) if self._lookup(i).screen_bounds]
         refit, self._refit = getattr(self, "_refit", False), False
         self.preview.draw(board, usable, o.to_screen_point(0.0, 0.0), obstacles, items, problems, show_art=show, refit=refit)
 
@@ -905,7 +1047,7 @@ class MainWindow(QMainWindow):
             for i in self.plan.report.warnings:
                 self.list_issues.addItem("⚠ " + issue_text(i.code, i.item_ids, i.params))
             for iid in self.order:
-                for w in self.project.item(iid).warnings:
+                for w in self._lookup(iid).warnings:
                     self.list_issues.addItem(f"⚠ {iid}: " + message(w.code, **w.params))
             can_save = self.plan.report.can_save
             if can_save and not self.plan.report.errors:

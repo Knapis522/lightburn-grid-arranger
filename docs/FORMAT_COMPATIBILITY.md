@@ -148,3 +148,16 @@ Nástroj `tools/kal02/native_shapes_calibration.py <šablona.lbrn2>` vytvořil `
 - [x] Povoleny všechny počty stran a zaoblené rohy; testy s čísly z LightBurnu (`test_polygon_vertices_match_lightburn`, `test_rounded_rect_matches_lightburn_including_clamped_radius`).
 
 **Stav brány KAL-02: SPLNĚNO 2026-10-17** (LightBurn 2.2.00-RC-7).
+
+## KAL-03 — kopie výrobků (2026-10-17, čeká na ověření)
+
+Kopie se zapisují jako nové nejvyšší skupiny za poslední původní tvar (spec. v1.16 kap. 22.2). Cesty se sdíleným `VertID`/`PrimID` v kopii nemají `VertList`/`PrimList` — odkazují na definici v originálu (stejný zápis použil LightBurn v souboru z KAL-02 pro opakované tvary). Texty mají `BackupPath` přímo v kopii, nativní tvary nemají ID.
+
+Kalibrační výstupy (datová složka, `KAL03\`):
+- `Test_klicenky__kal03_kopie.lbrn2` — 4 kopie G5 (jedna o 90°, jedna o 180°), kopie G2 a G8, natočení *Libovolný úhel*;
+- `Test_tvary_A__kal03_kopie.lbrn2` — 2 kopie klíčenky K1 (vnořená skupina), kopie E2 (natočená elipsa, ručně 0°), šestiúhelníku a zaobleného obdélníku; vpravo nahoře;
+- `Test_tvary_L_A__kal03_kopie.lbrn2` — totéž pro laser vlevo nahoře.
+
+- [ ] Otevřít v LightBurnu (File → Open): kopie celé (obrysy, otvory, texty, motivy), na správných vrstvách, Preview v pořádku.
+- [ ] Kopii vybrat, posunout a upravit (editovatelnost); uložit a znovu otevřít — LightBurn sdílená ID přečísluje sám.
+- [ ] Zapsat výsledek; po splnění označit kopie za ověřené.

@@ -18,6 +18,8 @@ Order: **grab an item in the preview with the mouse and drag it onto the place o
 
 A manual angle is marked “(manual)” in the list; the application never changes it and it also applies with Rotation *Do not rotate*. The angle is measured from the position in the original project. Opening another project clears manual angles. See [grid](grid.md).
 
+**Copies (filling the board):** select items and press **Ctrl+C** and **Ctrl+V** — one copy of each is added. For more copies at once use the **Create copies** icon on the toolbar (or **Ctrl+D**, Edit menu) and enter the number, e.g. 5. Copies are added at the end of the order, are marked “(copy of G5)” in the list, take over the manual angle and can be rotated and moved like any other item. Remove a copy with **Delete** or by unchecking it. Copies are written to the saved project as new groups; the original project is not changed.
+
 Item number **1** is placed in the grid corner given by *Fill order* (see [grid](grid.md)).
 
 [← Preparing](prepare.md) · [Next: grid →](grid.md)
