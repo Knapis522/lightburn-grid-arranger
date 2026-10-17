@@ -162,11 +162,15 @@ class MainWindow(QMainWindow):
         self.toolbar.setMovable(False)
         self.toolbar.setIconSize(QSize(24, 24))
         self.toolbar.setToolButtonStyle(Qt.ToolButtonStyle.ToolButtonIconOnly)
+        self.act_fit = QAction(self)
+        self.act_fit.setShortcut(QKeySequence("Ctrl+0"))
         self.toolbar.addActions([self.act_open, self.act_save])
+        self.toolbar.addSeparator()
+        self.toolbar.addAction(self.act_fit)
         self.toolbar.addSeparator()
         self.toolbar.addAction(self.act_help)
         self.addToolBar(Qt.ToolBarArea.TopToolBarArea, self.toolbar)
-        self._toolbar_icons = {self.act_open: "open", self.act_save: "save_new", self.act_help: "help"}
+        self._toolbar_icons = {self.act_open: "open", self.act_save: "save_new", self.act_fit: "fit", self.act_help: "help"}
 
         # --- levý panel: sbalitelné sekce (stav se pamatuje), kompaktní mřížka polí
         left = QWidget()
@@ -221,6 +225,10 @@ class MainWindow(QMainWindow):
         iv.addLayout(g)
         self.lbl_count = QLabel()
         iv.addWidget(self.lbl_count)
+        self.chk_art = QCheckBox()  # v hlavičce sekce Výrobky (vykreslení motivů v náhledu)
+        self.chk_art.setChecked(True)
+        self.chk_art.toggled.connect(lambda _: self.recompute())
+        self.box_items.add_header_widget(self.chk_art)
 
         # Mřížka: Sloupce | Mezera X, Y | Pořadí plnění
         self.box_grid, body = section("grid")
@@ -297,14 +305,8 @@ class MainWindow(QMainWindow):
         bar = QHBoxLayout()
         self.lbl_summary = QLabel()
         self.lbl_summary.setWordWrap(True)
-        self.btn_fit = QPushButton()
-        self.btn_fit.clicked.connect(self.preview.fit)
-        self.chk_art = QCheckBox()
-        self.chk_art.setChecked(True)
-        self.chk_art.toggled.connect(lambda _: self.recompute())
+        self.act_fit.triggered.connect(self.preview.fit)
         bar.addWidget(self.lbl_summary, 1)
-        bar.addWidget(self.chk_art)
-        bar.addWidget(self.btn_fit)
         rv.addLayout(bar)
         self.list_issues = QListWidget()
         self.list_issues.setMaximumHeight(150)
@@ -364,6 +366,7 @@ class MainWindow(QMainWindow):
         self.act_help.setText(self.tr("User &guide"))
         self.act_check_updates.setText(self.tr("Check for &updates…"))
         self.act_about.setText(self.tr("&About"))
+        self.act_fit.setText(self.tr("Fit view"))
         self.toolbar.setWindowTitle(self.tr("Toolbar"))
         for act in self._toolbar_icons:
             tip = act.text().replace("&", "").rstrip("…")
@@ -413,7 +416,6 @@ class MainWindow(QMainWindow):
         for lbl, t in zip(self.lbls_board, labels):
             lbl.setText(t)
         self.btn_board_default.setText(self.tr("Save as default for this laser"))
-        self.btn_fit.setText(self.tr("Fit view"))
         self.chk_art.setText(self.tr("Show artwork"))
         self._update_project_labels()
         self._rebuild_item_list()
@@ -422,6 +424,10 @@ class MainWindow(QMainWindow):
 
     def _fit_left_panel(self) -> None:
         """Levý panel tak široký, aby se vešla pole vedle sebe (závisí na jazyku a jednotkách) — bez vodorovného posuvníku."""
+        self._left_widget.ensurePolished()
+        for w in self._left_widget.findChildren(QWidget):
+            w.ensurePolished()
+        self._left_widget.layout().invalidate()
         self._left_widget.layout().activate()
         need = max(self._left_widget.minimumSizeHint().width(), 340)
         self._left_scroll.setMinimumWidth(need + self._left_scroll.verticalScrollBar().sizeHint().width() + 8)
@@ -867,6 +873,7 @@ class MainWindow(QMainWindow):
         self.centralWidget().setStyleSheet(section_stylesheet(
             window.name(), text.name(), c(QPalette.ColorRole.Mid).name() if self.is_dark else window.darker(118).name(),
             c(QPalette.ColorRole.Highlight).name(), header_bg.name(), body_bg.name()))
+        self._fit_left_panel()  # tučné hlavičky mění potřebnou šířku
 
     def _on_system_scheme_changed(self, *_args) -> None:
         if self.settings.theme() == "auto" and not getattr(self, "_theme_busy", False):

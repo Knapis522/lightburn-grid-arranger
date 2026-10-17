@@ -10,7 +10,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 from PySide6.QtCore import Qt, Signal
-from PySide6.QtWidgets import QAbstractSpinBox, QDoubleSpinBox, QFrame, QSizePolicy, QToolButton, QVBoxLayout, QWidget
+from PySide6.QtWidgets import QAbstractSpinBox, QDoubleSpinBox, QFrame, QHBoxLayout, QSizePolicy, QToolButton, QVBoxLayout, QWidget
 
 MM_PER_INCH = 25.4
 
@@ -99,6 +99,11 @@ class Section(QWidget):
         lay = QVBoxLayout(self)
         lay.setContentsMargins(0, 0, 0, 0)
         lay.setSpacing(0)
+        self.header_bar = QFrame()
+        self.header_bar.setObjectName("sectionHeaderBar")
+        bar = QHBoxLayout(self.header_bar)
+        bar.setContentsMargins(0, 0, 6, 0)
+        bar.setSpacing(6)
         self.header = QToolButton()
         self.header.setObjectName("sectionHeader")
         self.header.setCheckable(True)
@@ -110,8 +115,15 @@ class Section(QWidget):
         self.header.toggled.connect(self.setExpanded)
         self.body = QFrame()
         self.body.setObjectName("sectionBody")
-        lay.addWidget(self.header)
+        bar.addWidget(self.header, 1)
+        self._header_layout = bar
+        lay.addWidget(self.header_bar)
         lay.addWidget(self.body)
+
+    def add_header_widget(self, widget: QWidget) -> None:
+        """Ovládací prvek vpravo v hlavičce (např. přepínač) — viditelný i u sbalené sekce."""
+        widget.setObjectName("sectionHeaderWidget")
+        self._header_layout.addWidget(widget, 0, Qt.AlignmentFlag.AlignVCenter)
 
     def setTitle(self, text: str) -> None:  # noqa: N802 — stejné API jako QGroupBox
         self.header.setText(text)
@@ -134,18 +146,22 @@ class Section(QWidget):
 def section_stylesheet(window: str, text: str, mid: str, accent: str, header_bg: str, body_bg: str) -> str:
     """Hlavička: tučný text, jemné pozadí a úzký barevný proužek vlevo; tělo: jemný rámeček."""
     return f"""
-QToolButton#sectionHeader {{
-    font-weight: 600;
-    color: {text};
+QFrame#sectionHeaderBar {{
     background: {header_bg};
     border: none;
     border-left: 3px solid {accent};
     border-radius: 3px;
-    padding: 5px 6px;
     margin-top: 8px;
+}}
+QToolButton#sectionHeader {{
+    font-weight: 600;
+    color: {text};
+    background: transparent;
+    border: none;
+    padding: 5px 6px;
     text-align: left;
 }}
-QToolButton#sectionHeader:hover {{ background: {mid}; }}
+QToolButton#sectionHeader:hover {{ color: {accent}; }}
 QFrame#sectionBody {{
     background: {body_bg};
     border: 1px solid {mid};

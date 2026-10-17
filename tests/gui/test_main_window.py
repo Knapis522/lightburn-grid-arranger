@@ -299,7 +299,8 @@ def test_title_shows_project_like_lightburn(make_window, tmp_path):
 def test_toolbar_open_save_help_with_icons(make_window, tmp_path):
     w = make_window("en")
     acts = [a for a in w.toolbar.actions() if not a.isSeparator()]
-    assert acts == [w.act_open, w.act_save, w.act_help]
+    assert acts == [w.act_open, w.act_save, w.act_fit, w.act_help]
+    assert w.act_fit.toolTip() == "Fit view (Ctrl+0)"
     assert all(not a.icon().isNull() for a in acts)
     assert w.act_open.toolTip() == "Open project (Ctrl+O)"
     assert not w.act_save.isEnabled()  # bez projektu nelze uložit — i na liště
@@ -496,3 +497,20 @@ def test_rotated_items_drawn_rotated_in_preview(make_window, tmp_path):
     w.open_project(write(tmp_path, project([tilted(0, 0)])))
     art = [g for g in w.preview._graphics["G1"] if g.rotation() != 0]
     assert art and art[0].rotation() == pytest.approx(w.plan.rotations["G1"])
+
+
+def test_fit_on_toolbar_and_artwork_toggle_in_items_header(make_window, tmp_path):
+    w = make_window("en")
+    w.open_project(write(tmp_path, four()))
+    v = w.preview
+    v.fit()
+    base = v.transform().m11()
+    _wheel(v, 360)
+    assert v.transform().m11() != pytest.approx(base)
+    w.act_fit.trigger()
+    assert v.transform().m11() == pytest.approx(base)  # Přizpůsobit z lišty
+    assert w.chk_art.parentWidget() is w.box_items.header_bar  # přepínač v hlavičce sekce Výrobky
+    w.box_items.setExpanded(False)
+    assert w.chk_art.isVisibleTo(w.box_items)  # zůstává vidět i u sbalené sekce
+    w.chk_art.setChecked(False)
+    assert all(len(g) == 2 for g in w.preview._graphics.values())  # jen obdélník + popisek, bez kresby

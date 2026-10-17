@@ -18,6 +18,9 @@ _PATHS: dict[str, str] = {
     "save_new": '<path d="M13 20H5.5A1.5 1.5 0 0 1 4 18.5v-13A1.5 1.5 0 0 1 5.5 4h10l4 4v4"/>'
                 '<path d="M8 4v4.5h6.5V4"/><path d="M7.5 20v-5.5h5"/>'
                 '<path d="M18 15v6M15 18h6"/>',
+    # rohy výřezu kolem obdélníku = přizpůsobit náhled
+    "fit": '<path d="M4 9V5.5A1.5 1.5 0 0 1 5.5 4H9M15 4h3.5A1.5 1.5 0 0 1 20 5.5V9M20 15v3.5a1.5 1.5 0 0 1-1.5 1.5H15M9 20H5.5A1.5 1.5 0 0 1 4 18.5V15"/>'
+           '<rect x="8.5" y="9.5" width="7" height="5" rx="0.8"/>',
     # otazník v kruhu = příručka
     "help": '<circle cx="12" cy="12" r="8.5"/><path d="M9.6 9.4a2.5 2.5 0 0 1 4.8 1c0 1.7-2.4 2.2-2.4 3.6"/>'
             '<path d="M12 17.2v.1"/>',

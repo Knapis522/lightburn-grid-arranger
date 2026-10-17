@@ -20,7 +20,7 @@ Mají-li výrobky **různé rozměry**, šířka sloupce je podle nejširšího 
 Pole **Roh X / Y** jdou upravit jen v režimu *Ručně*. V ostatních režimech jsou zašedlá a ukazují roh, který aplikace právě vypočítala (mění se třeba s okraji). Po přepnutí na *Ručně* v nich zůstane aktuální roh, takže se mřížka neposune a můžete ji jen doladit.
 - *Podle původní polohy výrobků*.
 
-Náhled vpravo ukazuje desku, využitelnou plochu (čárkovaně), počátek laseru (●), přesouvané výrobky se skutečnými motivy a texty v barvách vrstev a s pořadím a nepřesouvané objekty šedě. Výrobky s chybou jsou červené. Přepínač **Zobrazit motivy** vypne kresbu a nechá jen obdélníky výrobků. Kolečko myši (i touchpad) plynule přibližuje, tažením prázdného místa posouváte pohled (tažením kartičky měníte pořadí), **Přizpůsobit** nebo dvojklik do prázdného místa zobrazí vše.
+Náhled vpravo ukazuje desku, využitelnou plochu (čárkovaně), počátek laseru (●), přesouvané výrobky se skutečnými motivy a texty v barvách vrstev a s pořadím a nepřesouvané objekty šedě. Výrobky s chybou jsou červené. Přepínač **Zobrazit motivy** v hlavičce sekce Výrobky vypne kresbu a nechá jen obdélníky výrobků. Kolečko myši (i touchpad) plynule přibližuje, tažením prázdného místa posouváte pohled (tažením kartičky měníte pořadí), ikona **Přizpůsobit** na nástrojové liště (Ctrl+0) nebo dvojklik do prázdného místa zobrazí vše.
 
 ## Natočení pro úsporu materiálu
 

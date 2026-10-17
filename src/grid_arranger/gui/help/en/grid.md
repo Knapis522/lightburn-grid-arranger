@@ -20,7 +20,7 @@ If items have **different sizes**, a column is as wide as its widest item and a 
 The **Corner X / Y** fields can be edited only in the *Manually* mode. In the other modes they are greyed out and show the corner the application has just calculated (it changes e.g. with the margins). After switching to *Manually* they keep the current corner, so the grid does not move and you can fine-tune it.
 - *At the original position of the items*.
 
-The preview shows the board, the usable area (dashed), the laser origin (●), the moved items with their real artwork and texts in layer colours and with their numbers, and unmoved objects in grey. Items with an error are red. **Show artwork** turns the drawing off and leaves only the item rectangles. The mouse wheel (or touchpad) zooms smoothly, dragging empty space pans the view (dragging an item changes the order), **Fit view** or a double-click on empty space shows everything.
+The preview shows the board, the usable area (dashed), the laser origin (●), the moved items with their real artwork and texts in layer colours and with their numbers, and unmoved objects in grey. Items with an error are red. **Show artwork** in the header of the Items section turns the drawing off and leaves only the item rectangles. The mouse wheel (or touchpad) zooms smoothly, dragging empty space pans the view (dragging an item changes the order), the **Fit view** icon on the toolbar (Ctrl+0) or a double-click on empty space shows everything.
 
 ## Rotation to save material
 
