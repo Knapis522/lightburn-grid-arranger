@@ -1,6 +1,6 @@
 # Grid Arranger for LightBurn — technická specifikace
 
-**Verze dokumentu:** 1.13 (natočení výrobků pro úsporu materiálu; viz kap. 28)  
+**Verze dokumentu:** 1.14 (nativní tvary LightBurnu, vnořené skupiny; viz kap. 28)  
 **Datum:** 17. 10. 2026  
 **Název produktu:** Grid Arranger for LightBurn; spustitelný soubor `GridArranger.exe`; Python balíček `grid_arranger`; repozitář `lightburn-grid-arranger`. Neoficiální nástroj, nikoli produkt LightBurn Software.  
 **Stav:** Interní pracovní podklad; nikoli hotový nebo otestovaný plugin  
@@ -102,6 +102,8 @@ Před spuštěním uživatel uloží projekt v LightBurnu. Po vytvoření novéh
 5. Obsah mimo tento obrys: geometrii s **ověřitelnými** hranicemi (cesty, `Rect`, `Ellipse`, bitmapy se známým rozměrem), která přesahuje obrys, skupinu **odmítnout** — mohla by narušit bezpečný odstup. Obsah, jehož hranice nelze spolehlivě spočítat (např. `Text` bez `BackupPath`), **neblokuje**, ale vyvolá viditelné **varování** u výrobku a připomenutí kontroly v LightBurn Preview (rozhodnutí 16. 10. 2026). KAL-00 prokázal, že LightBurn 2.2 ukládá u textu `HasBackupPath="1"` a úplnou geometrii v `BackupPath` → pro takové texty se použije ověřitelná kontrola.
 6. Zamčené skupiny, nevysvětlené odkazy a neznámé vlastnosti, které by se mohly změnit přesunem, odmítnout.
 7. Neseskupené výrobky neidentifikovat heuristikou; nabídnout uživateli jejich seskupení v LightBurnu.
+8. **Nativní tvary LightBurnu** (v1.14, ověřeno na vzorcích C, `docs/FORMAT_COMPATIBILITY.md`): `Ellipse` (`Rx`, `Ry`), `Rect` (`W`, `H`, `Cr`) a `Polygon` (`Rx`, `Ry`, `N`) nemají seznam vrcholů; posun v `XForm` je střed tvaru. Jsou uzavřené, mohou být obrysem i vnitřním obsahem (např. otvor klíčenky) a mohou ležet ve vnořených skupinách. AABB se počítá přesně (elipsa analyticky, obdélník a mnohoúhelník z rohů; zaoblený obdélník konzervativně z ostrých rohů); pro náhled a natočení se tvar převede na ekvivalentní cestu. Neznámé atributy či prvky tvaru a nečitelné rozměry výrobek blokují. Varianty, které LightBurn zatím nepotvrdil — mnohoúhelník s jiným počtem stran než 6 a obdélník se zaoblenými rohy (`Cr` > 0) — se blokují s návodem převést tvar v LightBurnu na křivky, dokud je neověří brána KAL-02.
+9. Za vrcholem ve `VertList` může stát příznak `S` (hladký uzel); geometrii nemění. Jiné neznámé znaky → nečitelná křivka.
 
 **Výrobní zásada:** pokud nelze hranici výrobku spolehlivě vypočítat, nástroj nesmí předstírat přesnost ani tiše použít hranici textu. V budoucnu přidat další „bounding strategie“ (libovolná uzavřená cesta, explicitní reference, úplný vizuální obrys).
 
@@ -205,10 +207,11 @@ Tento algoritmus nesmí importovat žádnou knihovnu LightBurnu ani upravovat so
 
 - **Režimy** (společná volba v sekci Mřížka, uložená v nastavení): *Libovolný úhel (nejmenší plocha)* — **výchozí** (rozhodnutí vlastníka 2026-10-17), *Po 90°*, *Nenatáčet*. Jednotlivé výrobky lze z natáčení vyjmout (výjimky v seznamu).
 - **Úhel výrobku:** nejmenší osový obdélník kolem konvexního obalu všech křivek výrobku (obrys, motivy, `BackupPath` textů; Bézierovy úseky rozvinuté s odchylkou ≤ 0,002 mm, obdélník o tuto odchylku zvětšen). Natočit jen při úspoře plochy obdélníku ≥ 0,5 %. Úhel v (−45°, 45°].
-- **Společná orientace:** vyzkoušet „beze změny“, „vše na šířku“, „vše na výšku“ (o 90° navíc menším celkovým úhlem); vybrat variantu, která se vejde na využitelnou plochu desky, z nich s nejmenší plochou mřížky; jiná než „beze změny“ jen při úspoře ≥ 0,5 %. V režimu *Po 90°* je výchozí úhel 0.
+- **Společná orientace:** vyzkoušet „nenatáčet nic“, „beze změny“ (nejmenší obdélník každého výrobku), „vše na šířku“, „vše na výšku“ (o 90° navíc menším celkovým úhlem); vybrat variantu, která se vejde na využitelnou plochu desky, z nich s nejmenší plochou mřížky; jiná než „nenatáčet nic“ jen při úspoře ≥ 0,5 % (v1.14: natočení se nepoužije, když by mřížka nevyšla menší). Výrobky se čtvercovým obdélníkem (rozdíl stran ≤ 0,01 mm, např. kruhové klíčenky) se o 90° navíc neotáčí. V režimu *Po 90°* je výchozí úhel 0.
+- **Hezký úhel (v1.14):** u oblých tvarů je minimum ploché a hrany rozvinuté křivky dají např. 29,6° místo 30°; úhel se proto zaokrouhlí na celé stupně, půlstupně nebo desetiny, pokud obdélník naroste nejvýš o 0,01 %.
 - **Střed natočení** = střed obrysu v původní poloze; potom posun do mřížky. Transformace jádra `T` → soubor `S ∘ T ∘ S`, `S = diag(±1, ±1)` podle `MirrorX/MirrorY` (kap. 8). Násobky 90° zapisovat s přesnými 0/±1.
 - **Zápis a invarianty:** mění se jen `XForm` nejvyšší skupiny a `BackupPath` textů v ní: `XForm' = T ∘ XForm` (rozšíření pravidla „pouze translace“ z MVP; bez natočení zůstává čistý posun s bajtově nezměněnou lineární částí). Nezávislá kontrola ověří celou matici; po znovunačtení výstupu musí skutečné křivky natočeného výrobku ležet v cílovém obdélníku.
-- **Ověření:** brána KAL-01 — kalibrační soubory s natočením otevřené v LightBurnu (směr natočení, texty, Preview) pro oba typy laseru.
+- **Ověření:** brána KAL-01 — kalibrační soubory s natočením otevřené v LightBurnu (texty, Preview, srovnání výstupem aplikace) pro oba typy laseru — **splněno 2026-10-17** (`docs/FORMAT_COMPATIBILITY.md`).
 
 ## 8. Přesun přes `XForm` ve formátu LightBurnu
 
@@ -1041,6 +1044,7 @@ Toto jsou **ověřovací úkoly**, nikoli potvrzené technické možnosti souča
 
 ## 28. Záznam změn specifikace
 
+- **v1.14 (17. 10. 2026):** Nativní tvary LightBurnu `Ellipse`, `Rect`, `Polygon` jako obrys i obsah výrobku, včetně vnořených skupin (klíčenky); ověřeno na vzorcích C pro oba lasery, náš přesun je shodný s přesunem v LightBurnu. Neověřené varianty (mnohoúhelník ≠ 6 stran, zaoblené rohy) blokovány do brány KAL-02. Příznak hladkého uzlu `S` ve `VertList` (kap. 5 body 8–9). Natočení: varianta „nenatáčet nic“ jako výchozí srovnání, čtvercové výrobky bez otočení o 90°, zaokrouhlení na hezký úhel (kap. 7.6).
 - **v1.13 (17. 10. 2026):** Na přání vlastníka natočení výrobků pro úsporu materiálu: libovolný úhel (výchozí) / po 90° / nenatáčet, výjimky jednotlivých výrobků, společná orientace podle nejmenší mřížky, zápis `T ∘ XForm` skupiny i `BackupPath` textů s nezávislou kontrolou celé matice (kap. 7.6, ADR-0005); brána KAL-01. Podpora kruhu/elipsy/obdélníku nakreslených přímo v LightBurnu (typy `Ellipse`, `Rect`) čeká na kalibrační soubor.
 - **v1.12 (17. 10. 2026):** Na přání vlastníka si uživatel při ukládání volí složku a název výstupu (návrh `__grid_NNN` zůstává); pravidlo „nikdy nepřepsat“ platí i pro zvolený cíl a jeho protokol (kap. 9.4); protokol uložení je volitelný, výchozí neukládat. GUI: nástrojová lišta s ikonami, název projektu v titulku okna, sbalitelné sekce levého panelu s kompaktními poli; **jednotky mm / palce** (Nastavení → Jednotky) jen pro zobrazení a zadávání — jádro, uložená nastavení i soubor `.lbrn2` zůstávají v mm (kap. 12.1).
 - **v1.11 (17. 10. 2026):** Na přání vlastníka: (1) hlavní distribucí je instalátor (Inno Setup, per-user, bez práv správce), ZIP zůstává jako záloha, jednosouborové EXE se nepoužívá (kap. 12.1, 31.2); (2) kontrola aktualizací z GitHub Releases — automatická (volitelná, výchozí zapnutá) i ruční, nabídka vždy nejnovější verze s možností zůstat u staré nebo verzi přeskočit, stažení s ověřením SHA-256 a instalace jen po souhlasu (kap. 32, nahrazuje „mimo scope“ z v1.3); (3) verze aplikace `0.1.0-alpha.N` pro interní předběžná vydání.

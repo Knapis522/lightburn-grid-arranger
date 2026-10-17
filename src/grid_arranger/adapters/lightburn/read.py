@@ -8,7 +8,8 @@ Konzervativní pravidla (spec. kap. 13 „neznámé = unsupported“):
 
 * podporovaná verze: ``AppVersion`` 2.2.x, ``FormatVersion`` 1;
 * podporovaná orientace: ``MirrorY="True"`` (ověřeno KAL-00);
-* uvnitř výrobku jsou dovoleny jen ověřené typy ``Group``, ``Path``, ``Text``.
+* uvnitř výrobku jsou dovoleny jen ověřené typy ``Group``, ``Path``, ``Text`` a nativní tvary
+  ``Ellipse``, ``Rect``, ``Polygon`` (:mod:`.shapes`; neověřené varianty se blokují).
   Neznámý typ může nést souřadnice ve světovém systému (jako ``BackupPath``)
   a po přesunu by zůstal na místě → výrobek se blokuje.
 """
@@ -24,6 +25,7 @@ from ...domain.errors import GridError
 from ...domain.models import Obstacle, Rect
 from ...core.tolerance import EPSILON
 from . import geometry as geo
+from . import shapes
 from .coords import Orientation
 from .xmltree import Node, parse
 
@@ -225,6 +227,25 @@ def _measure(shape: Node, parent_m: geo.Affine, ctx: _Ctx, acc: _Measure) -> Non
         except geo.GeometryError as e:
             acc.unmeasurable += 1
             acc.warnings.append(Reason("text_unmeasurable", {"text": acc.texts[-1], "detail": str(e)}))
+        return
+
+    if kind in shapes.NATIVE_TYPES:
+        extra = child_tags - shapes.NATIVE_CHILDREN
+        if extra:
+            acc.blocking.append(Reason("unknown_element", {"in": kind, "tags": sorted(extra)}))
+        attrs = shapes.unknown_attrs(shape.attrs)
+        if attrs:
+            acc.blocking.append(Reason("unknown_shape_attribute", {"type": kind, "attrs": attrs}))
+        try:
+            native = shapes.parse_native(shape.attrs)
+        except geo.GeometryError as e:
+            acc.unmeasurable += 1
+            acc.blocking.append(Reason("unreadable_shape", {"type": kind, "detail": str(e)}))
+            return
+        pending = shapes.unverified(native)
+        if pending:
+            acc.blocking.append(Reason(*pending))
+        acc.boxes.append((shapes.native_bbox(native, m), shape, True))
         return
 
     acc.unmeasurable += 1

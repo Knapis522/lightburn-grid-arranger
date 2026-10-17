@@ -118,6 +118,9 @@ def _turned_bounds(it, angle: float, geometry: ItemGeometry) -> Rect:
     return Rect(r.left - t, r.top - t, r.right + t, r.bottom + t)
 
 
+SQUARE_TOL = 0.01  # mm
+
+
 def _choose_rotations(project: LoadedProject, params: ArrangeParams, order: tuple[str, ...], corner: Corner,
                       geometry: ItemGeometry, fit: tuple[float, float] | None) -> dict[str, float]:
     """Úhel pro každý vybraný výrobek (0 = beze změny)."""
@@ -137,23 +140,26 @@ def _choose_rotations(project: LoadedProject, params: ArrangeParams, order: tupl
                 out[iid] = a
                 continue
             r = _turned_bounds(project.item(iid), a, geometry)
-            landscape = r.width >= r.height
+            if abs(r.width - r.height) <= SQUARE_TOL:  # čtverec / kruh: otočení o 90° nic nezmění
+                out[iid] = a
+                continue
+            landscape = r.width > r.height
             want_landscape = kind == "landscape"
             # o 90° navíc tím směrem, který dá menší celkové natočení (−60° místo 120°)
             out[iid] = a if landscape == want_landscape else (a + 90.0 if a <= 0 else a - 90.0)
         return out
 
     candidates = []
-    for kind in ("keep", "landscape", "portrait"):
-        angles = variant(kind)
+    # „original“ = nic nenatáčet: natočení se použije, jen když mřížka opravdu vyjde menší
+    for kind in ("original", "keep", "landscape", "portrait"):
+        angles = {iid: 0.0 for iid in base} if kind == "original" else variant(kind)
         items = [Item(it.id, _turned_bounds(it, angles.get(it.id, 0.0), geometry) if it.id in angles else it.screen_bounds,
                       it.label, it.source_order) for it in project.items if it.supported]
         lay = arrange_to_grid(items, GridRequest(order, params.columns, params.gap_x, params.gap_y, 0.0, 0.0, fill_from=corner))
         w, h = lay.grid_bounds.width, lay.grid_bounds.height
         fits = fit is None or (w <= fit[0] + 1e-6 and h <= fit[1] + 1e-6)
         candidates.append((kind, angles, w * h, fits))
-    keep = candidates[0]
-    best = keep
+    best = candidates[0]
     for c in candidates[1:]:
         better_fit = c[3] and not best[3]
         smaller = c[3] == best[3] and c[2] < best[2] * (1.0 - ORIENTATION_GAIN)

@@ -45,3 +45,12 @@ def test_convex_hull_and_rotation_about_center():
     assert sorted(convex_hull([(0, 0), (1, 0), (1, 1), (0, 1), (0.5, 0.5)])) == [(0, 0), (0, 1), (1, 0), (1, 1)]
     x, y = rotate_point((2, 1), 90, 1, 1)
     assert (round(x, 9), round(y, 9)) == (1.0, 2.0)  # kladně = po směru hodin při ose Y dolů
+
+
+def test_min_area_angle_snaps_to_a_round_angle_for_smooth_shapes():
+    # elipsa 60 × 30 natočená o 30°, rozvinutá na úsečky: hrany obalu dají ~29,6°, výsledkem je přesně 30°
+    pts = []
+    for k in range(400):
+        t = 2 * math.pi * k / 400
+        pts.append(rotate_point((30 * math.cos(t), 15 * math.sin(t)), 30.0))
+    assert min_area_angle(pts) == -30.0

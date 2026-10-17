@@ -1,7 +1,7 @@
 # Stav projektu
 
 **Aktualizováno:** 2026-10-17
-**Verze specifikace:** 1.13 (`docs/specification.md`)
+**Verze specifikace:** 1.14 (`docs/specification.md`)
 **Verze aplikace:** `0.1.0-alpha.2` — zveřejněno 2026-10-17 jako GitHub Pre-release (tag `v0.1.0-alpha.2`, commit `d8c0cc9`; instalátor, ZIP, SHA256SUMS). Předchozí: `v0.1.0-alpha.1` (2026-10-16, `64a5d00`)
 
 > Tento soubor je hlavní předávací dokument. Při navázání práce: přečíst tento soubor → `ROADMAP.md` → relevantní kapitolu specifikace. Nepředpokládat, že funkce funguje jen proto, že existuje kód.
@@ -24,6 +24,7 @@
 | MVP-08 příručka F1 cs/en | ano (`gui/help.py`, `gui/help/`) | ano — T-HELP-01…04, 09 | ne (T-HELP-05…08, 10 / EXE) |
 | MVP-05 bezpečné uložení a validace | ano (`adapters/lightburn/write.py`, `safety/verify.py`, `application/arrange_job.py`) | ano — T-MVP-19…25, T-FMT-01…05, 07 | ne (čeká T-MVP-26 ruční kontrola v LightBurnu) |
 | Formát `.lbrn2` (čtení, orientace) | ano (`adapters/lightburn/read.py`, `coords.py`) | ano — LB-01…06, 08, 10, 11 | částečně (V-001 ověřen v LightBurnu přes prototyp) |
+| Nativní tvary `Ellipse` / `Rect` / `Polygon`, vnořené skupiny (v1.14) | ano (`adapters/lightburn/shapes.py`) | ano — `test_shapes.py`, `test_native_shapes.py`, vzorky C | ne (čeká kontrola výstupů v LightBurnu, KAL-02) |
 
 ## Otevřená rozhodnutí
 
@@ -51,3 +52,5 @@
 - 2026-10-17 — levý panel: sbalitelné sekce s výraznější hlavičkou, úzká pole, dvojice hodnot vedle sebe; jednotky mm/palce (Nastavení → Jednotky, jen zobrazení). 353 testů.
 - 2026-10-17 — spec. v1.13, ADR-0005: **natočení pro úsporu materiálu** (Libovolný úhel — výchozí / Po 90° / Nenatáčet, výjimky, orientace podle nejmenší mřížky). Implementováno a automaticky otestováno (373 testů, oba typy laseru); **KAL-01 čeká na ověření v LightBurnu** (soubory `…__kal01_rot.lbrn2` v datové složce). Kruh/elipsa/obdélník přímo z LightBurnu čekají na testovací soubor od vlastníka.
 - 2026-10-17 — vlastník otestoval celý soupis B (nové funkce okna, uložení, protokol, jednotky, sekce, natočení včetně výstupu s natočením otevřeného v LightBurnu). Čeká: soupis A (kalibrační soubory KAL-01, směr natočení) a testovací soubory C (kruh/elipsa/obdélník, klíčenky, `Kalibrace_A_rot30`).
+- 2026-10-17 — **KAL-01 splněno** (soupis A ověřen vlastníkem v LightBurnu pro oba lasery): natočení skupin i textů funguje. Zbývá: testovací soubory C (tvary přímo z LightBurnu, klíčenky), vydání `v0.1.0-alpha.3`, zkouška u laseru.
+- 2026-10-17 — spec. v1.14 (**SHAPES-00**): tvary nakreslené přímo v LightBurnu — `Ellipse`, `Rect` bez zaoblení, `Polygon` se 6 stranami — jako obrys i obsah, vnořené skupiny (klíčenky); příznak hladkého uzlu `S`. Ověřeno automaticky na vzorcích C (oba lasery, všech 8 + 8 + 8 výrobků podporováno; náš posun shodný s přesunem v LightBurnu). Natočení: použije se jen při menší mřížce, kulaté výrobky bez otočení o 90°, hezký úhel. Jiné mnohoúhelníky a zaoblené rohy blokovány do KAL-02 (`tools/kal02`). 411 testů. Čeká: kontrola výstupů vzorků C v LightBurnu, KAL-02.

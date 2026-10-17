@@ -82,6 +82,35 @@ class Text:
 
 
 @dataclass
+class Native:
+    """Nativní tvar LightBurnu (Ellipse / Rect / Polygon) — rozměry v atributech, střed v XForm."""
+
+    kind: str
+    attrs: dict
+    xform: Affine = (1, 0, 0, 1, 0, 0)
+    cut: int = 2
+    children: str = ""
+
+    def lines(self, ind: str, world: Affine | None = None) -> list[str]:
+        a = "".join(f' {k}="{v}"' for k, v in self.attrs.items())
+        out = [f'{ind}<Shape Type="{self.kind}" CutIndex="{self.cut}"{a}>', f"{ind}    <XForm>{xf(self.xform)}</XForm>"]
+        if self.children:
+            out.append(ind + "    " + self.children)
+        out.append(f"{ind}</Shape>")
+        return out
+
+
+def ellipse(cx: float, cy: float, rx: float, ry: float | None = None, **kw) -> Native:
+    return Native("Ellipse", {"Rx": rx, "Ry": rx if ry is None else ry}, xform=(1, 0, 0, 1, cx, cy), **kw)
+
+
+def keyring(cx: float, cy: float, r: float = 20, text: str = "K1", xform: Affine = (1, 0, 0, 1, 0, 0)) -> Group:
+    """Klíčenka jako v Test_tvary_A: vnořená skupina (kruh + otvor) a text."""
+    inner = Group([ellipse(cx, cy, r, cut=0), ellipse(cx, cy - r + 4.5, 2.5, cut=0)])
+    return Group([inner, Text(text, (cx - 8, cy - 4, 16, 8))], xform=xform)
+
+
+@dataclass
 class Raw:
     """Libovolný tvar (např. neznámý typ) — vložen doslova."""
 
@@ -103,7 +132,7 @@ class Group:
         for c in self.children:
             if isinstance(c, (Group, Text)):
                 out += c.lines(ind + "        ", m)
-            elif isinstance(c, Raw):
+            elif isinstance(c, (Raw, Native)):
                 out += c.lines(ind + "        ")
             else:
                 out += c.lines(ind + "        ")

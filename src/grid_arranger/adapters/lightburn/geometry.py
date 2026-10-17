@@ -4,7 +4,8 @@ Formát ověřený v KAL-00 (LightBurn 2.2.00, `docs/FORMAT_COMPATIBILITY.md`):
 
 * ``XForm``: ``a b c d e f`` — ``x' = a·x + c·y + e``, ``y' = b·x + d·y + f``.
 * ``VertList``: ``V<x> <y>`` a volitelně ``c0x<v>c0y<v>`` / ``c1x<v>c1y<v>``;
-  samotné ``c0x1`` / ``c1x1`` znamená „bez řídicího bodu“.
+  samotné ``c0x1`` / ``c1x1`` znamená „bez řídicího bodu“. Za vrcholem může stát příznak
+  ``S`` (hladký uzel, jen pro úpravy v LightBurnu — geometrii nemění; KAL-02).
 * ``PrimList``: ``LineClosed`` nebo posloupnost ``L<i> <j>`` / ``B<i> <j>``.
 
 AABB je **konzervativní**: obsahuje vrcholy i všechny řídicí body (konvexní obal
@@ -22,7 +23,7 @@ IDENTITY: Affine = (1.0, 0.0, 0.0, 1.0, 0.0, 0.0)
 BBox = tuple[float, float, float, float]  # minx, miny, maxx, maxy (souřadnice souboru)
 
 _NUM = r"[-+]?(?:\d+\.?\d*|\.\d+)(?:[eE][-+]?\d+)?"
-_VERTEX = re.compile(rf"\s*({_NUM})\s+({_NUM})((?:c[01][xy]{_NUM})*)\s*$")
+_VERTEX = re.compile(rf"\s*({_NUM})\s+({_NUM})((?:c[01][xy]{_NUM})*)S?\s*$")
 _CTRL = re.compile(rf"c([01])([xy])({_NUM})")
 _PRIM = re.compile(r"([LB])(\d+) (\d+)")
 

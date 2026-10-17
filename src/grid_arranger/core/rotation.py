@@ -8,6 +8,9 @@ obrazovce (stejně jako ``QGraphicsItem.setRotation``): ``x' = x·cos − y·sin
 * :func:`rotated_bounds` — osový obdélník natočených bodů.
 * Natočí se jen tehdy, když to plochu zmenší aspoň o :data:`MIN_GAIN` — jinak by se výrobky
   zbytečně natáčely o zlomky stupně kvůli zaokrouhlení křivek.
+* U oblých tvarů (elipsa) je minimum ploché a hrany rozvinuté křivky dají např. 29,6° místo 30°;
+  proto se úhel zaokrouhlí na celé stupně / půlstupně / desetiny, pokud obdélník naroste nejvýš
+  o :data:`SNAP_TOL`.
 """
 
 from __future__ import annotations
@@ -19,6 +22,8 @@ from ..domain.models import Rect
 
 Point = tuple[float, float]
 MIN_GAIN = 0.005  # natočit, jen když ušetří aspoň 0,5 % plochy obdélníku
+SNAP_STEPS = (1.0, 0.5, 0.1)  # „hezký“ úhel (celé stupně, půlstupně, desetiny) …
+SNAP_TOL = 1e-4  # … pokud je obdélník větší nejvýš o 0,01 % (křivky rozvinuté na úsečky)
 
 
 def rotate_point(p: Point, deg: float, cx: float = 0.0, cy: float = 0.0) -> Point:
@@ -85,4 +90,9 @@ def min_area_angle(points: Sequence[Point]) -> float:
             best_deg, best_area = deg, area
     if base_area <= 0 or (base_area - best_area) / base_area < MIN_GAIN:
         return 0.0
+    for step in SNAP_STEPS:
+        nice = _normalize(round(best_deg / step) * step)
+        r = rotated_bounds(hull, nice)
+        if r.width * r.height <= best_area * (1.0 + SNAP_TOL):
+            return nice
     return _normalize(round(best_deg, 6))

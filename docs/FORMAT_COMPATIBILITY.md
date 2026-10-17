@@ -8,6 +8,8 @@
 |---|---|---|---|---|---|---|---|
 | Pro 2.2.00-RC-7 (Qt 6.11.2) | 1 | Top-level `Group` s `Path` + `Text` (BackupPath); `MirrorX=True, MirrorY=True` | ověřeno | ověřeno | ověřeno (prototyp) | ověřeno (File → Open) | V-001, V-002 |
 | Pro 2.2.00-RC-7 (Qt 6.11.2) | 1 | totéž; `MirrorX=False, MirrorY=True` | ověřeno | ověřeno (LightBurn) | neověřeno | neověřeno | V-003 |
+| Pro 2.2.00-RC-7 (Qt 6.11.2) | 1 | Nativní tvary `Ellipse`, `Rect` (`Cr="0"`), `Polygon` (`N="6"`) ve skupině, i ve vnořené skupině (klíčenky); oba lasery | ověřeno | ověřeno (shoda s přesunem v LightBurnu) | ověřeno (automaticky) | čeká | Test_tvary_A / L_A / _posun, Test_klicenky |
+| Pro 2.2.00-RC-7 (Qt 6.11.2) | 1 | `Polygon` s jiným počtem stran, `Rect` se zaoblenými rohy (`Cr` > 0) | — | — | — | — | **blokováno** do KAL-02 (`tools/kal02`) |
 | — | — | `MirrorY=False` (jakékoli `MirrorX`) | — | — | — | — | **nepodporováno v MVP** (neověřeno) |
 
 ## Vzorek V-001 (KAL-00, pouze čtení)
@@ -93,7 +95,7 @@ Z A vytvořen `Kalibrace_C__grid_poc.lbrn2` posunem skupiny 8 o (+50, +30) metod
 
 **Stav brány KAL-00: SPLNĚNO 2026-10-16** pro LightBurn 2.2.00-RC-7 a kombinace Mirror True/True a False/True; negativní testy jsou podmínkou dokončení ADAPT-00.
 
-## KAL-01 — natočení skupin (2026-10-17, čeká na ověření v LightBurnu)
+## KAL-01 — natočení skupin (2026-10-17, ověřeno vlastníkem)
 
 Zápis natočení: `XForm' = T ∘ XForm` u nejvyšší skupiny i u `BackupPath` každého textu v ní (BackupPath je ve světových souřadnicích, KAL-00), kde `T` je natočení kolem středu obrysu (+ posun). Nástroj `tools/kal01/rotate_calibration.py` vytvořil z V-001 / V-003:
 
@@ -102,7 +104,41 @@ Zápis natočení: `XForm' = T ∘ XForm` u nejvyšší skupiny i u `BackupPath`
 
 ### Otevřené body KAL-01
 
-- [ ] Otevření kalibračních souborů v LightBurnu (File → Open): kartičky celé, text na kartičce a natočený s ní, Preview v pořádku.
-- [ ] Směr natočení v LightBurnu pro kladný úhel v souřadnicích souboru (po / proti směru hodin) pro oba lasery.
-- [ ] Srovnaný výstup `__grid_001` vypadá jako původní kalibrace (kromě G3 vzhůru nohama).
+- [x] Otevření kalibračních souborů v LightBurnu (File → Open): kartičky celé, text na kartičce a natočený s ní, Preview v pořádku — ověřeno vlastníkem 2026-10-17 pro oba lasery.
+- [x] Konzistence směru natočení: výstup aplikace `__grid_001` (srovnání šikmých kartiček zpět) vypadá v LightBurnu jako původní kalibrace → převod jádro ↔ soubor (`S∘T∘S`) odpovídá zobrazení LightBurnu. Absolutní směr (po/proti hodinám) vlastník nezapisoval — pro funkci není potřeba.
+- [x] Srovnaný výstup `__grid_001` vypadá jako původní kalibrace (kromě G3 vzhůru nohama) — ověřeno; vlastník navíc uložil z aplikace `__grid_002` s natočením a otevřel ho v LightBurnu.
 
+**Stav brány KAL-01: SPLNĚNO 2026-10-17** (LightBurn 2.2.00-RC-7, Mirror True/True a False/True). Doplňující porovnání s natočením provedeným přímo v LightBurnu: `Kalibrace_A_rot30.lbrn2` (soupis C4) — volitelné.
+
+
+## Vzorky C — nativní tvary a klíčenky (2026-10-17)
+
+Soubory od vlastníka (mimo Git, `lightburn-grid-arranger-data`): `Test_tvary_A.lbrn2` (vpravo nahoře), `Test_tvary_L_A.lbrn2` (vlevo nahoře), `Test_tvary_A_posun.lbrn2` (klíčenka K1 posunutá v LightBurnu o +50 / +30 mm), `Test_klicenky.lbrn2` (8 skutečných klíčenek), `Kalibrace_A_rot30.lbrn2` (natočení o 30° provedené v LightBurnu).
+
+### Zjištění
+
+1. **Nativní tvary nemají `VertList`** — jen rozměry v atributech a `XForm`, jehož posun je **střed** tvaru:
+   - `<Shape Type="Ellipse" Rx="20" Ry="20">` — elipsa s poloosami Rx, Ry;
+   - `<Shape Type="Rect" W="59.999996" H="40" Cr="0">` — obdélník se středem v počátku (ověřeno podle středu textu na něm);
+   - `<Shape Type="Polygon" Rx="30.5" Ry="30.5" N="6">` s `XForm` `-1 0 0 1 …` — šestiúhelník: podle náhledu v souboru hrot vlevo a vpravo, rovná strana nahoře → vrcholy v úhlech `2πk/N` od kladné osy X (pro N = 6 shodné i se zrcadlením).
+2. **Klíčenky** = nejvyšší skupina bez `CutIndex` → vnořená skupina (`Ellipse` Rx 20 = obrys + `Ellipse` Rx 2,5 = otvor) + `Text`. Čtení prochází vnořené skupiny; obrysem je velký kruh.
+3. **Elipsa natočená v LightBurnu** (E2): natočení je v `XForm` skupiny, `BackupPath` textu = skupina ∘ text (stejně jako KAL-01). AABB 54,08 × 39,69 mm = elipsa 60 × 30 natočená o 30°.
+4. **Přesun v LightBurnu** (`_posun`): změnily se přesně dva řádky — `XForm` nejvyšší skupiny (`1 0 0 1 50.000076 30.000229`) a `XForm` v `BackupPath` textu. Náš zápis stejného posunu dá **tytéž dva řádky**; liší se jen poslední řád (`254.68969` vs `254.68968`, LightBurn počítá v jednoduché přesnosti) a náhled (`Thumbnail`). Vnitřní kruhy se nemění — potvrzuje pravidlo „měnit jen nejvyšší skupinu a BackupPath“ i pro vnořené skupiny.
+5. **Příznak `S` za vrcholem** (`…c1y168.51593SV327 198…`, Test_klicenky): hladký uzel pro úpravy v LightBurnu; geometrii nemění. Dříve způsoboval „nečitelný vrchol“.
+6. **Zaoblený obdélník převedený na křivky** („Obdéln“, 80 × 50, poloměr 5): 8 vrcholů, `PrimList` `B0 1L1 2B2 3L3 4B4 5L5 6B6 7L7 0`, řídicí body ve vzdálenosti 0,5523 · r (kubická aproximace čtvrtkruhu) — aplikace vytváří z `Rect` s `Cr` stejnou cestu (test `test_rounded_rect_path_matches_lightburn_conversion`).
+7. **Natočení o 30° v LightBurnu** (`Kalibrace_A_rot30`): `XForm` skupiny `0.86602539 -0.5 0.5 0.86602539 …`; náš kalibrační soubor KAL-01 měl pro „+30°“ opačné znaménko `b` — jde jen o konvenci směru úhlu, aplikace je vnitřně konzistentní (KAL-01). Soubor se načte, všechny výrobky podporované.
+
+### Zpracování v aplikaci (spec. v1.14 kap. 5)
+
+- Obrys z nativního tvaru: AABB **přesně** (elipsa analyticky `hx = √((a·Rx)² + (c·Ry)²)`, obdélník a mnohoúhelník z rohů; zaoblený obdélník konzervativně z ostrých rohů).
+- Náhled a výpočet natočení: tvar převedený na ekvivalentní cestu (elipsa 4 Bézierovy úseky, `Rect` s `Cr` jako výše, mnohoúhelník lomená čára).
+- Neznámé atributy nebo prvky v nativním tvaru, nečitelné rozměry → výrobek blokován. Neověřené varianty (jiný počet stran než 6, `Cr` > 0) → blokovány s návodem „Převést na křivky“ v LightBurnu, dokud je nepotvrdí KAL-02.
+- Výsledky na vzorcích: Test_tvary_A / L_A — všech 8 výrobků podporováno; Test_klicenky — 8/8 podporováno, s natočením *Libovolný úhel* (4 sloupce, mezera 3 mm) mřížka 174,8 × 86,8 mm místo 187,5 × 99,2 mm (**−18,5 % plochy**).
+
+### KAL-02 — ověření dalších nativních tvarů (čeká)
+
+Nástroj `tools/kal02/native_shapes_calibration.py <šablona.lbrn2>` vytvoří `…__kal02_tvary.lbrn2`: 12 skupin, v každé nativní tvar (vrstva 0) a náš výpočet téhož tvaru jako křivka (vrstva 1) — mnohoúhelníky N = 3, 4, 5, 5 zrcadlený, 7, 8, 5 eliptický, 6 (kontrola), obdélníky s poloměrem 5, 12 a 30 (větší než polovina výšky), elipsa natočená o 30°.
+
+- [ ] Otevřít v LightBurnu: u každého tvaru musí obě čáry ležet přesně na sobě (zapsat čísla, která nesedí).
+- [ ] Vybrat vše na vrstvě 0 → Převést na křivky → Uložit jako `…_prevedeno.lbrn2`; `--compare` změří odchylku (požadavek ≤ 0,01 mm).
+- [ ] Po potvrzení rozšířit `VERIFIED_POLYGON_SIDES` / `ROUNDED_RECT_VERIFIED` v `adapters/lightburn/shapes.py` a doplnit testy.

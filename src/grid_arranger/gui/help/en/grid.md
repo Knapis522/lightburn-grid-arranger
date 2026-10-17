@@ -30,6 +30,6 @@ The **Rotation** option in the Grid section:
 - *In 90° steps* — items are only turned by a quarter turn (landscape / portrait).
 - *Do not rotate* — items are only moved.
 
-In all modes the application also checks whether the grid would be smaller with all items in landscape or in portrait and uses the smaller variant — preferably one that fits on the board. Rotation is shown in the preview and in the item list. An item is rotated about its centre together with its texts and artwork; after saving, check the Preview in LightBurn. Exceptions for single items: the **No rotation** button in the Items section.
+In all modes the application also checks whether the grid would be smaller with all items in landscape or in portrait and uses the smaller variant — preferably one that fits on the board. If rotating would not make the grid smaller, the items stay as they are; round items are never turned by 90°. Rotation is shown in the preview and in the item list. An item is rotated about its centre together with its texts and artwork; after saving, check the Preview in LightBurn. Exceptions for single items: the **No rotation** button in the Items section.
 
 [← Items](items.md) · [Next: board and check →](board.md)

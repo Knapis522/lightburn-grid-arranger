@@ -29,7 +29,7 @@ Při hlášení problému prosím pošlete podrobnosti níže.</translation>
 <context>
     <name>MainWindow</name>
     <message>
-        <location filename="../src/grid_arranger/gui/main_window.py" line="477"/>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="481"/>
         <source>Grid Arranger for LightBurn</source>
         <translation>Grid Arranger for LightBurn</translation>
     </message>
@@ -358,62 +358,62 @@ Při hlášení problému prosím pošlete podrobnosti níže.</translation>
         <translation>Zobrazit motivy</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/main_window.py" line="472"/>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="476"/>
         <source>top right</source>
         <translation>vpravo nahoře</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/main_window.py" line="473"/>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="477"/>
         <source>top left</source>
         <translation>vlevo nahoře</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/main_window.py" line="494"/>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="498"/>
         <source>No project open. Save the project in LightBurn first, then open the saved .lbrn2 file.</source>
         <translation>Žádný projekt není otevřený. Nejdřív projekt uložte v LightBurnu a potom otevřete uložený soubor .lbrn2.</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/main_window.py" line="500"/>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="504"/>
         <source>Saved for laser: {device}, origin {origin} (LightBurn {version}).</source>
         <translation>Projekt uložen pro laser: {device}, počátek {origin} (LightBurn {version}).</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/main_window.py" line="503"/>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="507"/>
         <source>After switching the laser in LightBurn, save the project again and reopen it here.</source>
         <translation>Po přepnutí laseru v LightBurnu projekt znovu uložte a otevřete ho zde znovu.</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/main_window.py" line="510"/>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="514"/>
         <source>Open LightBurn project</source>
         <translation>Otevřít projekt LightBurnu</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/main_window.py" line="511"/>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="515"/>
         <source>LightBurn project (*.lbrn2);;All files (*)</source>
         <translation>Projekt LightBurnu (*.lbrn2);;Všechny soubory (*)</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/main_window.py" line="545"/>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="549"/>
         <source>Board saved as default for {device}.</source>
         <translation>Deska uložena jako výchozí pro {device}.</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/main_window.py" line="591"/>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="595"/>
         <source>(no rotation)</source>
         <translation>(nenatáčet)</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/main_window.py" line="596"/>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="600"/>
         <source>cannot be moved</source>
         <translation>nelze přesunout</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/main_window.py" line="566"/>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="570"/>
         <source>Outline layer: {layer}</source>
         <translation>Vrstva obrysu: {layer}</translation>
     </message>
     <message numerus="yes">
-        <location filename="../src/grid_arranger/gui/main_window.py" line="578"/>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="582"/>
         <source>Selected %n item(s)</source>
         <translation>
             <numerusform>Vybrán %n výrobek</numerusform>
@@ -422,61 +422,61 @@ Při hlášení problému prosím pošlete podrobnosti níže.</translation>
         </translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/main_window.py" line="578"/>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="582"/>
         <source>supported: {s}, total: {t}</source>
         <translation>podporováno: {s}, celkem: {t}</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/main_window.py" line="768"/>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="772"/>
         <source>Translation catalogue is missing; showing English.</source>
         <translation>Chybí katalog překladu; zobrazuje se angličtina.</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/main_window.py" line="772"/>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="776"/>
         <source>The grid cannot be calculated.</source>
         <translation>Mřížku nelze vypočítat.</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/main_window.py" line="790"/>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="794"/>
         <source>The layout passed all checks.</source>
         <translation>Rozložení prošlo všemi kontrolami.</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/main_window.py" line="807"/>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="811"/>
         <source>Choose another name or folder.</source>
         <translation>Zvolte jiný název nebo složku.</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/main_window.py" line="813"/>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="817"/>
         <source>Saved:
 {out}</source>
         <translation>Uloženo:
 {out}</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/main_window.py" line="815"/>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="819"/>
         <source>Protocol:
 {proto}</source>
         <translation>Protokol:
 {proto}</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/main_window.py" line="816"/>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="820"/>
         <source>Open the file in LightBurn via File → Open and check the layers, Preview and the position on the machine before cutting.</source>
         <translation>Otevřete soubor v LightBurnu přes File → Open a před řezáním zkontrolujte vrstvy, Preview a polohu na stroji.</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/main_window.py" line="897"/>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="902"/>
         <source>Save as new project</source>
         <translation>Uložit jako nový projekt</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/main_window.py" line="897"/>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="902"/>
         <source>LightBurn project (*.lbrn2)</source>
         <translation>Projekt LightBurnu (*.lbrn2)</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/main_window.py" line="888"/>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="893"/>
         <source>About</source>
         <translation>O aplikaci</translation>
     </message>
@@ -491,17 +491,17 @@ Při hlášení problému prosím pošlete podrobnosti níže.</translation>
         <translation>dole:</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/main_window.py" line="586"/>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="590"/>
         <source>{w} × {h} {unit}</source>
         <translation>{w} × {h} {unit}</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/main_window.py" line="778"/>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="782"/>
         <source>Grid {c} × {r}: {w} × {h} {unit}. Corner at the origin side: X {x}, Y {y}.</source>
         <translation>Mřížka {c} × {r}: {w} × {h} {unit}. Roh u počátku: X {x}, Y {y}.</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/main_window.py" line="889"/>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="894"/>
         <source>&lt;b&gt;Grid Arranger for LightBurn&lt;/b&gt; {version}&lt;br&gt;&lt;br&gt;Moves existing groups of a LightBurn project into an exact grid and saves a new .lbrn2 file.&lt;br&gt;&lt;br&gt;Unofficial tool — not a product of LightBurn Software. Always check the result in LightBurn before cutting.</source>
         <translation>&lt;b&gt;Grid Arranger for LightBurn&lt;/b&gt; {version}&lt;br&gt;&lt;br&gt;Přesune existující skupiny projektu LightBurnu do přesné mřížky a uloží nový soubor .lbrn2.&lt;br&gt;&lt;br&gt;Neoficiální nástroj — není produktem LightBurn Software. Výsledek vždy zkontrolujte v LightBurnu před řezáním.</translation>
     </message>
@@ -585,211 +585,231 @@ Při hlášení problému prosím pošlete podrobnosti níže.</translation>
     </message>
     <message>
         <location filename="../src/grid_arranger/gui/messages.py" line="31"/>
+        <source>The shape {type} has unknown properties ({attrs}) and cannot be processed safely.</source>
+        <translation>Tvar {type} má neznámé vlastnosti ({attrs}) a nelze ho bezpečně zpracovat.</translation>
+    </message>
+    <message>
+        <location filename="../src/grid_arranger/gui/messages.py" line="32"/>
+        <source>Contains a shape {type} with unreadable dimensions.</source>
+        <translation>Obsahuje tvar {type} s nečitelnými rozměry.</translation>
+    </message>
+    <message>
+        <location filename="../src/grid_arranger/gui/messages.py" line="33"/>
+        <source>A polygon with {sides} sides has not been verified with LightBurn yet. Convert it to a path in LightBurn (Convert to Path) and save again.</source>
+        <translation>Mnohoúhelník s {sides} stranami zatím nebyl ověřen s LightBurnem. V LightBurnu ho převeďte na křivky (Convert to Path) a projekt znovu uložte.</translation>
+    </message>
+    <message>
+        <location filename="../src/grid_arranger/gui/messages.py" line="34"/>
+        <source>A rectangle with rounded corners ({radius} mm) has not been verified with LightBurn yet. Convert it to a path in LightBurn (Convert to Path) and save again.</source>
+        <translation>Obdélník se zaoblenými rohy ({radius} mm) zatím nebyl ověřen s LightBurnem. V LightBurnu ho převeďte na křivky (Convert to Path) a projekt znovu uložte.</translation>
+    </message>
+    <message>
+        <location filename="../src/grid_arranger/gui/messages.py" line="35"/>
         <source>Contains an unreadable transformation.</source>
         <translation>Obsahuje nečitelnou transformaci.</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/messages.py" line="32"/>
+        <location filename="../src/grid_arranger/gui/messages.py" line="36"/>
         <source>Contains an unreadable curve.</source>
         <translation>Obsahuje nečitelnou křivku.</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/messages.py" line="33"/>
+        <location filename="../src/grid_arranger/gui/messages.py" line="37"/>
         <source>No closed cut outline was found.</source>
         <translation>Nebyl nalezen uzavřený řezný obrys.</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/messages.py" line="34"/>
+        <location filename="../src/grid_arranger/gui/messages.py" line="38"/>
         <source>Some content extends beyond the cut outline.</source>
         <translation>Část obsahu vyčnívá ven z řezného obrysu.</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/messages.py" line="35"/>
+        <location filename="../src/grid_arranger/gui/messages.py" line="39"/>
         <source>The cut outline is ambiguous ({count} candidates).</source>
         <translation>Řezný obrys není jednoznačný ({count} kandidáti).</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/messages.py" line="36"/>
+        <location filename="../src/grid_arranger/gui/messages.py" line="40"/>
         <source>The cut outline has zero size.</source>
         <translation>Řezný obrys má nulový rozměr.</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/messages.py" line="37"/>
+        <location filename="../src/grid_arranger/gui/messages.py" line="41"/>
         <source>The group is empty.</source>
         <translation>Skupina je prázdná.</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/messages.py" line="38"/>
+        <location filename="../src/grid_arranger/gui/messages.py" line="42"/>
         <source>Text geometry does not match its position. Open and save the project in LightBurn again.</source>
         <translation>Geometrie textu neodpovídá jeho poloze. Otevřete a znovu uložte projekt v LightBurnu.</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/messages.py" line="39"/>
+        <location filename="../src/grid_arranger/gui/messages.py" line="43"/>
         <source>Text “{text}” cannot be measured — check it in LightBurn Preview.</source>
         <translation>Text „{text}“ nelze změřit — zkontrolujte ho v Preview v LightBurnu.</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/messages.py" line="41"/>
+        <location filename="../src/grid_arranger/gui/messages.py" line="45"/>
         <source>Enter the board size.</source>
         <translation>Zadejte rozměr desky.</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/messages.py" line="42"/>
+        <location filename="../src/grid_arranger/gui/messages.py" line="46"/>
         <source>The board size is invalid.</source>
         <translation>Rozměr desky je neplatný.</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/messages.py" line="43"/>
+        <location filename="../src/grid_arranger/gui/messages.py" line="47"/>
         <source>The margins are invalid.</source>
         <translation>Okraje jsou neplatné.</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/messages.py" line="44"/>
+        <location filename="../src/grid_arranger/gui/messages.py" line="48"/>
         <source>The margins are larger than the board.</source>
         <translation>Okraje jsou větší než deska.</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/messages.py" line="45"/>
+        <location filename="../src/grid_arranger/gui/messages.py" line="49"/>
         <source>{a} extends beyond the usable board area.</source>
         <translation>{a} přesahuje využitelnou plochu desky.</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/messages.py" line="46"/>
+        <location filename="../src/grid_arranger/gui/messages.py" line="50"/>
         <source>{a} and {b} overlap.</source>
         <translation>{a} a {b} se překrývají.</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/messages.py" line="47"/>
+        <location filename="../src/grid_arranger/gui/messages.py" line="51"/>
         <source>{a} and {b} are closer than the gap.</source>
         <translation>{a} a {b} jsou blíž, než je mezera.</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/messages.py" line="48"/>
+        <location filename="../src/grid_arranger/gui/messages.py" line="52"/>
         <source>{a} collides with {b}, which is not being moved.</source>
         <translation>{a} koliduje s {b}, který se nepřesouvá.</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/messages.py" line="49"/>
+        <location filename="../src/grid_arranger/gui/messages.py" line="53"/>
         <source>{a} is too close to {b}, which is not being moved.</source>
         <translation>{a} je příliš blízko {b}, který se nepřesouvá.</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/messages.py" line="50"/>
+        <location filename="../src/grid_arranger/gui/messages.py" line="54"/>
         <source>The size of {a} cannot be determined, so saving is blocked.</source>
         <translation>Rozměr {a} nelze zjistit, proto je uložení zablokováno.</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/messages.py" line="51"/>
+        <location filename="../src/grid_arranger/gui/messages.py" line="55"/>
         <source>Zero gap: items touch each other — risky when cutting.</source>
         <translation>Nulová mezera: výrobky se dotýkají — riziko při řezání.</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/messages.py" line="52"/>
+        <location filename="../src/grid_arranger/gui/messages.py" line="56"/>
         <source>Items have different sizes: the gap is a minimum, not exactly the same everywhere.</source>
         <translation>Výrobky mají různé rozměry: mezera je minimální, ne všude přesně stejná.</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/messages.py" line="54"/>
+        <location filename="../src/grid_arranger/gui/messages.py" line="58"/>
         <source>The number of columns must be at least 1.</source>
         <translation>Počet sloupců musí být alespoň 1.</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/messages.py" line="55"/>
+        <location filename="../src/grid_arranger/gui/messages.py" line="59"/>
         <source>The gap must be 0 or more.</source>
         <translation>Mezera musí být 0 nebo větší.</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/messages.py" line="56"/>
+        <location filename="../src/grid_arranger/gui/messages.py" line="60"/>
         <source>Enter the grid corner position.</source>
         <translation>Zadejte polohu rohu mřížky.</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/messages.py" line="57"/>
+        <location filename="../src/grid_arranger/gui/messages.py" line="61"/>
         <source>Unknown grid placement.</source>
         <translation>Neznámé umístění mřížky.</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/messages.py" line="58"/>
+        <location filename="../src/grid_arranger/gui/messages.py" line="62"/>
         <source>Unknown fill order.</source>
         <translation>Neznámé pořadí plnění.</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/messages.py" line="59"/>
+        <location filename="../src/grid_arranger/gui/messages.py" line="63"/>
         <source>Unknown rotation mode.</source>
         <translation>Neznámý režim natočení.</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/messages.py" line="60"/>
+        <location filename="../src/grid_arranger/gui/messages.py" line="64"/>
         <source>Internal error: invalid item transformation. Nothing was saved.</source>
         <translation>Interní chyba: neplatná transformace výrobku. Nic nebylo uloženo.</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/messages.py" line="61"/>
+        <location filename="../src/grid_arranger/gui/messages.py" line="65"/>
         <source>Select at least one item.</source>
         <translation>Vyberte alespoň jeden výrobek.</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/messages.py" line="62"/>
+        <location filename="../src/grid_arranger/gui/messages.py" line="66"/>
         <source>An item is listed more than once.</source>
         <translation>Výrobek je v seznamu vícekrát.</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/messages.py" line="63"/>
+        <location filename="../src/grid_arranger/gui/messages.py" line="67"/>
         <source>Unknown item.</source>
         <translation>Neznámý výrobek.</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/messages.py" line="64"/>
+        <location filename="../src/grid_arranger/gui/messages.py" line="68"/>
         <source>An item has zero size.</source>
         <translation>Výrobek má nulový rozměr.</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/messages.py" line="65"/>
+        <location filename="../src/grid_arranger/gui/messages.py" line="69"/>
         <source>Internal error: the grid calculation violated the gap. Nothing was saved.</source>
         <translation>Interní chyba: výpočet mřížky porušil mezeru. Nic nebylo uloženo.</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/messages.py" line="66"/>
+        <location filename="../src/grid_arranger/gui/messages.py" line="70"/>
         <source>The selected item cannot be moved.</source>
         <translation>Vybraný výrobek nelze přesunout.</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/messages.py" line="67"/>
+        <location filename="../src/grid_arranger/gui/messages.py" line="71"/>
         <source>The layout did not pass the check; nothing was saved.</source>
         <translation>Rozložení neprošlo kontrolou; nic nebylo uloženo.</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/messages.py" line="68"/>
+        <location filename="../src/grid_arranger/gui/messages.py" line="72"/>
         <source>The output check failed; nothing was saved.</source>
         <translation>Kontrola výstupu selhala; nic nebylo uloženo.</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/messages.py" line="69"/>
+        <location filename="../src/grid_arranger/gui/messages.py" line="73"/>
         <source>The original file has changed since it was opened. Open it again.</source>
         <translation>Původní soubor se od otevření změnil. Otevřete ho znovu.</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/messages.py" line="70"/>
+        <location filename="../src/grid_arranger/gui/messages.py" line="74"/>
         <source>The file already exists (or its protocol .json does). The application never overwrites files; nothing was saved.</source>
         <translation>Soubor už existuje (nebo jeho protokol .json). Aplikace nikdy nepřepisuje soubory; nic nebylo uloženo.</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/messages.py" line="71"/>
+        <location filename="../src/grid_arranger/gui/messages.py" line="75"/>
         <source>The output would overwrite the original; refused.</source>
         <translation>Výstup by přepsal originál; odmítnuto.</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/messages.py" line="72"/>
+        <location filename="../src/grid_arranger/gui/messages.py" line="76"/>
         <source>Saving failed: {detail}</source>
         <translation>Uložení selhalo: {detail}</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/messages.py" line="73"/>
+        <location filename="../src/grid_arranger/gui/messages.py" line="77"/>
         <source>There is no free name for the output file.</source>
         <translation>Pro výstupní soubor není volný název.</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/messages.py" line="76"/>
+        <location filename="../src/grid_arranger/gui/messages.py" line="80"/>
         <source>Error {code}</source>
         <translation>Chyba {code}</translation>
     </message>

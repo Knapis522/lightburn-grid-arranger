@@ -30,6 +30,6 @@ Volba **Natočení** v sekci Mřížka:
 - *Po 90°* — výrobky se jen otáčí o čtvrt otáčky (na šířku / na výšku).
 - *Nenatáčet* — výrobky se jen posouvají.
 
-Ve všech režimech aplikace navíc vyzkouší, zda by mřížka nebyla menší, kdyby všechny výrobky ležely na šířku nebo na výšku, a zvolí menší variantu — přednostně tu, která se vejde na desku. Natočení je vidět v náhledu i v seznamu výrobků. Výrobek se natáčí kolem svého středu i s texty a motivy; po uložení zkontrolujte v LightBurnu Preview. Výjimky pro jednotlivé výrobky: tlačítko **Nenatáčet** v sekci Výrobky.
+Ve všech režimech aplikace navíc vyzkouší, zda by mřížka nebyla menší, kdyby všechny výrobky ležely na šířku nebo na výšku, a zvolí menší variantu — přednostně tu, která se vejde na desku. Pokud by natočení mřížku nezmenšilo, výrobky zůstanou, jak jsou; kulaté výrobky se o 90° neotáčí. Natočení je vidět v náhledu i v seznamu výrobků. Výrobek se natáčí kolem svého středu i s texty a motivy; po uložení zkontrolujte v LightBurnu Preview. Výjimky pro jednotlivé výrobky: tlačítko **Nenatáčet** v sekci Výrobky.
 
 [← Výběr](items.md) · [Další: deska a kontrola →](board.md)

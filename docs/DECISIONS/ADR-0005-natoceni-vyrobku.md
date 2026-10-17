@@ -1,6 +1,6 @@
 # ADR-0005: Natočení výrobků pro úsporu materiálu
 
-**Stav:** přijato 2026-10-17 (požadavek vlastníka; spec. v1.13 kap. 7.6), podmíněně — zápis natočení ověřit v LightBurnu (KAL-01).
+**Stav:** přijato 2026-10-17 (požadavek vlastníka; spec. v1.13 kap. 7.6); zápis natočení ověřen v LightBurnu (KAL-01 splněno 2026-10-17).
 **Souvisí:** ADR-0002 (zápis bajtovým patchem), KAL-00 (BackupPath textů ve světových souřadnicích).
 
 ## Rozhodnutí
@@ -15,4 +15,4 @@
 
 - Výstup je dál bajtově shodný mimo `XForm`; bez natočení se chování nemění (čistý posun).
 - Natočení o 180° se nedělá samo (plochu nezmenší) — výrobek „vzhůru nohama“ zůstane, jak je.
-- Do ověření KAL-01 v LightBurnu je funkce v aplikaci, ale výstupy s natočením je nutné kontrolovat zvlášť pečlivě.
+- KAL-01 ověřeno vlastníkem v LightBurnu 2.2.00-RC-7 pro oba typy laseru (natočené skupiny i texty, srovnání výstupem aplikace).

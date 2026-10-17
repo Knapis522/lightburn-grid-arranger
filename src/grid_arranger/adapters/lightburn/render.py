@@ -11,6 +11,7 @@ import re
 from dataclasses import dataclass, field
 
 from . import geometry as geo
+from . import shapes
 from .coords import Orientation
 from .read import LoadedProject, _Ctx, _xform
 from .xmltree import Node
@@ -78,6 +79,12 @@ def _walk(node: Node, parent: geo.Affine, ctx: _Ctx, o: Orientation, out: list[S
     elif kind == "Path":
         try:
             verts, prims = ctx.path_geometry(node)
+            out.append(Stroke(node.attrs.get("CutIndex", ""), _path_ops(verts, prims, m, o)))
+        except geo.GeometryError:
+            pass
+    elif kind in shapes.NATIVE_TYPES:
+        try:
+            verts, prims = shapes.native_path(shapes.parse_native(node.attrs))
             out.append(Stroke(node.attrs.get("CutIndex", ""), _path_ops(verts, prims, m, o)))
         except geo.GeometryError:
             pass

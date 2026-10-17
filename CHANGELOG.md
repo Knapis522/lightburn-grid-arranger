@@ -7,7 +7,8 @@ Formát podle [Keep a Changelog](https://keepachangelog.com/), verze podle SemVe
 ## [0.1.0-alpha.3] — nevydáno
 
 ### Přidáno
-- **Natočení pro úsporu materiálu** (spec. v1.13, ADR-0005): Mřížka → Natočení *Libovolný úhel (nejmenší plocha)* (výchozí) / *Po 90°* / *Nenatáčet*; nejmenší obdélník kolem skutečných křivek výrobku (konvexní obal, Bézier rozvinutý s odchylkou ≤ 0,002 mm), volba společné orientace na šířku/výšku podle nejmenší mřížky (přednostně vejde-li se na desku); výjimky tlačítkem **Nenatáčet**; úhel v seznamu a natočené motivy v náhledu. Zápis `XForm' = T ∘ XForm` skupiny i `BackupPath` textů, nezávislá kontrola ověřuje celou matici, po znovunačtení se kontroluje poloha skutečných křivek. CLI `--rotate none|90|any`, `--no-rotate`. Protokol uvádí úhel a transformaci. Kalibrace KAL-01 v LightBurnu čeká na ověření.
+- **Tvary nakreslené přímo v LightBurnu** (spec. v1.14): kruh / elipsa (`Ellipse`), obdélník (`Rect` bez zaoblení) a šestiúhelník (`Polygon`, 6 stran) jako obrys i obsah výrobku, včetně vnořených skupin (klíčenka = kruh s otvorem ve vlastní skupině + text). Přesný obdélník kolem tvaru, tvary v náhledu i při natočení. Ověřeno na testovacích souborech od vlastníka pro oba lasery; přesun z aplikace je shodný s přesunem v LightBurnu. Jiné mnohoúhelníky a zaoblené rohy jsou zatím blokované s návodem (Převést na křivky) — kalibrace `tools/kal02`.
+- **Natočení pro úsporu materiálu** (spec. v1.13, ADR-0005): Mřížka → Natočení *Libovolný úhel (nejmenší plocha)* (výchozí) / *Po 90°* / *Nenatáčet*; nejmenší obdélník kolem skutečných křivek výrobku (konvexní obal, Bézier rozvinutý s odchylkou ≤ 0,002 mm), volba společné orientace na šířku/výšku podle nejmenší mřížky (přednostně vejde-li se na desku); výjimky tlačítkem **Nenatáčet**; úhel v seznamu a natočené motivy v náhledu. Zápis `XForm' = T ∘ XForm` skupiny i `BackupPath` textů, nezávislá kontrola ověřuje celou matici, po znovunačtení se kontroluje poloha skutečných křivek. CLI `--rotate none|90|any`, `--no-rotate`. Protokol uvádí úhel a transformaci. Kalibrace KAL-01 ověřena vlastníkem v LightBurnu (oba lasery).
 - Levý panel: sekce s výraznější, ale klidnou hlavičkou (tučný název, jemné pozadí, úzký barevný proužek), sbalitelné kliknutím (stav se pamatuje); pole hodnot úzká (pro 0000,00), dvojice vedle sebe (Mezera X/Y, Roh X/Y, Šířka/Výška, Okraje vlevo/vpravo a nahoře/dole); šířka panelu se přizpůsobí jazyku a jednotkám.
 - Zašedlá pole Roh X/Y ukazují vždy aktuálně vypočtený roh mřížky (mění se s okraji, deskou, režimem umístění); po přepnutí na Ručně v nich zůstane, takže mřížka neposkočí.
 - Jednotky **Nastavení → Jednotky**: milimetry / palce (jako v LightBurnu) — jen zobrazení a zadávání (palce na 3 desetiny); výpočty, uložené desky i projekt vždy v mm, opakované přepínání hodnoty nemění.
@@ -18,6 +19,10 @@ Formát podle [Keep a Changelog](https://keepachangelog.com/), verze podle SemVe
 - Tlačítka „Otevřít projekt…“ a „Uložit jako nový projekt…“ v okně odstraněna — stejné funkce jsou na liště a v menu Soubor; panel Projekt ukazuje jen údaje o projektu a laseru.
 - V titulku okna je za názvem a verzí aplikace název otevřeného projektu (jako v LightBurnu), např. `Grid Arranger for LightBurn 0.1.0-alpha.3 - zakazka.lbrn2`.
 - Samokontrola sestavení ověřuje i vykreslení ikon lišty (plugin SVG v balíčku).
+
+### Opraveno
+- Křivky s hladkými uzly (příznak `S` za vrcholem, např. upravené klíčenky) se už nehlásí jako „nečitelná křivka“.
+- Natočení *Libovolný úhel* se použije jen tehdy, když mřížka opravdu vyjde menší (dříve mohlo natočení jednoho výrobku mřížku rozšířit); kulaté výrobky se neotáčí o 90°; úhel oblých tvarů se zaokrouhlí (30° místo 29,6°).
 
 ## [0.1.0-alpha.2] — 2026-10-17
 
