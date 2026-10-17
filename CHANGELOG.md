@@ -6,7 +6,7 @@ Formát podle [Keep a Changelog](https://keepachangelog.com/), verze podle SemVe
 
 ## [0.1.0-alpha.3] — 2026-10-17
 
-Interní předběžné vydání (GitHub Pre-release). Release notes: `docs/releases/v0.1.0-alpha.3.md`.
+Interní předběžné vydání (GitHub Pre-release, tag na commitu `a804585`). Release notes: `docs/releases/v0.1.0-alpha.3.md`.
 
 ### Přidáno
 - **Kopie výrobků** pro vyplnění desky (spec. v1.16, V11-02 předsunuto): vybrané výrobky (seznam nebo klik v náhledu) zkopírujete **Ctrl+C** a vložíte **Ctrl+V** (po jedné kopii), nebo **Vytvořit kopie…** (ikona na nástrojové liště, Ctrl+D, menu Úpravy) přidá zadaný počet kopií každého vybraného. Kopie (`G5+1`, `G5+2`…) se přidají na konec pořadí, převezmou ruční úhel a v seznamu jsou označené „(kopie G5)“; **Delete** nebo odškrtnutí kopii odebere. Do výstupu se zapíšou jako nové skupiny; nezávislá kontrola ověří obsah každé kopie. CLI `--copies ID=N`. Ověření v LightBurnu: KAL-03.

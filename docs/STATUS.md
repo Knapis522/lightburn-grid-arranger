@@ -2,7 +2,7 @@
 
 **Aktualizováno:** 2026-10-17
 **Verze specifikace:** 1.16 (`docs/specification.md`)
-**Verze aplikace:** `0.1.0-alpha.2` — zveřejněno 2026-10-17 jako GitHub Pre-release (tag `v0.1.0-alpha.2`, commit `d8c0cc9`; instalátor, ZIP, SHA256SUMS). Předchozí: `v0.1.0-alpha.1` (2026-10-16, `64a5d00`)
+**Verze aplikace:** `0.1.0-alpha.3` — zveřejněno 2026-10-17 jako GitHub Pre-release (tag `v0.1.0-alpha.3`, commit `a804585`; instalátor, ZIP, SHA256SUMS). Předchozí: `v0.1.0-alpha.2` (2026-10-17, `d8c0cc9`), `v0.1.0-alpha.1` (2026-10-16, `64a5d00`).
 
 > Tento soubor je hlavní předávací dokument. Při navázání práce: přečíst tento soubor → `ROADMAP.md` → relevantní kapitolu specifikace. Nepředpokládat, že funkce funguje jen proto, že existuje kód.
 
@@ -60,3 +60,4 @@
 - 2026-10-17 — spec. v1.16 (přání vlastníka): **kopie výrobků** (V11-02 předsunuto) — Ctrl+C / Ctrl+V, Vytvořit kopie… (ikona na liště, Ctrl+D, počet kopií), Odebrat kopie (Delete), menu Úpravy; zápis kopií jako nových skupin se sdílenou geometrií, nezávislá kontrola kopií; CLI `--copies`. 440 testů. **Čeká KAL-03** (kalibrační výstupy `…__kal03_kopie.lbrn2` v datové složce otevřít v LightBurnu).
 - 2026-10-17 — **GH-05 splněno:** vlastník ověřil běh sestavené aplikace na PC bez Pythonu (u laseru).
 - 2026-10-17 — **KAL-03 splněno** (kopie výrobků ověřeny vlastníkem v LightBurnu). Připraveno vydání `v0.1.0-alpha.3` (CHANGELOG, release notes).
+- 2026-10-17 — **Vydáno `v0.1.0-alpha.3`** (GitHub Pre-release, tag na commitu `a804585`): natočení, tvary z LightBurnu, ruční natočení a výběr v náhledu, kopie výrobků, nástrojová lišta, dialog uložení, volitelný protokol, jednotky, nový levý panel. Další číslo pro vývoj: `0.1.0a4`.
