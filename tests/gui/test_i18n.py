@@ -60,9 +60,9 @@ def test_t_i18n09_switch_language_keeps_state(make_window, tmp_path):
     w.spin_cols.setValue(2)
     w.spin_gap_x.setValue(4.25)
     state = (w.order, w.spin_cols.value(), w.spin_gap_x.value(), w.plan.layout.grid_bounds)
-    assert w.btn_save.text() == "Uložit jako nový projekt…"
+    assert w.act_save.text().replace("&", "") == "Uložit jako nový projekt…"
     w.set_language("en")
-    assert w.btn_save.text() == "Save as new project…"
+    assert w.act_save.text().replace("&", "") == "Save as new project…"
     assert (w.order, w.spin_cols.value(), w.spin_gap_x.value(), w.plan.layout.grid_bounds) == state
 
 

@@ -5,8 +5,8 @@ from __future__ import annotations
 from pathlib import Path
 
 from PySide6 import __version__ as pyside_version
-from PySide6.QtCore import QEvent, Qt, qVersion
-from PySide6.QtGui import QAction, QActionGroup, QKeySequence
+from PySide6.QtCore import QEvent, QSize, QStandardPaths, Qt, QUrl, qVersion
+from PySide6.QtGui import QAction, QActionGroup, QDesktopServices, QKeySequence, QPalette
 from PySide6.QtWidgets import (
     QApplication,
     QAbstractSpinBox,
@@ -27,6 +27,7 @@ from PySide6.QtWidgets import (
     QScrollArea,
     QSpinBox,
     QSplitter,
+    QToolBar,
     QVBoxLayout,
     QWidget,
 )
@@ -34,15 +35,16 @@ from PySide6.QtWidgets import (
 from ..adapters.lightburn.read import LoadedProject, load_project
 from ..adapters.lightburn.render import ProjectRenderer
 from ..adapters.lightburn.write import next_output_path
-from ..application.arrange_job import ArrangeParams, MaterialInput, Plan, execute, make_plan, material_to_core
+from ..application.arrange_job import ArrangeParams, MaterialInput, Plan, check_output_path, execute, make_plan, material_to_core
 from ..core.collision import Severity, usable_area
 from ..core.order import default_order, deselect, move_down, move_up, select, swap
 from ..domain.errors import GridError
 from ..version import display_version
+from . import icons
 from .i18n import NATIVE_NAMES, LocaleManager
 from .messages import issue_text, message
 from .preview import PreviewView
-from .settings import BoardPreset, UserSettings
+from .settings import PROTOCOL_MODES, BoardPreset, UserSettings
 from .theme import THEMES, apply_theme
 from .updates_ui import UpdateController
 
@@ -121,6 +123,16 @@ class MainWindow(QMainWindow):
         self.act_update_pre = QAction(self, checkable=True)
         self.act_update_pre.setChecked(self.settings.update_prerelease())
         self.act_update_pre.toggled.connect(self.settings.set_update_prerelease)
+        self.protocol_group = QActionGroup(self)
+        self.protocol_actions: dict[str, QAction] = {}
+        for key in PROTOCOL_MODES:
+            a = QAction(self, checkable=True)
+            a.triggered.connect(lambda _=False, k=key: self.settings.set_protocol_mode(k))
+            self.protocol_group.addAction(a)
+            self.protocol_actions[key] = a
+        self.protocol_actions[self.settings.protocol_mode()].setChecked(True)
+        self.act_open_protocols = QAction(self)
+        self.act_open_protocols.triggered.connect(self.open_protocol_folder)
         self.act_check_updates = QAction(self)
         self.act_check_updates.triggered.connect(lambda: self.updates.check(manual=True))
 
@@ -134,10 +146,26 @@ class MainWindow(QMainWindow):
         self.menu_lang.addActions(list(self.lang_actions.values()))
         self.menu_theme = self.menu_settings.addMenu("")
         self.menu_theme.addActions(list(self.theme_actions.values()))
+        self.menu_protocol = self.menu_settings.addMenu("")
+        self.menu_protocol.addActions(list(self.protocol_actions.values()))
+        self.menu_protocol.addSeparator()
+        self.menu_protocol.addAction(self.act_open_protocols)
         self.menu_updates = self.menu_settings.addMenu("")
         self.menu_updates.addActions([self.act_update_auto, self.act_update_pre])
         self.menu_help = mb.addMenu("")
         self.menu_help.addActions([self.act_help, self.act_check_updates, self.act_about])
+
+        # --- nástrojová lišta (ikony; další funkce: nová akce + ikona v gui/icons.py)
+        self.toolbar = QToolBar(self)
+        self.toolbar.setObjectName("mainToolbar")
+        self.toolbar.setMovable(False)
+        self.toolbar.setIconSize(QSize(24, 24))
+        self.toolbar.setToolButtonStyle(Qt.ToolButtonStyle.ToolButtonIconOnly)
+        self.toolbar.addActions([self.act_open, self.act_save])
+        self.toolbar.addSeparator()
+        self.toolbar.addAction(self.act_help)
+        self.addToolBar(Qt.ToolBarArea.TopToolBarArea, self.toolbar)
+        self._toolbar_icons = {self.act_open: "open", self.act_save: "save_new", self.act_help: "help"}
 
         # --- levý panel
         left = QWidget()
@@ -145,14 +173,10 @@ class MainWindow(QMainWindow):
 
         self.box_project = QGroupBox()
         pv = QVBoxLayout(self.box_project)
-        row = QHBoxLayout()
-        self.btn_open = QPushButton()
-        self.btn_open.clicked.connect(lambda: self.open_project())
+        # otevření a uložení je na nástrojové liště (a v menu Soubor); zde jen údaje o projektu
         self.lbl_file = QLabel()
         self.lbl_file.setWordWrap(True)
-        row.addWidget(self.btn_open)
-        row.addWidget(self.lbl_file, 1)
-        pv.addLayout(row)
+        pv.addWidget(self.lbl_file)
         self.lbl_device = QLabel()
         self.lbl_device.setWordWrap(True)
         pv.addWidget(self.lbl_device)
@@ -249,10 +273,6 @@ class MainWindow(QMainWindow):
         self.list_issues = QListWidget()
         self.list_issues.setMaximumHeight(150)
         rv.addWidget(self.list_issues)
-        self.btn_save = QPushButton()
-        self.btn_save.setMinimumHeight(36)
-        self.btn_save.clicked.connect(lambda: self.save_new_project())
-        rv.addWidget(self.btn_save)
 
         split = QSplitter()
         split.addWidget(scroll)
@@ -272,7 +292,7 @@ class MainWindow(QMainWindow):
 
     # ====================================================================== texty
     def retranslate(self) -> None:
-        self.setWindowTitle(self.tr("Grid Arranger for LightBurn"))
+        self._update_title()
         self.menu_file.setTitle(self.tr("&File"))
         self.act_open.setText(self.tr("&Open project…"))
         self.act_save.setText(self.tr("&Save as new project…"))
@@ -286,6 +306,11 @@ class MainWindow(QMainWindow):
         self.theme_actions["auto"].setText(self.tr("Automatic (system)"))
         self.theme_actions["light"].setText(self.tr("Light"))
         self.theme_actions["dark"].setText(self.tr("Dark"))
+        self.menu_protocol.setTitle(self.tr("Save &protocol"))
+        self.protocol_actions["none"].setText(self.tr("Do not save"))
+        self.protocol_actions["beside"].setText(self.tr("Next to the saved project"))
+        self.protocol_actions["appdata"].setText(self.tr("In the application's protocol folder"))
+        self.act_open_protocols.setText(self.tr("Open protocol folder"))
         self.menu_updates.setTitle(self.tr("&Updates"))
         self.act_update_auto.setText(self.tr("Check for updates &automatically"))
         self.act_update_pre.setText(self.tr("Include &pre-release versions"))
@@ -293,9 +318,13 @@ class MainWindow(QMainWindow):
         self.act_help.setText(self.tr("User &guide"))
         self.act_check_updates.setText(self.tr("Check for &updates…"))
         self.act_about.setText(self.tr("&About"))
+        self.toolbar.setWindowTitle(self.tr("Toolbar"))
+        for act in self._toolbar_icons:
+            tip = act.text().replace("&", "").rstrip("…")
+            keys = act.shortcut().toString(QKeySequence.SequenceFormat.NativeText)
+            act.setToolTip(f"{tip} ({keys})" if keys else tip)
 
         self.box_project.setTitle(self.tr("Project"))
-        self.btn_open.setText(self.tr("Open project…"))
         self.box_items.setTitle(self.tr("Items (groups)"))
         self.btn_up.setText(self.tr("Up"))
         self.btn_down.setText(self.tr("Down"))
@@ -331,7 +360,6 @@ class MainWindow(QMainWindow):
         self.btn_board_default.setText(self.tr("Save as default for this laser"))
         self.btn_fit.setText(self.tr("Fit view"))
         self.chk_art.setText(self.tr("Show artwork"))
-        self.btn_save.setText(self.tr("Save as new project…"))
         self._update_project_labels()
         self._rebuild_item_list()
         self._refresh_issue_texts()
@@ -362,7 +390,23 @@ class MainWindow(QMainWindow):
             "top_left": self.tr("top left"),
         }.get(o, o)
 
+    def app_title(self) -> str:
+        return self.tr("Grid Arranger for LightBurn")
+
+    def _update_title(self) -> None:
+        """Jako v LightBurnu: název aplikace a verze, za pomlčkou otevřený projekt."""
+        title = f"{self.app_title()} {display_version()}"
+        if self.project is not None:
+            title += f" - {self.project.info.path.name}"
+        self.setWindowTitle(title)
+
+    def _refresh_icons(self) -> None:
+        color = QApplication.palette().color(QPalette.ColorRole.WindowText).name()
+        for act, name in self._toolbar_icons.items():
+            act.setIcon(icons.icon(name, color))
+
     def _update_project_labels(self) -> None:
+        self._update_title()
         if self.project is None:
             self.lbl_file.setText(self.tr("No project open. Save the project in LightBurn first, then open the saved .lbrn2 file."))
             self.lbl_device.setText("")
@@ -605,7 +649,6 @@ class MainWindow(QMainWindow):
             can_save = self.plan.report.can_save
             if can_save and not self.plan.report.errors:
                 self.list_issues.insertItem(0, "✔ " + self.tr("The layout passed all checks."))
-        self.btn_save.setEnabled(can_save)
         self.act_save.setEnabled(can_save)
 
     # ====================================================================== uložení
@@ -613,20 +656,42 @@ class MainWindow(QMainWindow):
         if self.plan is None or not self.plan.report.can_save:
             return None
         src = self.project.info.path
-        target = next_output_path(src)
-        if confirm and not self._ask(
-            self.tr("Create a new project next to the original?\n\n{name}\n\nThe original file will not be changed.").format(name=target.name)
-        ):
-            return None
+        target: Path | None = next_output_path(src)  # návrh: puvodni__grid_NNN.lbrn2 vedle originálu
+        while confirm:
+            target = self._ask_save_path(target)
+            if target is None:
+                return None
+            try:
+                target = check_output_path(target, src, self._protocol_target())
+                break
+            except GridError as e:  # existující soubor nebo originál: nic nepřepsat, nabídnout znovu
+                self._error(message(e.code, **e.params) + "\n\n" + self.tr("Choose another name or folder."))
         try:
-            res = execute(self.plan)
+            res = execute(self.plan, output=target, protocol=self._protocol_target())
         except GridError as e:
             self._error(message(e.code, **e.params))
             return None
-        self._info(
-            self.tr("Saved:\n{out}\n\nProtocol:\n{proto}\n\nOpen the file in LightBurn via File → Open and check the layers, "
-                    "Preview and the position on the machine before cutting.").format(out=res.output, proto=res.protocol))
+        text = self.tr("Saved:\n{out}").format(out=res.output)
+        if res.protocol is not None:
+            text += "\n\n" + self.tr("Protocol:\n{proto}").format(proto=res.protocol)
+        self._info(text + "\n\n" + self.tr("Open the file in LightBurn via File → Open and check the layers, "
+                                           "Preview and the position on the machine before cutting."))
         return res.output
+
+    # ====================================================================== protokol
+    @staticmethod
+    def protocol_folder() -> Path:
+        """Složka protokolů v profilu uživatele (Windows: %LOCALAPPDATA%\\GridArranger\\GridArranger\\protocols)."""
+        return Path(QStandardPaths.writableLocation(QStandardPaths.StandardLocation.AppLocalDataLocation)) / "protocols"
+
+    def _protocol_target(self) -> str | Path:
+        mode = self.settings.protocol_mode()
+        return self.protocol_folder() if mode == "appdata" else mode
+
+    def open_protocol_folder(self) -> None:
+        folder = self.protocol_folder()
+        folder.mkdir(parents=True, exist_ok=True)
+        QDesktopServices.openUrl(QUrl.fromLocalFile(str(folder)))
 
     # ====================================================================== jazyk, nápověda
     def set_language(self, key: str) -> None:
@@ -651,6 +716,7 @@ class MainWindow(QMainWindow):
         self._theme_busy = True
         try:
             self.is_dark = apply_theme(QApplication.instance(), key)
+            self._refresh_icons()  # barva ikon podle vzhledu
         finally:
             self._theme_busy = False
 
@@ -676,14 +742,20 @@ class MainWindow(QMainWindow):
             + f"<br><br><small>Qt {qVersion()} · PySide6 {pyside_version} · {QApplication.style().name()}</small>")
 
     # ====================================================================== dialogy (v testech nahraditelné)
+    def _ask_save_path(self, proposal: Path) -> Path | None:
+        path, _ = QFileDialog.getSaveFileName(
+            self, self.tr("Save as new project"), str(proposal), self.tr("LightBurn project (*.lbrn2)"),
+            options=QFileDialog.Option.DontConfirmOverwrite)  # přepsání odmítneme sami s vysvětlením
+        return Path(path) if path else None
+
     def _ask(self, text: str) -> bool:
-        return QMessageBox.question(self, self.windowTitle(), text) == QMessageBox.StandardButton.Yes
+        return QMessageBox.question(self, self.app_title(), text) == QMessageBox.StandardButton.Yes
 
     def _info(self, text: str) -> None:
-        QMessageBox.information(self, self.windowTitle(), text)
+        QMessageBox.information(self, self.app_title(), text)
 
     def _error(self, text: str) -> None:
-        QMessageBox.critical(self, self.windowTitle(), text)
+        QMessageBox.critical(self, self.app_title(), text)
 
     # pro testy
     def issues(self) -> list[str]:

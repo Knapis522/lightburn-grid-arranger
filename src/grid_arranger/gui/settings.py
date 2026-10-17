@@ -5,6 +5,7 @@ aplikace — přežije přesun i výměnu ZIPu. Nic z toho se nezapisuje do `.lb
 
 * ``ui/language`` — ``auto`` | ``cs`` | ``en``
 * ``boards/<laser>/…`` — výchozí deska pro laser podle ``DeviceName`` z projektu
+* ``save/protocol`` — protokol uložení: ``none`` (výchozí) | ``beside`` | ``appdata``
 * ``updates/…`` — automatická kontrola aktualizací, předběžné verze, přeskočená verze, čas poslední kontroly
 """
 
@@ -18,6 +19,7 @@ ORGANIZATION = "GridArranger"
 APPLICATION = "GridArranger"
 LANGUAGES = ("auto", "cs", "en")
 THEMES = ("auto", "light", "dark")
+PROTOCOL_MODES = ("none", "beside", "appdata")  # protokol uložení: vůbec / vedle výstupu / ve složce aplikace
 
 # Výchozí desky vlastníka (spec. v1.10). Před veřejným vydáním nahradit prázdným výchozím stavem.
 DEFAULT_BOARDS: dict[str, tuple[float, float]] = {
@@ -133,4 +135,16 @@ class UserSettings:
 
     def set_last_update_check(self, iso: str) -> None:
         self._s.setValue("updates/last_check", iso)
+        self._s.sync()
+
+    # --- protokol uložení (spec. v1.12 kap. 9.4) -----------------------------------------------
+    def protocol_mode(self) -> str:
+        """Výchozí: protokol se neukládá (rozhodnutí vlastníka 2026-10-17)."""
+        v = str(self._s.value("save/protocol", "none"))
+        return v if v in PROTOCOL_MODES else "none"
+
+    def set_protocol_mode(self, value: str) -> None:
+        if value not in PROTOCOL_MODES:
+            raise ValueError(value)
+        self._s.setValue("save/protocol", value)
         self._s.sync()

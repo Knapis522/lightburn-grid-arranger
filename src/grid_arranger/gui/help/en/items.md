@@ -1,6 +1,6 @@
 # Selecting and ordering items
 
-After opening a project (**File → Open project**) the list shows all top-level groups:
+After opening a project (the **Open project** toolbar icon, **File → Open project** or Ctrl+O) the list shows all top-level groups:
 
 - **Checked** items are arranged into the grid. The number before the name is their position in the grid.
 - **Unchecked** items stay where they are and the application makes sure the grid does not hit them.

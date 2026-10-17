@@ -1,6 +1,6 @@
 # Výběr a pořadí výrobků
 
-Po otevření projektu (**Soubor → Otevřít projekt**) se v seznamu zobrazí všechny skupiny nejvyšší úrovně:
+Po otevření projektu (ikona **Otevřít projekt** na nástrojové liště, **Soubor → Otevřít projekt** nebo Ctrl+O) se v seznamu zobrazí všechny skupiny nejvyšší úrovně:
 
 - **Zaškrtnuté** výrobky se rozmístí do mřížky. Číslo před názvem je jejich pořadí v mřížce.
 - **Nezaškrtnuté** výrobky zůstanou na místě a aplikace hlídá, aby do nich mřížka nenarazila.

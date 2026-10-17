@@ -55,3 +55,4 @@
 | 2026-10-16 | Sestavení EXE (Windows) | — | syntetický | prochází | Windows 11 (26200), Python 3.13.6, PySide6 6.12.0: `tools\build_exe.bat` — testy, PyInstaller, samokontrola 5/5 v `GridArranger.exe` (frozen), ZIP 28 MB. GH-05 ruční test na PC bez Pythonu čeká |
 | 2026-10-16 | GH-06 / GH-07 (interní) | — | — | prochází | Tag `v0.1.0-alpha.1` (commit `64a5d00`), GitHub Pre-release se ZIPem `GridArranger-v0.1.0-alpha.1-win-x64.zip` a `SHA256SUMS.txt` v soukromém repozitáři |
 | 2026-10-17 | Instalátor (Windows) | — | — | ruční – ověřeno | Windows 11, Inno Setup 6: `dist\v0.1.0-alpha.2\` s instalátorem (22 MB), ZIP, `SHA256SUMS.txt` (součet instalátoru ověřen), `RELEASE_NOTES.md`; samokontrola 6/6 (HTTPS: 43 certifikátů Windows); instalace i odinstalace funguje (vlastník) |
+| 2026-10-17 | GH-06 / GH-07 (interní) | — | — | prochází | Tag `v0.1.0-alpha.2` (commit `d8c0cc9`), Pre-release s instalátorem, ZIPem a `SHA256SUMS.txt` |

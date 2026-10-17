@@ -102,9 +102,14 @@ def _check_window(app, settings_file: Path) -> str:
 def _check_icon(app) -> str:
     from .app import ICON_PATH
 
+    from . import icons
+
     if not ICON_PATH.is_file() or app.windowIcon().isNull():
         raise AssertionError(f"icon missing: {ICON_PATH}")
-    return str(ICON_PATH.name)
+    broken = [n for n in icons.names() if icons.icon(n, "#000000").isNull()]  # vyžaduje plugin qsvg v balíčku
+    if broken:
+        raise AssertionError(f"toolbar icons not rendered (SVG plugin missing?): {broken}")
+    return f"{ICON_PATH.name} + {len(icons.names())} toolbar icons"
 
 
 def _check_roundtrip(work: Path) -> str:

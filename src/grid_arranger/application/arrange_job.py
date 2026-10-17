@@ -183,8 +183,47 @@ def _protocol(plan: Plan, output: Path, out_bytes: bytes, problems: list[str]) -
     }
 
 
-def execute(plan: Plan, out_dir: Path | None = None) -> JobResult:
-    """Zapíše nový projekt jen při platné validaci a úspěšné nezávislé kontrole."""
+PROTOCOL_BESIDE = "beside"
+PROTOCOL_NONE = "none"
+
+
+def _protocol_path(target: Path, protocol: str | Path) -> Path | None:
+    """Kam zapsat protokol: vedle výstupu (``<název>.json``), do zvolené složky (bez přepsání: ``_2``, ``_3``…), nebo nikam."""
+    if protocol == PROTOCOL_NONE:
+        return None
+    if protocol == PROTOCOL_BESIDE:
+        return target.with_suffix(".json")
+    folder = Path(protocol)
+    folder.mkdir(parents=True, exist_ok=True)
+    cand = folder / f"{target.stem}.json"
+    n = 2
+    while cand.exists():
+        cand = folder / f"{target.stem}_{n}.json"
+        n += 1
+    return cand
+
+
+def check_output_path(target: Path, source: Path, protocol: str | Path = PROTOCOL_BESIDE) -> Path:
+    """Cíl zvolený uživatelem: přípona ``.lbrn2``, nikdy originál, nikdy existující soubor (ani protokol vedle něj)."""
+    target = Path(target)
+    if target.suffix.lower() != ".lbrn2":
+        target = target.with_name(target.name + ".lbrn2")
+    if target.resolve() == source.resolve():
+        raise GridError("would_overwrite_source", "Výstup by přepsal originál.")
+    if target.exists() or (protocol == PROTOCOL_BESIDE and target.with_suffix(".json").exists()):
+        raise GridError("output_exists", "Výstupní soubor už existuje.", path=str(target))
+    if not target.parent.is_dir():
+        raise GridError("write_failed", "Složka neexistuje.", detail=str(target.parent))
+    return target
+
+
+def execute(plan: Plan, out_dir: Path | None = None, output: Path | None = None,
+            protocol: str | Path = PROTOCOL_BESIDE) -> JobResult:
+    """Zapíše nový projekt jen při platné validaci a úspěšné nezávislé kontrole.
+
+    ``output`` = cesta zvolená uživatelem (jinak ``puvodni__grid_NNN.lbrn2`` vedle originálu / v ``out_dir``).
+    ``protocol`` = ``"beside"`` (vedle výstupu), ``"none"`` (nezapisovat) nebo složka pro protokoly.
+    """
     if not plan.report.can_save:
         raise GridError("validation_failed", "Rozložení neprošlo kontrolou; nic nebylo uloženo.",
                         codes=sorted({i.code for i in plan.report.errors}))
@@ -204,11 +243,12 @@ def execute(plan: Plan, out_dir: Path | None = None) -> JobResult:
     if hashlib.sha256(src_path.read_bytes()).hexdigest() != project.info.sha256:
         raise GridError("source_changed", "Původní soubor se od načtení změnil; načtěte jej znovu.")
 
-    target = next_output_path(src_path, out_dir)
+    target = check_output_path(output, src_path, protocol) if output is not None else next_output_path(src_path, out_dir)
+    proto_path = _protocol_path(target, protocol)
     write_new_file(target, out_bytes, forbidden=src_path)
-    proto_path = target.with_suffix(".json")
-    with open(proto_path, "x", encoding="utf-8") as fh:
-        json.dump(_protocol(plan, target, out_bytes, problems), fh, ensure_ascii=False, indent=2)
+    if proto_path is not None:
+        with open(proto_path, "x", encoding="utf-8") as fh:
+            json.dump(_protocol(plan, target, out_bytes, problems), fh, ensure_ascii=False, indent=2)
 
     if hashlib.sha256(src_path.read_bytes()).hexdigest() != project.info.sha256:
         raise GridError("source_changed", "Původní soubor se během zápisu změnil.")

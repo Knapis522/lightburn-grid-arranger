@@ -27,7 +27,7 @@ V11-ACCEPT → V20-ACCEPT → FUT-01 (jen při veřejném API)
 | GUI-00 | PySide6 aplikace: výběr, pořadí, náhled, validace | CORE-00, ADAPT-00 | **Implementováno**, okno ověřeno vlastníkem na Windows 2026-10-16; sestavení EXE připraveno (PyInstaller, ADR-0003), čeká GH-05 na PC bez Pythonu | `src/grid_arranger/gui`, `tests/gui`, `packaging/`, `tools/build_exe.py` |
 | HELP-01 | Offline příručka F1, cs/en | GUI-00 | Rozpracováno: příručka cs/en a F1 hotové; samokontrola sestavení ověřuje přibalení příručky; čeká ruční ověření v EXE na Windows | `src/grid_arranger/gui/help` |
 | REL-ALPHA1 | Interní Pre-release `v0.1.0-alpha.1` (soukromý repozitář) | GUI-00, sestavení EXE | **Zveřejněno** 2026-10-16 (tag na `64a5d00`, Pre-release) | `docs/releases/v0.1.0-alpha.1.md`, `docs/RELEASE_CHECKLIST.md` |
-| UPD-00 | Instalátor + nabízené aktualizace (spec. v1.11 kap. 32) | REL-ALPHA1 | **Implementováno a automaticky otestováno** 2026-10-17; čeká sestavení instalátoru na Windows a `v0.1.0-alpha.2`; aktualizace funkční po PUB-01 | `updates.py`, `gui/updates_ui.py`, `packaging/GridArranger.iss`, ADR-0004 |
+| UPD-00 | Instalátor + nabízené aktualizace (spec. v1.11 kap. 32) | REL-ALPHA1 | **Vydáno** v `v0.1.0-alpha.2` 2026-10-17 (instalátor ověřen vlastníkem); aktualizace z aplikace funkční po PUB-01 | `updates.py`, `gui/updates_ui.py`, `packaging/GridArranger.iss`, ADR-0004 |
 | MVP-ACCEPT | Ověření MVP-01..08, test v LightBurnu | výše | Nezahájeno | — |
 | PUBLIC-01 | Veřejné v1.0.0 | MVP-ACCEPT + REL-01, PUB-01, L10N-PUBLIC-01, DOC-REL-01 | Neschváleno | — |
 | V11-ACCEPT | Profily, množství, automatické sloupce | MVP-ACCEPT | Plánováno | — |

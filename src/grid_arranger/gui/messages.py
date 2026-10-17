@@ -65,7 +65,7 @@ TEMPLATES: dict[str, str] = {
     "validation_failed": QT_TRANSLATE_NOOP("Messages", "The layout did not pass the check; nothing was saved."),
     "verification_failed": QT_TRANSLATE_NOOP("Messages", "The output check failed; nothing was saved."),
     "source_changed": QT_TRANSLATE_NOOP("Messages", "The original file has changed since it was opened. Open it again."),
-    "output_exists": QT_TRANSLATE_NOOP("Messages", "The output file already exists; nothing was overwritten."),
+    "output_exists": QT_TRANSLATE_NOOP("Messages", "The file already exists (or its protocol .json does). The application never overwrites files; nothing was saved."),
     "would_overwrite_source": QT_TRANSLATE_NOOP("Messages", "The output would overwrite the original; refused."),
     "write_failed": QT_TRANSLATE_NOOP("Messages", "Saving failed: {detail}"),
     "no_free_output_name": QT_TRANSLATE_NOOP("Messages", "There is no free name for the output file."),

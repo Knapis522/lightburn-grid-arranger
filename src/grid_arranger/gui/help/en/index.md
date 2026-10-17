@@ -12,4 +12,6 @@
 4. [Board, margins and collision check](board.md)
 5. [Saving and checking in LightBurn](save.md)
 
+**Controls:** the toolbar at the top — **Open project** (Ctrl+O), **Save as new project** (Ctrl+S), **User guide** (F1); hover over an icon to see its description. The window title shows the name of the open project.
+
 More: [Troubleshooting](troubleshooting.md) · [Version, supported files and data](about.md)

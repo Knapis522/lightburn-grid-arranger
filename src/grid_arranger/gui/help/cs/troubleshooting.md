@@ -18,6 +18,6 @@
 
 **Aplikace se nespustí nebo hlásí chybějící soubor** — nejspíš chybí složka `_internal` vedle `GridArranger.exe` (např. byl zkopírován jen samotný EXE). Rozbalte ZIP znovu celý. Kontrolu instalace provede příkaz `GridArranger.exe --self-test report.json` v příkazovém řádku; výsledek je v `report.json`.
 
-**Hlášení chyby** — pošlete protokol `.json` (obsahuje kontrolní součty a parametry, ne obsah výrobků) a popis kroků. Zákaznické projekty posílejte jen s oprávněním.
+**Hlášení chyby** — zapněte Nastavení → Protokol uložení, uložte znovu a pošlete protokol `.json` (obsahuje kontrolní součty a parametry, ne obsah výrobků) a popis kroků. Zákaznické projekty posílejte jen s oprávněním.
 
 [← Úvod](index.md)

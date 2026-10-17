@@ -1,8 +1,8 @@
 # Stav projektu
 
 **Aktualizováno:** 2026-10-17
-**Verze specifikace:** 1.11 (`docs/specification.md`)
-**Verze aplikace:** `0.1.0-alpha.1` — první interní předběžné vydání **zveřejněno** 2026-10-16 jako GitHub Pre-release (tag `v0.1.0-alpha.1`, commit `64a5d00`)
+**Verze specifikace:** 1.12 (`docs/specification.md`)
+**Verze aplikace:** `0.1.0-alpha.2` — zveřejněno 2026-10-17 jako GitHub Pre-release (tag `v0.1.0-alpha.2`, commit `d8c0cc9`; instalátor, ZIP, SHA256SUMS). Předchozí: `v0.1.0-alpha.1` (2026-10-16, `64a5d00`)
 
 > Tento soubor je hlavní předávací dokument. Při navázání práce: přečíst tento soubor → `ROADMAP.md` → relevantní kapitolu specifikace. Nepředpokládat, že funkce funguje jen proto, že existuje kód.
 
@@ -10,7 +10,7 @@
 
 | Hotovo | Probíhá | Blokováno | Další |
 |---|---|---|---|
-| GIT-00, DOC-00, KAL-00; CORE-00 a ADAPT-00 (T-MVP-26 ověřeno vlastníkem pro `__grid_001` i `__grid_002`); **GUI-00 ověřeno vlastníkem na Windows** (okno, motivy, prohození tažením, světlý/tmavý vzhled, zoom; 2026-10-16) | **EXE-00 / GH-05:** sestavení přenosné složky `GridArranger/` přes PyInstaller (`tools\build_exe.bat`) se samokontrolou; **sestaveno na Windows vlastníka** (samokontrola 5/5 v `GridArranger.exe`, ZIP 28 MB); 286 testů | — | Commit + vydání `v0.1.0-alpha.2` (instalátor, ZIP, SHA256SUMS); instalátor u laseru bez Pythonu (GH-05, T-I18N-16, HELP-01); pak ostrý provoz → MVP-ACCEPT |
+| GIT-00, DOC-00, KAL-00; CORE-00 a ADAPT-00 (T-MVP-26 ověřeno vlastníkem pro `__grid_001` i `__grid_002`); **GUI-00 ověřeno vlastníkem na Windows** (okno, motivy, prohození tažením, světlý/tmavý vzhled, zoom; 2026-10-16) | **EXE-00 / GH-05:** sestavení přenosné složky `GridArranger/` přes PyInstaller (`tools\build_exe.bat`) se samokontrolou; **sestaveno na Windows vlastníka** (samokontrola 5/5 v `GridArranger.exe`, ZIP 28 MB); 286 testů | — | Instalátor `v0.1.0-alpha.2` z GitHub Releases u laseru bez Pythonu (GH-05, T-I18N-16, HELP-01); ostrý provoz → MVP-ACCEPT; po PUB-01 ověřit aktualizaci z aplikace (T-UPD-07) |
 
 ## Implementováno / otestováno
 
@@ -45,3 +45,6 @@
 - Další bezpečný krok: vlastník spustí `tools\build_exe.bat`, ZIP rozbalí na počítači bez Pythonu (ideálně u laseru), vyzkouší F1, přepnutí jazyka a uložení reálného projektu; výsledek zapsat do TEST_PLAN (GH-05, T-I18N-16, HELP-01).
 - Vydání `v0.1.0-alpha.1`: číslo verze, `SHA256SUMS.txt`, `THIRD_PARTY_NOTICES.txt` a commit v balíčku, release notes `docs/releases/v0.1.0-alpha.1.md` (anglicky), postup `docs/RELEASE_CHECKLIST.md`. Zveřejněno vlastníkem 2026-10-16: tag `v0.1.0-alpha.1` na commitu `64a5d00`, Pre-release se ZIPem a `SHA256SUMS.txt` (https://github.com/Knapis522/lightburn-grid-arranger/releases). Předběžné verze se nezobrazují v pravém sloupci repozitáře — odkaz Releases nebo nadpis „Releases“.
 - 2026-10-17 — spec. v1.11, ADR-0004 (požadavek vlastníka): **instalátor** Inno Setup (per-user, bez práv správce, ZIP jako záloha) a **aktualizace z GitHub Releases** — Nastavení → Aktualizace (automaticky, předběžné verze), Nápověda → Zkontrolovat aktualizace; vždy nejnovější verze, Přeskočit / Později / Nainstalovat, ověření SHA-256, tichá instalace jen po souhlasu a znovuspuštění. Verze `0.1.0-alpha.2` (nevydaná). 340 testů (logika bez sítě, GUI s falešným GitHubem, end-to-end přes lokální HTTP server). Instalátor sestaven na Windows vlastníka 2026-10-17; instalace i odinstalace ověřena vlastníkem. Kontrola aktualizací začne fungovat po zveřejnění repozitáře; do té doby hlásí „žádná veřejná vydání“.
+- 2026-10-17 — podle připomínky vlastníka: nástrojová lišta s ikonami (Otevřít, Uložit jako nový, Příručka; vlastní SVG ikony podle vzhledu) a název projektu v titulku okna jako v LightBurnu. Rozpracovaná verze `0.1.0-alpha.3` (nevydaná); 343 testů.
+- 2026-10-17 — spec. v1.12: při ukládání volba složky a názvu (návrh `__grid_NNN` vedle originálu; nikdy nepřepsat existující soubor, protokol ani originál — vyžádá jiný název); tlačítka Otevřít/Uložit v okně odstraněna (lišta, menu, Ctrl+O/S). 347 testů.
+- 2026-10-17 — protokol uložení `.json` volitelný: Nastavení → Protokol uložení (Neukládat — výchozí / Vedle projektu / Složka aplikace). 350 testů.

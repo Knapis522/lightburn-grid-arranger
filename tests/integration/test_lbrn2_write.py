@@ -328,3 +328,30 @@ def test_no_temp_files_left_after_success(write_project):
     src = write_project(four_cards())
     run(src, ArrangeParams(columns=2, gap_x=3, gap_y=3, material=BOARD))
     assert not [p for p in os.listdir(src.parent) if ".tmp-" in p]
+
+
+def test_check_output_path_rules(tmp_path):
+    from grid_arranger.application.arrange_job import check_output_path
+    from grid_arranger.domain import GridError
+
+    src = tmp_path / "a.lbrn2"
+    src.write_bytes(b"x")
+    assert check_output_path(tmp_path / "b", src) == tmp_path / "b.lbrn2"
+    assert check_output_path(tmp_path / "b.LBRN2", src) == tmp_path / "b.LBRN2"
+    for bad, code in ((src, "would_overwrite_source"), (tmp_path / "missing" / "c.lbrn2", "write_failed")):
+        with pytest.raises(GridError) as e:
+            check_output_path(bad, src)
+        assert e.value.code == code
+    (tmp_path / "d.json").write_text("{}")
+    with pytest.raises(GridError) as e:
+        check_output_path(tmp_path / "d.lbrn2", src)  # existující protokol by se přepsal
+    assert e.value.code == "output_exists"
+
+
+def test_protocol_none_ignores_existing_json(tmp_path):
+    from grid_arranger.application.arrange_job import check_output_path
+
+    src = tmp_path / "a.lbrn2"
+    src.write_bytes(b"x")
+    (tmp_path / "d.json").write_text("{}")
+    assert check_output_path(tmp_path / "d.lbrn2", src, "none") == tmp_path / "d.lbrn2"

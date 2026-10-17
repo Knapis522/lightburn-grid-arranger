@@ -58,6 +58,13 @@ def make_window(qapp, qm_dir, settings):
         w._ask = lambda text: (w._dialogs.append(("ask", text)), True)[1]
         w._info = lambda text: w._dialogs.append(("info", text))
         w._error = lambda text: w._dialogs.append(("error", text))
+        w._save_answers = []  # cesty, které „vybere“ uživatel v dialogu uložení; prázdné = přijme návrh
+
+        def _ask_save_path(proposal):
+            w._dialogs.append(("save_as", str(proposal)))
+            return w._save_answers.pop(0) if w._save_answers else proposal
+
+        w._ask_save_path = _ask_save_path
         windows.append((w, lm))
         return w
 

@@ -24,12 +24,12 @@ def test_open_project_lists_items_and_laser(make_window, tmp_path):
     assert w.list_items.count() == 4
     assert w.order == ("G1", "G2", "G3", "G4")
     assert "Syntetický laser" in w.lbl_device.text() and "top right" in w.lbl_device.text()
-    assert w.btn_save.isEnabled()
+    assert w.act_save.isEnabled()
 
 
 def test_save_disabled_without_project(make_window):
     w = make_window("en")
-    assert not w.btn_save.isEnabled()
+    assert not w.act_save.isEnabled()
     assert w.save_new_project(confirm=False) is None
 
 
@@ -61,17 +61,17 @@ def test_t_mvp06_empty_selection_blocks_save(make_window, tmp_path):
     w = make_window("en")
     w.open_project(write(tmp_path, four()))
     w._select_none()
-    assert not w.btn_save.isEnabled()
+    assert not w.act_save.isEnabled()
     assert any("Select at least one item" in t for t in w.issues())
     w._select_all()
-    assert w.btn_save.isEnabled() and len(w.order) == 4
+    assert w.act_save.isEnabled() and len(w.order) == 4
 
 
 def test_t_mvp11_overrun_blocks_save_and_names_item(make_window, tmp_path):
     w = make_window("en")
     w.open_project(write(tmp_path, four()))
     w.spin_bw.setValue(150)
-    assert not w.btn_save.isEnabled()
+    assert not w.act_save.isEnabled()
     assert any("extends beyond the usable board area" in t for t in w.issues())
 
 
@@ -96,7 +96,8 @@ def test_save_creates_new_file_and_reports(make_window, tmp_path):
     assert out is not None and out.name == "karty__grid_001.lbrn2" and out.exists()
     assert src.read_bytes() == before
     kinds = [k for k, _ in w._dialogs]
-    assert kinds == ["ask", "info"]
+    assert kinds == ["save_as", "info"]
+    assert w._dialogs[0][1] == str(tmp_path / "karty__grid_001.lbrn2")  # návrh názvu vedle originálu
     assert "File → Open" in w._dialogs[-1][1]
 
 
@@ -281,3 +282,122 @@ def test_parameter_change_keeps_user_zoom(make_window, tmp_path):
     z = v.transform().m11()
     w.spin_gap_x.setValue(7)
     assert v.transform().m11() == pytest.approx(z)
+
+
+def test_title_shows_project_like_lightburn(make_window, tmp_path):
+    from grid_arranger.version import display_version
+
+    w = make_window("en")
+    assert w.windowTitle() == f"Grid Arranger for LightBurn {display_version()}"
+    w.open_project(write(tmp_path, four(), name="Zakázka 12.lbrn2"))
+    assert w.windowTitle() == f"Grid Arranger for LightBurn {display_version()} - Zakázka 12.lbrn2"
+    w.set_language("cs")
+    assert w.windowTitle().endswith(" - Zakázka 12.lbrn2")  # přepnutí jazyka název neztratí
+    assert w.app_title() == "Grid Arranger for LightBurn"
+
+
+def test_toolbar_open_save_help_with_icons(make_window, tmp_path):
+    w = make_window("en")
+    acts = [a for a in w.toolbar.actions() if not a.isSeparator()]
+    assert acts == [w.act_open, w.act_save, w.act_help]
+    assert all(not a.icon().isNull() for a in acts)
+    assert w.act_open.toolTip() == "Open project (Ctrl+O)"
+    assert not w.act_save.isEnabled()  # bez projektu nelze uložit — i na liště
+    w.open_project(write(tmp_path, four()))
+    assert w.act_save.isEnabled()
+
+
+def test_toolbar_icons_follow_theme(make_window, settings):
+    from PySide6.QtGui import QColor
+
+    def darkest_pixel_lightness(act):
+        img = act.icon().pixmap(24, 24).toImage()
+        vals = [QColor(img.pixel(x, y)).lightness() for x in range(24) for y in range(24) if QColor.fromRgba(img.pixel(x, y)).alpha() > 200]
+        return min(vals), max(vals)
+
+    w = make_window("en")
+    try:
+        w.set_theme("light")
+        assert darkest_pixel_lightness(w.act_open)[1] < 60  # tmavé ikony na světlé liště
+        w.set_theme("dark")
+        assert darkest_pixel_lightness(w.act_open)[0] > 180  # světlé ikony na tmavé liště
+    finally:
+        w.set_theme("light")
+        settings.set_theme("auto")
+
+
+def test_save_to_chosen_folder_and_name(make_window, tmp_path):
+    w = make_window("en")
+    src = write(tmp_path, four())
+    before = src.read_bytes()
+    w.open_project(src)
+    other = tmp_path / "zakazky"
+    other.mkdir()
+    w._save_answers = [other / "Deska 1"]  # bez přípony → doplní se .lbrn2
+    out = w.save_new_project()
+    assert out == other / "Deska 1.lbrn2" and out.exists()
+    assert not list(other.glob("*.json"))  # výchozí: protokol se neukládá
+    assert "Protocol" not in w._dialogs[-1][1]
+    assert src.read_bytes() == before
+
+
+def test_save_never_overwrites_and_asks_again(make_window, tmp_path):
+    w = make_window("en")
+    src = write(tmp_path, four())
+    before = src.read_bytes()
+    w.open_project(src)
+    existing = tmp_path / "hotovo.lbrn2"
+    existing.write_bytes(b"keep me")
+    w._save_answers = [existing, src, tmp_path / "novy.lbrn2"]
+    out = w.save_new_project()
+    assert out == tmp_path / "novy.lbrn2"
+    assert existing.read_bytes() == b"keep me" and src.read_bytes() == before
+    kinds = [k for k, _ in w._dialogs]
+    assert kinds == ["save_as", "error", "save_as", "error", "save_as", "info"]
+    assert "never overwrites" in w._dialogs[1][1] and "overwrite the original" in w._dialogs[3][1]
+
+
+def test_save_cancelled_writes_nothing(make_window, tmp_path):
+    w = make_window("en")
+    src = write(tmp_path, four())
+    w.open_project(src)
+    w._ask_save_path = lambda proposal: None
+    assert w.save_new_project() is None
+    assert not list(tmp_path.glob("*__grid_*")) and not list(tmp_path.glob("*.json"))
+
+
+def test_protocol_modes(make_window, tmp_path, monkeypatch):
+    from grid_arranger.gui.main_window import MainWindow
+
+    w = make_window("en")
+    assert w.settings.protocol_mode() == "none" and w.protocol_actions["none"].isChecked()
+    src = write(tmp_path, four())
+    w.open_project(src)
+
+    w.protocol_actions["beside"].trigger()
+    assert w.settings.protocol_mode() == "beside"
+    out = w.save_new_project()
+    assert out.with_suffix(".json").exists() and "Protocol" in w._dialogs[-1][1]
+    clash = tmp_path / "jiny.lbrn2"
+    clash.with_suffix(".json").write_text("{}")
+    w._save_answers = [clash, tmp_path / "treti.lbrn2"]
+    assert w.save_new_project() == tmp_path / "treti.lbrn2"  # existující protokol se nepřepíše → jiný název
+    assert clash.with_suffix(".json").read_text() == "{}"
+
+    folder = tmp_path / "appdata" / "protocols"
+    monkeypatch.setattr(MainWindow, "protocol_folder", staticmethod(lambda: folder))
+    w.protocol_actions["appdata"].trigger()
+    w._save_answers = [tmp_path / "a.lbrn2"]
+    w.save_new_project()
+    (tmp_path / "x").mkdir()
+    w._save_answers = [tmp_path / "x" / "a.lbrn2"]  # stejný název z jiné složky → a_2.json, nic se nepřepíše
+    w.save_new_project()
+    assert sorted(p.name for p in folder.iterdir()) == ["a.json", "a_2.json"]
+    assert not (tmp_path / "a.json").exists()
+
+
+def test_invalid_protocol_setting_falls_back(settings):
+    settings._s.setValue("save/protocol", "everywhere")
+    assert settings.protocol_mode() == "none"
+    with pytest.raises(ValueError):
+        settings.set_protocol_mode("everywhere")

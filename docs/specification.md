@@ -1,6 +1,6 @@
 # Grid Arranger for LightBurn — technická specifikace
 
-**Verze dokumentu:** 1.11 (instalátor a nabízené aktualizace z GitHub Releases; viz kap. 28)  
+**Verze dokumentu:** 1.12 (volba složky a názvu výstupu; viz kap. 28)  
 **Datum:** 17. 10. 2026  
 **Název produktu:** Grid Arranger for LightBurn; spustitelný soubor `GridArranger.exe`; Python balíček `grid_arranger`; repozitář `lightburn-grid-arranger`. Neoficiální nástroj, nikoli produkt LightBurn Software.  
 **Stav:** Interní pracovní podklad; nikoli hotový nebo otestovaný plugin  
@@ -54,7 +54,7 @@ Zdrojové materiály jsou na konci dokumentu. Všechny technické závěry o zá
 - **MVP-02 Výběr skupin:** zobrazit identifikovatelné nejvyšší skupiny, jejich rozměry a stav, umožnit uživateli vybrat jen některé z nich; nevybrané prvky nikdy nepřesunovat.
 - **MVP-03 Ruční pořadí:** zobrazit číslovaný seznam vybraných skupin, měnit pořadí pomocí ovládání Nahoru/Dolů (drag-and-drop navíc volitelně), vrátit výchozí pořadí. Výpočet musí použít právě zobrazené pořadí.
 - **MVP-04 Materiál a kolize:** umožnit nastavit obdélník materiálu v souřadnicích projektu a bezpečnostní okraje; ověřit, že veškeré cílové výrobky leží v použitelné ploše, nekolidují mezi sebou **ani s ponechanými objekty**. Nevyhodnotitelné překážky vedou k blokaci výstupu, nikoli k tichému souhlasu.
-- **MVP-05 Bezpečné uložení a validace:** zapsat pouze nové `.lbrn2`, provést diff s pravidlem pouze povolených translací vybraných skupin; kontrola verze projektu, identity a nastavení; vytvořit auditní protokol a chybu místo nebezpečného výstupu.
+- **MVP-05 Bezpečné uložení a validace:** zapsat pouze nové `.lbrn2`, provést diff s pravidlem pouze povolených translací vybraných skupin; kontrola verze projektu, identity a nastavení; podle nastavení vytvořit auditní protokol (kap. 9.4) a místo nebezpečného výstupu vrátit chybu.
 - **MVP-06 Obsluha:** offline Windows aplikace `.exe` s PySide6/Qt; volba projektu, výběr a pořadí výrobků, parametry, kontrolní náhled a export; není nutné instalovat Python.
 - **MVP-07 Jazyk rozhraní:** od prvního interního použitelného MVP úplná **čeština (`cs`) a angličtina (`en`)** a připravená lokalizační architektura; **před prvním veřejným stabilním vydáním v1.0.0** navíc povinně **němčina (`de`), slovenština (`sk`), polština (`pl`), francouzština (`fr`), španělština (`es`) a italština (`it`)** — celkem osm jazyků. Volba `Automaticky (dle systému)` nebo konkrétního jazyka, zapamatování volby a bezpečný fallback do angličtiny. Povinné jsou i chyby a bezpečnostní varování. Viz kap. 36; veřejné vydání navíc podléhá bráně `L10N-PUBLIC-01`.
 
@@ -279,10 +279,10 @@ První laboratorní provedení může použít XML knihovnu pro parsování a se
 ### 9.4 Zápis na disk
 
 - Originál nikdy nepřepisovat; dočasný soubor vytvořit v cílové složce.
-- Výstup má nové jedinečné jméno `puvodni__grid_001.lbrn2` (další výstupy `_002`, …).
+- Výstup má nové jedinečné jméno; jako návrh se nabízí `puvodni__grid_001.lbrn2` (další výstupy `_002`, …) ve složce originálu. **Od v1.12 může uživatel v dialogu uložení změnit složku i název** (přípona `.lbrn2` se doplní). Zvolený cíl nesmí být originál ani existující soubor a nesmí existovat ani jeho protokol `<název>.json`; jinak aplikace nic nezapíše a vyžádá jiný název (žádné potvrzení přepsání).
 - Po úspěšné validaci provést atomické přejmenování do cílové cesty; nikdy nepřepsat existující soubor. Implementační poznámka: na Windows použít `os.rename` (při existujícím cíli selže výjimkou `FileExistsError`), **nikoli `os.replace`**, který existující soubor přepíše.
 - Při výjimce odstranit jen dočasný soubor a zachovat původní data.
-- Protokol umístit vedle výstupu (`.json`/`.txt`); doporučuje se archivovat originální kontrolní součet.
+- **Protokol uložení** (`.json`: zdroj a jeho SHA-256, výstup a jeho SHA-256, laser, parametry, posuny, výsledek kontroly) je od v1.12 **volitelný** podle nastavení uživatele: *neukládat* (výchozí, rozhodnutí vlastníka), *vedle výstupu* (`<název>.json`), *do složky protokolů aplikace* v profilu uživatele. Protokol nikdy nepřepíše existující soubor. Vývojářská CLI jej ukládá vedle výstupu.
 - Pokud je zdroj otevřený a obsahuje neuložené změny v LightBurnu, nástroj je **nemůže poznat**; uživatel musí před načtením použít Save As a načíst výslednou kopii.
 
 ### 9.5 Proč nepoužít prostý export/import SVG
@@ -413,7 +413,7 @@ Závislosti směrem dovnitř: `UI -> adaptér -> domain/grid engine`, nikdy opa�
 3. Aplikace zobrazí nalezené nejvyšší skupiny. Uživatel vidí **číslovaný seznam, rozměr a případné varování**; ručně zaškrtne skupiny určené k přesunutí. Nejednoznačně rozpoznané skupiny nelze uložit, dokud nejsou vyřešeny.
 4. Uživatel nastaví **počet sloupců**, **mezeru X/Y v mm**, **výchozí souřadnice**, **obdélník materiálu včetně okrajů** a **ručně upraví pořadí položek**. Výchozí mřížka zleva doprava a shora dolů, bez kopírování; žádná změna natočení.
 5. Aplikace **v reálném čase aktualizuje náhled** přesných obrysových obdélníků (MVP nemusí vykreslovat vnitřní motivy), celkové rozměry mřížky, materiál a upozornění na přesahy/kolize mezi výrobky i vůči nepřesouvaným objektům.
-6. Po úspěšné validaci uživatel vybere **Uložit nový projekt**. Dialog navrhne nový název `puvodni__grid_001.lbrn2`. Uložení vygeneruje protokol a ověří, že původní soubor nebyl změněn.
+6. Po úspěšné validaci uživatel vybere **Uložit nový projekt**. Dialog navrhne nový název `puvodni__grid_001.lbrn2`. Uložení ověří, že původní soubor nebyl změněn, a podle nastavení uloží protokol (kap. 9.4).
 7. Uživatel výstup otevře v LightBurnu přes **File → Open** a před výrobou zkontroluje vrstvy, náhled dráhy (Preview) a polohu na stroji.
 
 ### 12.3 Uspořádání okna a interakce
@@ -701,7 +701,7 @@ for each placed_item:
 
 **Předpoklady:** úspěšná kompatibilitní brána, všechna položková pravidla, validní materiál/kolize. Uživatelské soubory a protokoly lokální; originál se nikdy nepřepíše. Doporučené jméno `puvodni__grid_001.lbrn2`, bez přepsání existujících souborů.
 
-**Transakce:** načtení + SHA-256 → plán přesunů → vyloučení nepodporovaných struktur → patch translací nejvyšších skupin v dočasném souboru → strukturální a sémantický diff → validace zdrojového SHA-256 → znovunačtení výstupu → atomické zveřejnění nového výstupu → protokol. Pokud některý krok selže, nevznikne žádný výstup prezentovaný jako platný. Nemanipulovat s binárkami LightBurnu.
+**Transakce:** načtení + SHA-256 → plán přesunů → vyloučení nepodporovaných struktur → patch translací nejvyšších skupin v dočasném souboru → strukturální a sémantický diff → validace zdrojového SHA-256 → znovunačtení výstupu → atomické zveřejnění nového výstupu → protokol (je-li zapnutý). Pokud některý krok selže, nevznikne žádný výstup prezentovaný jako platný. Nemanipulovat s binárkami LightBurnu.
 
 **Povolené změny MVP:** pouze přesně specifikovaná `XForm` translace každé vybrané nejvyšší skupiny a stejná translace `XForm` v `BackupPath` textů v jejím podstromu (kap. 9.2); počet a identita všech objektů, vrstvy `CutIndex`, `CutSetting`, texty, obrázky a nevybrané objekty beze změny. Při nemožnosti průkazného porovnání blokovat. Přidat zprávu, že samotné strukturální porovnání nenahrazuje otevření v LightBurnu.
 
@@ -1031,6 +1031,7 @@ Toto jsou **ověřovací úkoly**, nikoli potvrzené technické možnosti souča
 
 ## 28. Záznam změn specifikace
 
+- **v1.12 (17. 10. 2026):** Na přání vlastníka si uživatel při ukládání volí složku a název výstupu (návrh `__grid_NNN` zůstává); pravidlo „nikdy nepřepsat“ platí i pro zvolený cíl a jeho protokol (kap. 9.4); protokol uložení je volitelný, výchozí neukládat. GUI: nástrojová lišta s ikonami a název projektu v titulku okna.
 - **v1.11 (17. 10. 2026):** Na přání vlastníka: (1) hlavní distribucí je instalátor (Inno Setup, per-user, bez práv správce), ZIP zůstává jako záloha, jednosouborové EXE se nepoužívá (kap. 12.1, 31.2); (2) kontrola aktualizací z GitHub Releases — automatická (volitelná, výchozí zapnutá) i ruční, nabídka vždy nejnovější verze s možností zůstat u staré nebo verzi přeskočit, stažení s ověřením SHA-256 a instalace jen po souhlasu (kap. 32, nahrazuje „mimo scope“ z v1.3); (3) verze aplikace `0.1.0-alpha.N` pro interní předběžná vydání.
 - **v1.10 (16. 10. 2026):** Po prvním zkušebním rozmístění reálného projektu: (1) umístění mřížky přepínačem — roh počátku laseru (výchozí), střed desky, ručně, podle původní polohy; (2) plnění od rohu počátku laseru (alternativa „čtení“), menší výrobek přiléhá ke straně počátku; (3) deska leží u počátku, výchozí okraj 5 mm, rozměr desky předvyplněn podle laseru (`DeviceName`) z uživatelského nastavení (kap. 6 bod 7, 12.3).
 - **v1.9 (16. 10. 2026):** Změny podle zjištění KAL-00 (LightBurn 2.2.00-RC-7, `docs/FORMAT_COMPATIBILITY.md`). (1) Obrys výrobku: libovolný uzavřený řezný tvar, který obsahuje veškerý ostatní obsah skupiny; rozměr = jeho AABB; nahrazuje omezení v1.8 na `Rect`/čtyřúhelník — reálné kartičky mají zaoblené rohy převedené na lomenou čáru (kap. 3.1, 4, 5). (2) Při přesunu skupiny se povinně posouvá i `BackupPath/XForm` textů, protože je ve světových souřadnicích a LightBurn jej takto posouvá (kap. 9.2, 14.3, 21.5). (3) Texty s `BackupPath` jsou měřitelné. (4) Formát čísel `.8g`. (5) Ověřený převod souřadnic podle `MirrorX/MirrorY`; podporované kombinace True/True a False/True, ostatní odmítnout (kap. 8). (6) `VertID`/`PrimID` LightBurn při uložení přečísluje → nejsou stabilní identitou mezi soubory. (7) Počátek laseru se odvozuje z `MirrorX/MirrorY` a GUI zobrazuje `DeviceName` a počátek; uživatel nic nenastavuje (kap. 9.1 bod 4a). (8) Odstup přesouvaných výrobků od nepřesouvaných překážek se kontroluje stejným pravidlem jako mezi výrobky: pár je v pořádku, je-li vodorovná vzdálenost AABB ≥ `gap_x` nebo svislá ≥ `gap_y` (kap. 21.4).

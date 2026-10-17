@@ -12,4 +12,6 @@
 4. [Deska, okraje a kontrola kolizí](board.md)
 5. [Uložení a kontrola v LightBurnu](save.md)
 
+**Ovládání:** nástrojová lišta nahoře — **Otevřít projekt** (Ctrl+O), **Uložit jako nový projekt** (Ctrl+S), **Příručka** (F1); najetím myší na ikonu se zobrazí popis. V titulku okna je název otevřeného projektu.
+
 Další: [Řešení problémů](troubleshooting.md) · [Verze, podporované soubory a data](about.md)
