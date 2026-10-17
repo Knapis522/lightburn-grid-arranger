@@ -16,8 +16,20 @@ If items have **different sizes**, a column is as wide as its widest item and a 
 - *In the board corner at the laser origin* (default) — the grid corner at the origin lies in the board corner plus margin.
 - *In the centre of the board*.
 - *Manually* — enter the LightBurn X/Y coordinates (distance from the origin) of the grid corner at the origin.
+
+The **Corner X / Y** fields can be edited only in the *Manually* mode. In the other modes they are greyed out and show the corner the application has just calculated (it changes e.g. with the margins). After switching to *Manually* they keep the current corner, so the grid does not move and you can fine-tune it.
 - *At the original position of the items*.
 
 The preview shows the board, the usable area (dashed), the laser origin (●), the moved items with their real artwork and texts in layer colours and with their numbers, and unmoved objects in grey. Items with an error are red. **Show artwork** turns the drawing off and leaves only the item rectangles. The mouse wheel (or touchpad) zooms smoothly, dragging empty space pans the view (dragging an item changes the order), **Fit view** or a double-click on empty space shows everything.
+
+## Rotation to save material
+
+The **Rotation** option in the Grid section:
+
+- *Any angle (smallest area)* — default. Each item is rotated so that the rectangle around it is as small as possible (saves space with tilted or irregular shapes such as key rings). Rectangular cards stay straight.
+- *In 90° steps* — items are only turned by a quarter turn (landscape / portrait).
+- *Do not rotate* — items are only moved.
+
+In all modes the application also checks whether the grid would be smaller with all items in landscape or in portrait and uses the smaller variant — preferably one that fits on the board. Rotation is shown in the preview and in the item list. An item is rotated about its centre together with its texts and artwork; after saving, check the Preview in LightBurn. Exceptions for single items: the **No rotation** button in the Items section.
 
 [← Items](items.md) · [Next: board and check →](board.md)

@@ -6,7 +6,8 @@ Kontrola **nepoužívá plán přepisů** — oba soubory znovu rozparsuje a por
    ``XForm`` (tím jsou prokazatelně beze změny tvary, texty, vrstvy, CutSetting…).
    Jedinou dovolenou výjimkou je nic — thumbnail se nemění.
 2. Každý ``XForm`` je beze změny, kromě nejvyšší skupiny přesouvaného výrobku a
-   ``BackupPath`` textů v ní; u nich se smí změnit jen ``e, f`` přesně o plánovaný posun.
+   ``BackupPath`` textů v ní; u nich musí výsledek přesně odpovídat ``T ∘ původní``
+   (čistý posun: lineární část bajtově beze změny, ``e, f`` o plánovaný posun).
 3. Výstup je znovu čitelný a struktura (tagy, atributy) je shodná.
 """
 
@@ -19,6 +20,7 @@ from ..adapters.lightburn.xmltree import Node, parse
 from ..domain.errors import GridError
 
 TOLERANCE = 1e-3  # mm; zápis na 8 platných číslic
+LINEAR_TOLERANCE = 1e-6  # koeficienty natočení (bezrozměrné)
 
 
 @dataclass(frozen=True, slots=True)
@@ -62,10 +64,15 @@ def _structure(root: Node) -> list[tuple[str, tuple]]:
     return [(n.tag, tuple(sorted(n.attrs.items()))) for n in root.iter()]
 
 
-def verify_output(source: bytes, output: bytes, moves_file: dict[int, tuple[float, float]]) -> list[str]:
+def _affine(move: tuple[float, ...]) -> tuple[float, ...]:
+    return (1.0, 0.0, 0.0, 1.0, float(move[0]), float(move[1])) if len(move) == 2 else tuple(float(v) for v in move)
+
+
+def verify_output(source: bytes, output: bytes, moves_file: dict[int, tuple[float, ...]]) -> list[str]:
     """Vrátí seznam nalezených problémů (prázdný = v pořádku).
 
-    ``moves_file`` mapuje pořadí nejvyšší skupiny (1-based) na posun (dx, dy) v souřadnicích souboru.
+    ``moves_file`` mapuje pořadí nejvyšší skupiny (1-based) na posun ``(dx, dy)`` nebo afinní
+    transformaci ``(a, b, c, d, e, f)`` v souřadnicích souboru.
     """
     problems: list[str] = []
     try:
@@ -95,9 +102,13 @@ def verify_output(source: bytes, output: bytes, moves_file: dict[int, tuple[floa
         except geo.GeometryError:
             problems.append(f"unreadable_xform: shape #{a.top_index}")
             continue
-        if ta.split()[:4] != tb.split()[:4]:
-            problems.append(f"linear_part_changed: shape #{a.top_index}")
-        dx, dy = move
-        if abs(vb[4] - (va[4] + dx)) > TOLERANCE or abs(vb[5] - (va[5] + dy)) > TOLERANCE:
+        t = _affine(move)
+        if t[:4] == (1.0, 0.0, 0.0, 1.0):
+            if ta.split()[:4] != tb.split()[:4]:
+                problems.append(f"linear_part_changed: shape #{a.top_index}")
+        expected = geo.compose(t, va)  # type: ignore[arg-type]
+        if any(abs(vb[i] - expected[i]) > LINEAR_TOLERANCE * max(1.0, abs(expected[i])) for i in range(4)):
+            problems.append(f"wrong_rotation: shape #{a.top_index} role={a.role}")
+        if abs(vb[4] - expected[4]) > TOLERANCE or abs(vb[5] - expected[5]) > TOLERANCE:
             problems.append(f"wrong_translation: shape #{a.top_index} role={a.role}")
     return problems

@@ -5,6 +5,7 @@ aplikace — přežije přesun i výměnu ZIPu. Nic z toho se nezapisuje do `.lb
 
 * ``ui/language`` — ``auto`` | ``cs`` | ``en``
 * ``boards/<laser>/…`` — výchozí deska pro laser podle ``DeviceName`` z projektu
+* ``layout/rotation`` — natočení výrobků: ``any`` (výchozí, rozhodnutí vlastníka) | ``90`` | ``none``
 * ``ui/units`` — ``mm`` (výchozí) | ``in`` — jen zobrazení, výpočty a soubor jsou vždy v mm
 * ``ui/sections/<klíč>`` — sbalené/rozbalené sekce levého panelu
 * ``save/protocol`` — protokol uložení: ``none`` (výchozí) | ``beside`` | ``appdata``
@@ -22,7 +23,8 @@ APPLICATION = "GridArranger"
 LANGUAGES = ("auto", "cs", "en")
 THEMES = ("auto", "light", "dark")
 PROTOCOL_MODES = ("none", "beside", "appdata")
-UNIT_KEYS = ("mm", "in")  # protokol uložení: vůbec / vedle výstupu / ve složce aplikace
+UNIT_KEYS = ("mm", "in")
+ROTATION_KEYS = ("none", "90", "any")  # protokol uložení: vůbec / vedle výstupu / ve složce aplikace
 
 # Výchozí desky vlastníka (spec. v1.10). Před veřejným vydáním nahradit prázdným výchozím stavem.
 DEFAULT_BOARDS: dict[str, tuple[float, float]] = {
@@ -168,4 +170,15 @@ class UserSettings:
 
     def set_section_expanded(self, key: str, expanded: bool) -> None:
         self._s.setValue(f"ui/sections/{key}", bool(expanded))
+        self._s.sync()
+
+    # --- natočení výrobků (spec. v1.13) ----------------------------------------------------------
+    def rotation_mode(self) -> str:
+        v = str(self._s.value("layout/rotation", "any"))
+        return v if v in ROTATION_KEYS else "any"
+
+    def set_rotation_mode(self, value: str) -> None:
+        if value not in ROTATION_KEYS:
+            raise ValueError(value)
+        self._s.setValue("layout/rotation", value)
         self._s.sync()

@@ -116,3 +116,40 @@ class ProjectRenderer:
             if ls.id == shape_id:
                 return ls.node
         return None
+
+
+def _flatten_cubic(p0: Point, p1: Point, p2: Point, p3: Point, tol: float, out: list[Point], depth: int = 0) -> None:
+    """Body na Bézierově křivce; mezi sousedními body se křivka neodchýlí o víc než ``tol``."""
+    def dist(p: Point) -> float:
+        dx, dy = p3[0] - p0[0], p3[1] - p0[1]
+        n = (dx * dx + dy * dy) ** 0.5
+        if n == 0:
+            return ((p[0] - p0[0]) ** 2 + (p[1] - p0[1]) ** 2) ** 0.5
+        return abs((p[0] - p0[0]) * dy - (p[1] - p0[1]) * dx) / n
+
+    if depth > 18 or max(dist(p1), dist(p2)) <= tol:
+        out.append(p3)
+        return
+    m01 = ((p0[0] + p1[0]) / 2, (p0[1] + p1[1]) / 2)
+    m12 = ((p1[0] + p2[0]) / 2, (p1[1] + p2[1]) / 2)
+    m23 = ((p2[0] + p3[0]) / 2, (p2[1] + p3[1]) / 2)
+    a = ((m01[0] + m12[0]) / 2, (m01[1] + m12[1]) / 2)
+    b = ((m12[0] + m23[0]) / 2, (m12[1] + m23[1]) / 2)
+    mid = ((a[0] + b[0]) / 2, (a[1] + b[1]) / 2)
+    _flatten_cubic(p0, m01, a, mid, tol, out, depth + 1)
+    _flatten_cubic(mid, b, m23, p3, tol, out, depth + 1)
+
+
+def stroke_points(strokes: list[Stroke], tol: float = 0.002) -> list[Point]:
+    """Body všech křivek (Bézier rozvinutý s odchylkou ≤ ``tol`` mm) — pro výpočet natočení."""
+    pts: list[Point] = []
+    for st in strokes:
+        cur: Point | None = None
+        for op in st.ops:
+            if op[0] in ("M", "L"):
+                cur = op[1]
+                pts.append(cur)
+            elif op[0] == "C" and cur is not None:
+                _flatten_cubic(cur, op[1], op[2], op[3], tol, pts)
+                cur = op[3]
+    return pts

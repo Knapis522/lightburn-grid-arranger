@@ -107,7 +107,8 @@ class PreviewView(QGraphicsView):
     def _r(r: Rect) -> QRectF:
         return QRectF(r.left, r.top, r.width, r.height)
 
-    def _add_art(self, item_id: str, strokes: list[Stroke], dx: float, dy: float, gray: bool) -> list[QGraphicsItem]:
+    def _add_art(self, item_id: str, strokes: list[Stroke], dx: float, dy: float, gray: bool,
+                 angle: float = 0.0, pivot: tuple[float, float] = (0.0, 0.0)) -> list[QGraphicsItem]:
         if item_id not in self._paths:
             self._paths[item_id] = strokes_to_paths(strokes)
         out: list[QGraphicsItem] = []
@@ -115,6 +116,9 @@ class PreviewView(QGraphicsView):
             gi = QGraphicsPathItem(path)
             c = QColor(self._c["obst_art"]) if gray else layer_color(cut)
             gi.setPen(QPen(c, 0))  # kosmetické pero: 1 px při každém přiblížení
+            if angle:
+                gi.setTransformOriginPoint(QPointF(*pivot))
+                gi.setRotation(angle)  # kladně po směru hodin = stejně jako jádro
             gi.setPos(dx, dy)
             gi.setZValue(2)
             self.scene().addItem(gi)
@@ -127,12 +131,12 @@ class PreviewView(QGraphicsView):
         usable: Rect | None,
         origin: tuple[float, float] | None,
         obstacles: list[tuple[str, Rect, list[Stroke]]],
-        items: list[tuple[str, int | None, Rect, list[Stroke], float, float]],
+        items: list[tuple],
         problem_ids: set[str],
         show_art: bool = True,
         refit: bool = False,
     ) -> None:
-        """``items``: (id, pořadí, cílový obdélník, křivky v původní poloze, dx, dy)."""
+        """``items``: (id, pořadí, cílový obdélník, křivky v původní poloze, dx, dy[, úhel, (cx, cy)])."""
         s = self.scene()
         s.clear()
         self._graphics.clear()
@@ -149,14 +153,15 @@ class PreviewView(QGraphicsView):
             if show_art and strokes:
                 self._add_art(oid, strokes, 0.0, 0.0, gray=True)
             self._label(oid, r.left, r.top, color=self._c["obst_text"])
-        for iid, num, r, strokes, dx, dy in items:
+        for iid, num, r, strokes, dx, dy, *rot in items:
+            angle, pivot = (rot[0], rot[1]) if rot else (0.0, (0.0, 0.0))
             bad = iid in problem_ids
             fill = QColor(214, 39, 40, 70) if bad else QColor(*self._c["item_fill"])
             rect_item = s.addRect(self._r(r), QPen(QColor("#d62728") if bad else QColor(*self._c["item_pen"]), 0), QBrush(fill))
             rect_item.setZValue(1)
             group: list[QGraphicsItem] = [rect_item]
             if show_art and strokes:
-                group += self._add_art(iid, strokes, dx, dy, gray=False)
+                group += self._add_art(iid, strokes, dx, dy, gray=False, angle=angle, pivot=pivot)
             group.append(self._label(f"{num}. {iid}" if num else iid, r.left + 1, r.top + 1, bold=True, color="#d62728" if bad else self._c["item_text"]))
             self._graphics[iid] = group
             self._rects[iid] = self._r(r)

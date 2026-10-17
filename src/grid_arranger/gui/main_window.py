@@ -32,7 +32,9 @@ from PySide6.QtWidgets import (
 from ..adapters.lightburn.read import LoadedProject, load_project
 from ..adapters.lightburn.render import ProjectRenderer
 from ..adapters.lightburn.write import next_output_path
-from ..application.arrange_job import ArrangeParams, MaterialInput, Plan, check_output_path, execute, make_plan, material_to_core
+from ..application.arrange_job import (
+    ROTATION_MODES, ArrangeParams, ItemGeometry, MaterialInput, Plan, check_output_path, execute, make_plan, material_to_core,
+)
 from ..core.collision import usable_area
 from ..core.order import default_order, deselect, move_down, move_up, select, swap
 from ..domain.errors import GridError
@@ -60,6 +62,8 @@ class MainWindow(QMainWindow):
         self.plan: Plan | None = None
         self.plan_error: GridError | None = None
         self._rebuilding = False
+        self._geometry = None
+        self.no_rotate: set[str] = set()
         self.updates = UpdateController(self, settings)
         self._build_ui()
         self.retranslate()
@@ -209,6 +213,11 @@ class MainWindow(QMainWindow):
         g.addWidget(self.btn_reset, 0, 2)
         g.addWidget(self.btn_all, 1, 0)
         g.addWidget(self.btn_none, 1, 1)
+        self.btn_norotate = QPushButton()
+        self.btn_norotate.setCheckable(True)
+        self.btn_norotate.toggled.connect(self._toggle_no_rotate)
+        g.addWidget(self.btn_norotate, 1, 2)
+        self.list_items.currentItemChanged.connect(lambda *_: self._sync_no_rotate_button())
         iv.addLayout(g)
         self.lbl_count = QLabel()
         iv.addWidget(self.lbl_count)
@@ -225,10 +234,12 @@ class MainWindow(QMainWindow):
         self.spin_gap_x = length(0, 1000, 3.0)
         self.spin_gap_y = length(0, 1000, 3.0)
         self.combo_fill = QComboBox()
+        self.combo_rotation = QComboBox()
         self.lbls_grid = [
             self._cell(gg, 0, 0, self.spin_cols),
             self._cell(gg, 1, 0, self.spin_gap_x), self._cell(gg, 1, 2, self.spin_gap_y),
             self._cell(gg, 2, 0, self.combo_fill, span=3),
+            self._cell(gg, 3, 0, self.combo_rotation, span=3),
         ]
 
         # Umístění: způsob | Roh X, Y
@@ -268,6 +279,7 @@ class MainWindow(QMainWindow):
         for w in self.length_spins:
             w.mmChanged.connect(self.recompute)
         self.combo_fill.currentIndexChanged.connect(self.recompute)
+        self.combo_rotation.currentIndexChanged.connect(self._on_rotation_changed)
         self.combo_anchor.currentIndexChanged.connect(self._on_anchor_changed)
 
         scroll = QScrollArea()
@@ -367,9 +379,18 @@ class MainWindow(QMainWindow):
         self.btn_none.setText(self.tr("Select none"))
 
         self.box_grid.setTitle(self.tr("Grid"))
-        labels = [self.tr("Columns:"), self.tr("Gap X:"), self.tr("Y:"), self.tr("Fill order:")]
+        labels = [self.tr("Columns:"), self.tr("Gap X:"), self.tr("Y:"), self.tr("Fill order:"), self.tr("Rotation:")]
         for lbl, t in zip(self.lbls_grid, labels):
             lbl.setText(t)
+        if self.combo_rotation.count() == 0:  # první naplnění: uložená volba
+            self.combo_rotation.addItem("", self.settings.rotation_mode())
+        self._fill_combo(self.combo_rotation, ROTATION_MODES, [
+            self.tr("Do not rotate"), self.tr("In 90° steps"), self.tr("Any angle (smallest area)")])
+        self.combo_rotation.setToolTip(self.tr(
+            "Rotate items to save material: each item is turned so that the rectangle around it is as small as possible, "
+            "and the orientation giving the smallest grid is chosen. Exceptions: select an item and click “No rotation”."))
+        self.btn_norotate.setText(self.tr("No rotation"))
+        self.btn_norotate.setToolTip(self.tr("The selected item will never be rotated."))
         self._fill_combo(self.combo_fill, FILL_KEYS, [self.tr("From the laser origin"), self.tr("Reading order (from top left)")])
 
         self.box_place.setTitle(self.tr("Placement"))
@@ -495,6 +516,8 @@ class MainWindow(QMainWindow):
             return False
         self.project = project
         self.renderer = ProjectRenderer(project)
+        self._geometry = ItemGeometry(project)
+        self.no_rotate = set()
         self.preview.clear_cache()
         self._refit = True
         self.order = default_order(it for it in project.items if it.supported)
@@ -534,17 +557,7 @@ class MainWindow(QMainWindow):
         rows += [it for it in self.project.items if not it.supported]
         for it in rows:
             selected = it.id in self.order
-            num = f"{self.order.index(it.id) + 1}. " if selected else ""
-            if it.supported:
-                b = it.file_bbox
-                size = self.tr("{w} × {h} {unit}").format(w=self._len(b[2] - b[0], short=True), h=self._len(b[3] - b[1], short=True),
-                                                        unit=self.unit.suffix)
-                text = f"{num}{it.id}  {it.label}  —  {size}"
-            else:
-                text = f"{it.id}  {it.label}  —  " + self.tr("cannot be moved")
-            if it.warnings:
-                text += "  ⚠"
-            li = QListWidgetItem(text)
+            li = QListWidgetItem(self._item_text(it))
             li.setData(Qt.ItemDataRole.UserRole, it.id)
             tips = [message(r.code, **r.params) for r in it.reasons] + [message(w.code, **w.params) for w in it.warnings]
             if it.outline_layer:
@@ -562,6 +575,63 @@ class MainWindow(QMainWindow):
         self.lbl_count.setText(
             self.tr("Selected %n item(s)", "", len(self.order)) + " / " + self.tr("supported: {s}, total: {t}").format(s=n_sup, t=len(self.project.items)))
         self._rebuilding = False
+
+    def _item_text(self, it) -> str:
+        selected = it.id in self.order
+        num = f"{self.order.index(it.id) + 1}. " if selected else ""
+        if it.supported:
+            b = it.file_bbox
+            size = self.tr("{w} × {h} {unit}").format(w=self._len(b[2] - b[0], short=True), h=self._len(b[3] - b[1], short=True),
+                                                    unit=self.unit.suffix)
+            text = f"{num}{it.id}  {it.label}  —  {size}"
+            angle = self.plan.rotations.get(it.id) if self.plan is not None else None
+            if it.id in self.no_rotate:
+                text += "  " + self.tr("(no rotation)")
+            elif angle:
+                deg = self.locale_mgr.qlocale().toString(abs(angle), "f", 1).rstrip("0").rstrip(",.")
+                text += f"  {'↻' if angle > 0 else '↺'} {deg}°"
+        else:
+            text = f"{it.id}  {it.label}  —  " + self.tr("cannot be moved")
+        if it.warnings:
+            text += "  ⚠"
+        return text
+
+    def _update_item_texts(self) -> None:
+        """Po přepočtu jen obnoví texty (úhel natočení) bez přestavby seznamu."""
+        if self.project is None:
+            return
+        self._rebuilding = True
+        for i in range(self.list_items.count()):
+            li = self.list_items.item(i)
+            li.setText(self._item_text(self.project.item(li.data(Qt.ItemDataRole.UserRole))))
+        self._rebuilding = False
+        self._sync_no_rotate_button()
+
+    def _current_item_id(self) -> str | None:
+        li = self.list_items.currentItem()
+        return li.data(Qt.ItemDataRole.UserRole) if li is not None else None
+
+    def _sync_no_rotate_button(self) -> None:
+        iid = self._current_item_id()
+        ok = iid is not None and self.project is not None and self.project.item(iid).supported
+        self.btn_norotate.blockSignals(True)
+        self.btn_norotate.setEnabled(ok and (self.combo_rotation.currentData() or "none") != "none")
+        self.btn_norotate.setChecked(ok and iid in self.no_rotate)
+        self.btn_norotate.blockSignals(False)
+
+    def _toggle_no_rotate(self, on: bool) -> None:
+        iid = self._current_item_id()
+        if iid is None:
+            return
+        if on:
+            self.no_rotate.add(iid)
+        else:
+            self.no_rotate.discard(iid)
+        self.recompute()
+
+    def _on_rotation_changed(self) -> None:
+        self.settings.set_rotation_mode(self.combo_rotation.currentData() or "any")
+        self.recompute()
 
     def _on_item_changed(self, li: QListWidgetItem) -> None:
         if self._rebuilding:
@@ -612,6 +682,15 @@ class MainWindow(QMainWindow):
         self._rebuild_item_list()
         self.recompute()
 
+    def _sync_corner_fields(self) -> None:
+        """Mimo režim Ručně ukazují (zašedlá) pole Roh X/Y skutečně vypočtený roh mřížky u počátku.
+        Po přepnutí na Ručně tak pole obsahují aktuální roh a mřížka se neposune."""
+        if self.plan is None or self.combo_anchor.currentData() == "manual":
+            return
+        x, y = self.plan.origin_corner_lightburn
+        self.spin_start_x.set_mm(x, emit=False)
+        self.spin_start_y.set_mm(y, emit=False)
+
     def _on_anchor_changed(self) -> None:
         manual = self.combo_anchor.currentData() == "manual"
         self.spin_start_x.setEnabled(manual)
@@ -631,6 +710,8 @@ class MainWindow(QMainWindow):
             anchor=self.combo_anchor.currentData() or "origin",
             start=(self.spin_start_x.mm(), self.spin_start_y.mm()),
             fill=self.combo_fill.currentData() or "origin",
+            rotation=self.combo_rotation.currentData() or "none",
+            no_rotate=frozenset(self.no_rotate),
         )
 
     def recompute(self) -> None:
@@ -641,9 +722,11 @@ class MainWindow(QMainWindow):
             return
         p = self.params()
         try:
-            self.plan = make_plan(self.project, p)
+            self.plan = make_plan(self.project, p, self._geometry)
         except GridError as e:
             self.plan_error = e
+        self._sync_corner_fields()
+        self._update_item_texts()
         self._draw()
         self._refresh_issue_texts()
 
@@ -663,7 +746,8 @@ class MainWindow(QMainWindow):
                      for ob in proj.obstacles_for(sel) if ob.bounds is not None]
         problems: set[str] = set()
         if self.plan is not None:
-            items = [(pl.item_id, pl.index + 1, pl.target_bounds, self.renderer.strokes(pl.item_id) if show else [], pl.dx, pl.dy)
+            items = [(pl.item_id, pl.index + 1, pl.target_bounds, self.renderer.strokes(pl.item_id) if show else [], pl.dx, pl.dy,
+                      self.plan.rotations.get(pl.item_id, 0.0), self.plan.pivots.get(pl.item_id, (0.0, 0.0)))
                      for pl in self.plan.layout.placements]
             for i in self.plan.report.errors:
                 problems.update(i.item_ids)

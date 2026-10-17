@@ -1,7 +1,7 @@
 # Stav projektu
 
 **Aktualizováno:** 2026-10-17
-**Verze specifikace:** 1.12 (`docs/specification.md`)
+**Verze specifikace:** 1.13 (`docs/specification.md`)
 **Verze aplikace:** `0.1.0-alpha.2` — zveřejněno 2026-10-17 jako GitHub Pre-release (tag `v0.1.0-alpha.2`, commit `d8c0cc9`; instalátor, ZIP, SHA256SUMS). Předchozí: `v0.1.0-alpha.1` (2026-10-16, `64a5d00`)
 
 > Tento soubor je hlavní předávací dokument. Při navázání práce: přečíst tento soubor → `ROADMAP.md` → relevantní kapitolu specifikace. Nepředpokládat, že funkce funguje jen proto, že existuje kód.
@@ -49,3 +49,4 @@
 - 2026-10-17 — spec. v1.12: při ukládání volba složky a názvu (návrh `__grid_NNN` vedle originálu; nikdy nepřepsat existující soubor, protokol ani originál — vyžádá jiný název); tlačítka Otevřít/Uložit v okně odstraněna (lišta, menu, Ctrl+O/S). 347 testů.
 - 2026-10-17 — protokol uložení `.json` volitelný: Nastavení → Protokol uložení (Neukládat — výchozí / Vedle projektu / Složka aplikace). 350 testů.
 - 2026-10-17 — levý panel: sbalitelné sekce s výraznější hlavičkou, úzká pole, dvojice hodnot vedle sebe; jednotky mm/palce (Nastavení → Jednotky, jen zobrazení). 353 testů.
+- 2026-10-17 — spec. v1.13, ADR-0005: **natočení pro úsporu materiálu** (Libovolný úhel — výchozí / Po 90° / Nenatáčet, výjimky, orientace podle nejmenší mřížky). Implementováno a automaticky otestováno (373 testů, oba typy laseru); **KAL-01 čeká na ověření v LightBurnu** (soubory `…__kal01_rot.lbrn2` v datové složce). Kruh/elipsa/obdélník přímo z LightBurnu čekají na testovací soubor od vlastníka.

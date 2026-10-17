@@ -1,6 +1,6 @@
 # Grid Arranger for LightBurn — technická specifikace
 
-**Verze dokumentu:** 1.12 (volba složky a názvu výstupu; viz kap. 28)  
+**Verze dokumentu:** 1.13 (natočení výrobků pro úsporu materiálu; viz kap. 28)  
 **Datum:** 17. 10. 2026  
 **Název produktu:** Grid Arranger for LightBurn; spustitelný soubor `GridArranger.exe`; Python balíček `grid_arranger`; repozitář `lightburn-grid-arranger`. Neoficiální nástroj, nikoli produkt LightBurn Software.  
 **Stav:** Interní pracovní podklad; nikoli hotový nebo otestovaný plugin  
@@ -200,6 +200,15 @@ def arrange_to_grid(items, request):
 ```
 
 Tento algoritmus nesmí importovat žádnou knihovnu LightBurnu ani upravovat soubory; vstup i výstup jsou čistá data.
+
+### 7.6 Natočení pro úsporu materiálu (v1.13, ADR-0005)
+
+- **Režimy** (společná volba v sekci Mřížka, uložená v nastavení): *Libovolný úhel (nejmenší plocha)* — **výchozí** (rozhodnutí vlastníka 2026-10-17), *Po 90°*, *Nenatáčet*. Jednotlivé výrobky lze z natáčení vyjmout (výjimky v seznamu).
+- **Úhel výrobku:** nejmenší osový obdélník kolem konvexního obalu všech křivek výrobku (obrys, motivy, `BackupPath` textů; Bézierovy úseky rozvinuté s odchylkou ≤ 0,002 mm, obdélník o tuto odchylku zvětšen). Natočit jen při úspoře plochy obdélníku ≥ 0,5 %. Úhel v (−45°, 45°].
+- **Společná orientace:** vyzkoušet „beze změny“, „vše na šířku“, „vše na výšku“ (o 90° navíc menším celkovým úhlem); vybrat variantu, která se vejde na využitelnou plochu desky, z nich s nejmenší plochou mřížky; jiná než „beze změny“ jen při úspoře ≥ 0,5 %. V režimu *Po 90°* je výchozí úhel 0.
+- **Střed natočení** = střed obrysu v původní poloze; potom posun do mřížky. Transformace jádra `T` → soubor `S ∘ T ∘ S`, `S = diag(±1, ±1)` podle `MirrorX/MirrorY` (kap. 8). Násobky 90° zapisovat s přesnými 0/±1.
+- **Zápis a invarianty:** mění se jen `XForm` nejvyšší skupiny a `BackupPath` textů v ní: `XForm' = T ∘ XForm` (rozšíření pravidla „pouze translace“ z MVP; bez natočení zůstává čistý posun s bajtově nezměněnou lineární částí). Nezávislá kontrola ověří celou matici; po znovunačtení výstupu musí skutečné křivky natočeného výrobku ležet v cílovém obdélníku.
+- **Ověření:** brána KAL-01 — kalibrační soubory s natočením otevřené v LightBurnu (směr natočení, texty, Preview) pro oba typy laseru.
 
 ## 8. Přesun přes `XForm` ve formátu LightBurnu
 
@@ -1032,6 +1041,7 @@ Toto jsou **ověřovací úkoly**, nikoli potvrzené technické možnosti souča
 
 ## 28. Záznam změn specifikace
 
+- **v1.13 (17. 10. 2026):** Na přání vlastníka natočení výrobků pro úsporu materiálu: libovolný úhel (výchozí) / po 90° / nenatáčet, výjimky jednotlivých výrobků, společná orientace podle nejmenší mřížky, zápis `T ∘ XForm` skupiny i `BackupPath` textů s nezávislou kontrolou celé matice (kap. 7.6, ADR-0005); brána KAL-01. Podpora kruhu/elipsy/obdélníku nakreslených přímo v LightBurnu (typy `Ellipse`, `Rect`) čeká na kalibrační soubor.
 - **v1.12 (17. 10. 2026):** Na přání vlastníka si uživatel při ukládání volí složku a název výstupu (návrh `__grid_NNN` zůstává); pravidlo „nikdy nepřepsat“ platí i pro zvolený cíl a jeho protokol (kap. 9.4); protokol uložení je volitelný, výchozí neukládat. GUI: nástrojová lišta s ikonami, název projektu v titulku okna, sbalitelné sekce levého panelu s kompaktními poli; **jednotky mm / palce** (Nastavení → Jednotky) jen pro zobrazení a zadávání — jádro, uložená nastavení i soubor `.lbrn2` zůstávají v mm (kap. 12.1).
 - **v1.11 (17. 10. 2026):** Na přání vlastníka: (1) hlavní distribucí je instalátor (Inno Setup, per-user, bez práv správce), ZIP zůstává jako záloha, jednosouborové EXE se nepoužívá (kap. 12.1, 31.2); (2) kontrola aktualizací z GitHub Releases — automatická (volitelná, výchozí zapnutá) i ruční, nabídka vždy nejnovější verze s možností zůstat u staré nebo verzi přeskočit, stažení s ověřením SHA-256 a instalace jen po souhlasu (kap. 32, nahrazuje „mimo scope“ z v1.3); (3) verze aplikace `0.1.0-alpha.N` pro interní předběžná vydání.
 - **v1.10 (16. 10. 2026):** Po prvním zkušebním rozmístění reálného projektu: (1) umístění mřížky přepínačem — roh počátku laseru (výchozí), střed desky, ručně, podle původní polohy; (2) plnění od rohu počátku laseru (alternativa „čtení“), menší výrobek přiléhá ke straně počátku; (3) deska leží u počátku, výchozí okraj 5 mm, rozměr desky předvyplněn podle laseru (`DeviceName`) z uživatelského nastavení (kap. 6 bod 7, 12.3).

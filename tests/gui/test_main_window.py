@@ -448,3 +448,51 @@ def test_compact_fields_and_collapsible_sections(make_window, settings):
     assert not w2.box_items.isExpanded()  # stav sekce se pamatuje
     w2.box_items.header.click()
     assert w2.box_items.isExpanded() and settings.section_expanded("items") is True
+
+
+def test_corner_fields_follow_computed_corner_and_manual_keeps_it(make_window, tmp_path):
+    w = make_window("en")
+    w.open_project(write(tmp_path, four()))
+    assert (w.spin_start_x.mm(), w.spin_start_y.mm()) == pytest.approx(w.plan.origin_corner_lightburn)
+    w.spin_ml.setValue(15)
+    w.spin_mt.setValue(15)
+    w.spin_mr.setValue(15)
+    corner = w.plan.origin_corner_lightburn
+    assert (w.spin_start_x.mm(), w.spin_start_y.mm()) == pytest.approx(corner)  # zašedlá pole se aktualizují
+    w.combo_anchor.setCurrentIndex(w.combo_anchor.findData("center"))
+    assert (w.spin_start_x.mm(), w.spin_start_y.mm()) == pytest.approx(w.plan.origin_corner_lightburn)
+    center = w.plan.origin_corner_lightburn
+    w.combo_anchor.setCurrentIndex(w.combo_anchor.findData("manual"))
+    assert w.plan.origin_corner_lightburn == pytest.approx(center)  # přepnutí na Ručně mřížku neposune
+    w.spin_ml.setValue(30)
+    assert w.plan.origin_corner_lightburn == pytest.approx(center)  # v režimu Ručně platí zadaný roh
+    w.spin_start_x.setValue(center[0] + 10)
+    assert w.plan.origin_corner_lightburn[0] == pytest.approx(center[0] + 10)
+
+
+def test_rotation_combo_exceptions_and_list_markers(make_window, tmp_path, settings):
+    from tests.integration.test_rotation_plan import tilted
+
+    assert settings.rotation_mode() == "any"  # výchozí volba vlastníka
+    w = make_window("en")
+    w.open_project(write(tmp_path, project([tilted(0, 0), tilted(300, 0)])))
+    assert w.combo_rotation.currentData() == "any"
+    assert set(w.plan.rotations) == {"G1", "G2"}
+    assert "↻" in w.list_items.item(0).text() or "↺" in w.list_items.item(0).text()
+    w.list_items.setCurrentRow(1)
+    assert w.btn_norotate.isEnabled() and not w.btn_norotate.isChecked()
+    w.btn_norotate.click()
+    assert w.no_rotate == {"G2"} and "G2" not in w.plan.rotations and "(no rotation)" in w.list_items.item(1).text()
+    w.combo_rotation.setCurrentIndex(w.combo_rotation.findData("none"))
+    assert settings.rotation_mode() == "none" and w.plan.rotations == {}
+    assert not w.btn_norotate.isEnabled()
+    settings.set_rotation_mode("any")
+
+
+def test_rotated_items_drawn_rotated_in_preview(make_window, tmp_path):
+    from tests.integration.test_rotation_plan import tilted
+
+    w = make_window("en")
+    w.open_project(write(tmp_path, project([tilted(0, 0)])))
+    art = [g for g in w.preview._graphics["G1"] if g.rotation() != 0]
+    assert art and art[0].rotation() == pytest.approx(w.plan.rotations["G1"])

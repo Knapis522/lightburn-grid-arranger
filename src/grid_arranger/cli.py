@@ -15,7 +15,9 @@ import sys
 from pathlib import Path
 
 from .adapters.lightburn.read import load_project
-from .application.arrange_job import ANCHORS, DEFAULT_MARGIN_MM, FILL_MODES, ArrangeParams, MaterialInput, execute, make_plan
+from .application.arrange_job import (
+    ANCHORS, DEFAULT_MARGIN_MM, FILL_MODES, ROTATION_MODES, ArrangeParams, MaterialInput, execute, make_plan,
+)
 from .domain.errors import GridError
 from .version import display_version
 
@@ -63,6 +65,8 @@ def _cmd_arrange(a: argparse.Namespace) -> int:
         anchor=a.anchor,
         start=tuple(a.start) if a.start else None,
         fill=a.fill,
+        rotation=a.rotate,
+        no_rotate=frozenset(a.no_rotate.split(",")) if a.no_rotate else frozenset(),
     )
     plan = make_plan(project, params)
     lay = plan.layout
@@ -71,8 +75,10 @@ def _cmd_arrange(a: argparse.Namespace) -> int:
     print(f"Grid: {lay.columns} columns x {lay.rows} rows, {lay.grid_bounds.width:.3f} x {lay.grid_bounds.height:.3f} mm;"
           f" anchor {plan.anchor}, fill from {plan.fill}; grid corner at origin side: LightBurn X {cx:.3f}, Y {cy:.3f}")
     for pl in lay.placements:
-        dx, dy = plan.moves_file[pl.item_id]
-        print(f"  {pl.index + 1:>3}. {pl.item_id:>4}  row {pl.row + 1} col {pl.column + 1}  move X {dx:+9.3f}  Y {dy:+9.3f}")
+        m = plan.moves_file[pl.item_id]
+        dx, dy = (m[0], m[1]) if len(m) == 2 else (m[4], m[5])
+        rot = f"  rotate {plan.rotations[pl.item_id]:+.2f}°" if pl.item_id in plan.rotations else ""
+        print(f"  {pl.index + 1:>3}. {pl.item_id:>4}  row {pl.row + 1} col {pl.column + 1}  move X {dx:+9.3f}  Y {dy:+9.3f}{rot}")
     for issue in plan.report.issues:
         print(f"  [{issue.severity.value.upper()}] {issue.code} {' '.join(issue.item_ids)} {issue.params or ''}")
     if not plan.report.can_save:
@@ -106,6 +112,9 @@ def main(argv: list[str] | None = None) -> int:
     pa.add_argument("--anchor", choices=ANCHORS, default="origin", help="where to put the grid (default: origin corner of the board)")
     pa.add_argument("--start", type=float, nargs=2, metavar=("X", "Y"), help="for --anchor manual: grid corner at origin side (LightBurn X Y)")
     pa.add_argument("--fill", choices=FILL_MODES, default="origin", help="first item at the laser origin corner (default) or top-left")
+    pa.add_argument("--rotate", choices=ROTATION_MODES, default="none",
+                    help="rotate items to save material: none (default), 90 (in 90° steps), any (smallest bounding box)")
+    pa.add_argument("--no-rotate", help="comma-separated item ids that must never be rotated")
     pa.add_argument("--out-dir")
     pa.add_argument("--dry-run", action="store_true")
     a = ap.parse_args(argv)

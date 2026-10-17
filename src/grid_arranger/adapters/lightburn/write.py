@@ -2,8 +2,11 @@
 
 Mění se výhradně obsah ``<XForm>…</XForm>``:
 
-1. nejvyšší skupiny každého přesouvaného výrobku (translace ``e, f``),
-2. ``BackupPath`` každého textu v jejím podstromu (stejný posun; KAL-00).
+1. nejvyšší skupiny každého přesouvaného výrobku,
+2. ``BackupPath`` každého textu v jejím podstromu (je ve světových souřadnicích; KAL-00).
+
+Oba se násobí zleva stejnou afinní transformací výrobku ``T`` (posun, od v1.13 i natočení):
+``XForm' = T ∘ XForm``. Čistý posun mění jen ``e, f`` a lineární část nechává bajtově beze změny.
 
 Ostatní bajty souboru zůstávají identické. Výstup se nikdy nezapisuje přes
 existující soubor ani přes originál.
@@ -40,33 +43,50 @@ def _xform_node(shape: Node) -> Node:
     return x
 
 
-def _shifted(data: bytes, x: Node, dx: float, dy: float) -> tuple[bytes, bytes]:
+def as_affine(move: tuple[float, ...]) -> geo.Affine:
+    """``(dx, dy)`` → čistý posun; šestice → afinní transformace (souřadnice souboru)."""
+    if len(move) == 2:
+        return (1.0, 0.0, 0.0, 1.0, float(move[0]), float(move[1]))
+    if len(move) == 6:
+        return tuple(float(v) for v in move)  # type: ignore[return-value]
+    raise GridError("bad_transform", "Neplatná transformace výrobku.")
+
+
+def is_translation(t: geo.Affine) -> bool:
+    return t[:4] == (1.0, 0.0, 0.0, 1.0)
+
+
+def _transformed(data: bytes, x: Node, t: geo.Affine) -> tuple[bytes, bytes]:
     old = data[x.content_start : x.content_end]
     try:
         vals = geo.parse_xform(old.decode("ascii"))
     except (UnicodeDecodeError, geo.GeometryError) as e:
         raise GridError("bad_xform", "Nečitelný XForm.", detail=str(e)) from None
-    tokens = old.decode("ascii").split()
-    new = " ".join(tokens[:4] + [geo.fmt_num(vals[4] + dx), geo.fmt_num(vals[5] + dy)])
+    if is_translation(t):  # posun: lineární část ponechat bajtově beze změny
+        tokens = old.decode("ascii").split()
+        new = " ".join(tokens[:4] + [geo.fmt_num(vals[4] + t[4]), geo.fmt_num(vals[5] + t[5])])
+    else:
+        new = " ".join(geo.fmt_num(v) for v in geo.compose(t, vals))
     return old, new.encode("ascii")
 
 
-def plan_patches(project: LoadedProject, moves_file: dict[str, tuple[float, float]]) -> list[PatchOp]:
-    """Připraví přepisy pro posuny ``{item_id: (dx, dy)}`` v souřadnicích **souboru**."""
+def plan_patches(project: LoadedProject, moves_file: dict[str, tuple[float, ...]]) -> list[PatchOp]:
+    """Přepisy pro výrobky ``{item_id: (dx, dy) | (a, b, c, d, e, f)}`` v souřadnicích **souboru**."""
     ops: list[PatchOp] = []
-    for item_id, (dx, dy) in moves_file.items():
+    for item_id, move in moves_file.items():
+        t = as_affine(move)
         it = project.item(item_id)
         if not it.supported:
             raise GridError("item_not_supported", "Výrobek nelze přesunout.", item_id=item_id)
         x = _xform_node(it.node)
-        old, new = _shifted(project.data, x, dx, dy)
+        old, new = _transformed(project.data, x, t)
         ops.append(PatchOp(x.content_start, x.content_end, old, new, item_id, "group"))
         for n in it.node.iter():
             if n.tag == "Shape" and n.attrs.get("Type") == "Text":
                 bp = n.find("BackupPath")
                 if bp is not None:
                     bx = _xform_node(bp)
-                    old, new = _shifted(project.data, bx, dx, dy)
+                    old, new = _transformed(project.data, bx, t)
                     ops.append(PatchOp(bx.content_start, bx.content_end, old, new, item_id, "text_backup"))
     ops.sort(key=lambda o: o.start)
     for a, b in zip(ops, ops[1:]):

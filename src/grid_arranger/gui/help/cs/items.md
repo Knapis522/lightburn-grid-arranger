@@ -9,6 +9,8 @@ Po otevření projektu (ikona **Otevřít projekt** na nástrojové liště, **S
 
 Pořadí: **chyťte kartičku v náhledu myší a přetáhněte ji na místo jiné kartičky** — zelený rámeček ukazuje, kam dopadne; **obě kartičky si prohodí místa**, ostatní zůstanou, kde jsou, a seznam se přečísluje. Puštění mimo kartičky tažení zruší. Nebo vyberte položku v seznamu a použijte **Nahoru / Dolů**. Nově zaškrtnutý výrobek se zařadí na konec. **Výchozí pořadí** vrátí pořadí ze souboru. **Vybrat vše / Zrušit výběr** hromadně mění výběr.
 
+**Natočení:** u natočeného výrobku je v seznamu šipka a úhel (↻ po směru, ↺ proti směru hodinových ručiček). Pokud se některý výrobek natáčet nesmí (směr textu, struktura materiálu), vyberte ho a klikněte na **Nenatáčet** — u položky se objeví „(nenatáčet)“; dalším kliknutím výjimku zrušíte. Viz [mřížka](grid.md).
+
 Číslo **1** se umístí do rohu mřížky podle volby *Pořadí plnění* (viz [mřížka](grid.md)).
 
 [← Příprava](prepare.md) · [Další: mřížka →](grid.md)

@@ -12,12 +12,18 @@ Umístění mřížky (spec. v1.10, kap. 12.3):
 * ``selection`` — levý horní roh (na obrazovce) původní polohy vybraných výrobků.
 
 Pořadí plnění: ``origin`` (výchozí) začíná v rohu počátku laseru, ``reading`` vlevo nahoře.
+
+Natočení (spec. v1.13 kap. 7.6): ``none`` | ``90`` (jen po 90°) | ``any`` (libovolný úhel —
+nejmenší obdélník kolem výrobku). Ve všech režimech se navíc zvolí společná orientace
+(beze změny / všechny na šířku / všechny na výšku), která dá nejmenší mřížku, přednostně
+takovou, která se vejde na desku. Výrobky v ``no_rotate`` se nenatáčí nikdy.
 """
 
 from __future__ import annotations
 
 import hashlib
 import json
+import math
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from pathlib import Path
@@ -25,13 +31,17 @@ from pathlib import Path
 from ..adapters.lightburn.read import LoadedProject, load_project
 from ..adapters.lightburn.write import apply_patches, next_output_path, plan_patches, write_new_file
 from ..core import arrange_to_grid, validate_layout
+from ..core.rotation import min_area_angle, rotated_bounds
 from ..core.collision import ValidationReport, usable_area
 from ..domain.errors import GridError
-from ..domain.models import Corner, GridRequest, Item, LayoutResult, MaterialSpec
+from ..domain.models import Corner, GridRequest, Item, LayoutResult, MaterialSpec, Rect
 from ..safety.verify import verify_output
 from ..version import __version__
 
 ANCHORS = ("origin", "center", "manual", "selection")
+ROTATION_MODES = ("none", "90", "any")
+GEOMETRY_TOL = 0.002  # mm — odchylka rozvinutí křivek; obdélník natočeného výrobku se o ni zvětší
+ORIENTATION_GAIN = 0.005  # jiná orientace jen při úspoře aspoň 0,5 % plochy mřížky (nebo když se jinak nevejde)
 FILL_MODES = ("origin", "reading")
 DEFAULT_MARGIN_MM = 5.0
 
@@ -65,6 +75,107 @@ class ArrangeParams:
     start: tuple[float, float] | None = None
     """Pro ``anchor="manual"``: roh mřížky u počátku laseru v souřadnicích LightBurnu."""
     fill: str = "origin"
+    rotation: str = "none"
+    """``none`` | ``90`` | ``any`` (spec. v1.13)."""
+    no_rotate: frozenset[str] = frozenset()
+    """Výrobky, které se nikdy nenatáčí (výjimky v seznamu)."""
+
+
+class ItemGeometry:
+    """Body skutečných křivek výrobků v souřadnicích jádra (pro natočení); výsledky se cachují."""
+
+    def __init__(self, project: LoadedProject) -> None:
+        from ..adapters.lightburn.render import ProjectRenderer
+
+        self._renderer = ProjectRenderer(project)
+        self._hull: dict[str, list[tuple[float, float]]] = {}
+        self._angle: dict[str, float] = {}
+
+    def hull(self, item_id: str) -> list[tuple[float, float]]:
+        if item_id not in self._hull:
+            from ..adapters.lightburn.render import stroke_points
+            from ..core.rotation import convex_hull
+
+            self._hull[item_id] = convex_hull(stroke_points(self._renderer.strokes(item_id), GEOMETRY_TOL))
+        return self._hull[item_id]
+
+    def min_angle(self, item_id: str) -> float:
+        if item_id not in self._angle:
+            pts = self.hull(item_id)
+            self._angle[item_id] = min_area_angle(pts) if len(pts) >= 3 else 0.0
+        return self._angle[item_id]
+
+
+def _turned_bounds(it, angle: float, geometry: ItemGeometry) -> Rect:
+    """Obdélník výrobku po natočení o ``angle`` kolem středu jeho obrysu (souřadnice jádra)."""
+    b = it.screen_bounds
+    cx, cy = (b.left + b.right) / 2.0, (b.top + b.bottom) / 2.0
+    q = round(angle / 90.0)
+    if abs(angle - 90.0 * q) < 1e-9:  # násobek 90°: přesně z (konzervativního) obdélníku obrysu
+        return rotated_bounds([(b.left, b.top), (b.right, b.bottom)], angle, cx, cy)
+    r = rotated_bounds(geometry.hull(it.id), angle, cx, cy)
+    t = GEOMETRY_TOL
+    return Rect(r.left - t, r.top - t, r.right + t, r.bottom + t)
+
+
+def _choose_rotations(project: LoadedProject, params: ArrangeParams, order: tuple[str, ...], corner: Corner,
+                      geometry: ItemGeometry, fit: tuple[float, float] | None) -> dict[str, float]:
+    """Úhel pro každý vybraný výrobek (0 = beze změny)."""
+    if params.rotation == "none":
+        return {}
+    base = {}
+    for iid in order:
+        if iid in params.no_rotate:
+            base[iid] = 0.0
+        else:
+            base[iid] = geometry.min_angle(iid) if params.rotation == "any" else 0.0
+
+    def variant(kind: str) -> dict[str, float]:
+        out = {}
+        for iid, a in base.items():
+            if iid in params.no_rotate or kind == "keep":
+                out[iid] = a
+                continue
+            r = _turned_bounds(project.item(iid), a, geometry)
+            landscape = r.width >= r.height
+            want_landscape = kind == "landscape"
+            # o 90° navíc tím směrem, který dá menší celkové natočení (−60° místo 120°)
+            out[iid] = a if landscape == want_landscape else (a + 90.0 if a <= 0 else a - 90.0)
+        return out
+
+    candidates = []
+    for kind in ("keep", "landscape", "portrait"):
+        angles = variant(kind)
+        items = [Item(it.id, _turned_bounds(it, angles.get(it.id, 0.0), geometry) if it.id in angles else it.screen_bounds,
+                      it.label, it.source_order) for it in project.items if it.supported]
+        lay = arrange_to_grid(items, GridRequest(order, params.columns, params.gap_x, params.gap_y, 0.0, 0.0, fill_from=corner))
+        w, h = lay.grid_bounds.width, lay.grid_bounds.height
+        fits = fit is None or (w <= fit[0] + 1e-6 and h <= fit[1] + 1e-6)
+        candidates.append((kind, angles, w * h, fits))
+    keep = candidates[0]
+    best = keep
+    for c in candidates[1:]:
+        better_fit = c[3] and not best[3]
+        smaller = c[3] == best[3] and c[2] < best[2] * (1.0 - ORIENTATION_GAIN)
+        if better_fit or smaller:
+            best = c
+    return {iid: a for iid, a in best[1].items() if abs(a) > 1e-9}
+
+
+def _cos_sin(deg: float) -> tuple[float, float]:
+    """Přesné hodnoty pro násobky 90° (žádné 6e-17 v souboru)."""
+    q = round(deg / 90.0)
+    if abs(deg - 90.0 * q) < 1e-9:
+        return ((1.0, 0.0), (0.0, 1.0), (-1.0, 0.0), (0.0, -1.0))[q % 4]
+    r = math.radians(deg)
+    return math.cos(r), math.sin(r)
+
+
+def _screen_to_file(t: tuple[float, ...], sx: float, sy: float) -> tuple[float, ...]:
+    """Transformace v souřadnicích jádra → souboru: ``S ∘ T ∘ S`` pro ``S = diag(sx, sy)``."""
+    a, b, c, d, e, f = t
+    k = sx * sy
+    return (a, k * b, k * c, d, sx * e, sy * f)
 
 
 @dataclass(slots=True)
@@ -73,11 +184,17 @@ class Plan:
     request: GridRequest
     layout: LayoutResult
     report: ValidationReport
-    moves_file: dict[str, tuple[float, float]]
+    moves_file: dict[str, tuple[float, ...]]
+    """Posun ``(dx, dy)`` nebo afinní transformace ``(a, b, c, d, e, f)`` v souřadnicích souboru."""
     origin_corner_lightburn: tuple[float, float]
     """Roh mřížky nejbližší počátku laseru v souřadnicích LightBurnu."""
     anchor: str
     fill: str
+    rotations: dict[str, float] = field(default_factory=dict)
+    """Natočení výrobků ve stupních (souřadnice jádra, kladně po směru hodin); chybí = 0."""
+    pivots: dict[str, tuple[float, float]] = field(default_factory=dict)
+    """Střed natočení (střed obrysu v původní poloze, souřadnice jádra)."""
+    rotation_mode: str = "none"
 
 
 @dataclass(slots=True)
@@ -99,11 +216,13 @@ def _origin_on_right(project: LoadedProject) -> bool:
     return project.info.orientation.mirror_x
 
 
-def make_plan(project: LoadedProject, params: ArrangeParams) -> Plan:
+def make_plan(project: LoadedProject, params: ArrangeParams, geometry: ItemGeometry | None = None) -> Plan:
     if params.anchor not in ANCHORS:
         raise GridError("invalid_anchor", "Neznámý způsob umístění mřížky.", anchor=params.anchor)
     if params.fill not in FILL_MODES:
         raise GridError("invalid_fill_corner", "Neznámé pořadí plnění.", fill=params.fill)
+    if params.rotation not in ROTATION_MODES:
+        raise GridError("invalid_rotation", "Neznámý režim natočení.", rotation=params.rotation)
     supported = [it for it in project.items if it.supported]
     order = params.order if params.order is not None else tuple(it.id for it in supported)
     for item_id in order:
@@ -115,9 +234,19 @@ def make_plan(project: LoadedProject, params: ArrangeParams) -> Plan:
 
     o = project.info.orientation
     right = _origin_on_right(project)
-    core_items = [Item(it.id, it.screen_bounds, it.label, it.source_order) for it in supported]
     corner = Corner.TOP_RIGHT if (params.fill == "origin" and right) else Corner.TOP_LEFT
     material = material_to_core(project, params.material) if params.material else None
+
+    rotations: dict[str, float] = {}
+    if params.rotation != "none":
+        geometry = geometry or ItemGeometry(project)
+        fit = None
+        if material is not None and params.anchor in ("origin", "center"):
+            area, _ = usable_area(material)
+            fit = (area.width, area.height) if area is not None else None
+        rotations = _choose_rotations(project, params, tuple(order), corner, geometry, fit)
+    core_items = [Item(it.id, _turned_bounds(it, rotations[it.id], geometry) if it.id in rotations else it.screen_bounds,
+                       it.label, it.source_order) for it in supported]
 
     # 1. průchod: rozměr mřížky (poloha nehraje roli, výpočet je čistá translace)
     probe = arrange_to_grid(core_items, GridRequest(tuple(order), params.columns, params.gap_x, params.gap_y, 0.0, 0.0, fill_from=corner))
@@ -146,10 +275,31 @@ def make_plan(project: LoadedProject, params: ArrangeParams) -> Plan:
     req = GridRequest(tuple(order), params.columns, params.gap_x, params.gap_y, sx, sy, fill_from=corner)
     layout = arrange_to_grid(core_items, req)
     report = validate_layout(layout, req.gap_x, req.gap_y, material, project.obstacles_for(set(order)))
-    moves = {p.item_id: o.to_file_delta(p.dx, p.dy) for p in layout.placements}
+    moves: dict[str, tuple[float, ...]] = {}
+    pivots: dict[str, tuple[float, float]] = {}
+    for p in layout.placements:
+        if p.item_id not in rotations:
+            moves[p.item_id] = o.to_file_delta(p.dx, p.dy)
+            continue
+        b = project.item(p.item_id).screen_bounds
+        cx, cy = (b.left + b.right) / 2.0, (b.top + b.bottom) / 2.0
+        cs, sn = _cos_sin(rotations[p.item_id])
+        # jádro: T = Tr(dx, dy) ∘ Tr(c) ∘ R ∘ Tr(−c);  x' = a·x + c·y + e
+        t = (cs, sn, -sn, cs, cx - cs * cx + sn * cy + p.dx, cy - sn * cx - cs * cy + p.dy)
+        moves[p.item_id] = _screen_to_file(t, o.sx, o.sy)
+        pivots[p.item_id] = (cx, cy)
     g = layout.grid_bounds
     corner_screen = (g.right if right else g.left, g.top)
-    return Plan(project, req, layout, report, moves, o.to_file_point(*corner_screen), params.anchor, params.fill)
+    return Plan(project, req, layout, report, moves, o.to_file_point(*corner_screen), params.anchor, params.fill,
+                {k: v for k, v in rotations.items() if k in moves}, pivots, params.rotation)
+
+
+def _move_xy(m: tuple[float, ...]) -> tuple[float, float]:
+    return (m[0], m[1]) if len(m) == 2 else (m[4], m[5])
+
+
+def _rotation_mode(plan: Plan) -> str:
+    return plan.rotation_mode
 
 
 def _protocol(plan: Plan, output: Path, out_bytes: bytes, problems: list[str]) -> dict:
@@ -166,6 +316,7 @@ def _protocol(plan: Plan, output: Path, out_bytes: bytes, problems: list[str]) -
         "parameters": {
             "columns": plan.request.columns, "gap_x_mm": plan.request.gap_x, "gap_y_mm": plan.request.gap_y,
             "anchor": plan.anchor, "fill": plan.fill, "order": list(plan.request.ordered_item_ids),
+            "rotation_mode": _rotation_mode(plan),
             "grid_corner_at_origin_lightburn_xy": plan.origin_corner_lightburn,
         },
         "grid": {"columns": plan.layout.columns, "rows": plan.layout.rows,
@@ -173,7 +324,9 @@ def _protocol(plan: Plan, output: Path, out_bytes: bytes, problems: list[str]) -
         "placements": [
             {"item": pl.item_id, "label": p.item(pl.item_id).label, "index": pl.index + 1,
              "row": pl.row + 1, "column_from_fill_corner": pl.column + 1,
-             "move_lightburn_xy_mm": plan.moves_file[pl.item_id],
+             "move_lightburn_xy_mm": _move_xy(plan.moves_file[pl.item_id]),
+             "rotation_deg_screen_clockwise": plan.rotations.get(pl.item_id, 0.0),
+             "transform_lightburn": list(plan.moves_file[pl.item_id]) if len(plan.moves_file[pl.item_id]) == 6 else None,
              "size_mm": [pl.target_bounds.width, pl.target_bounds.height]}
             for pl in plan.layout.placements
         ],
@@ -265,11 +418,26 @@ def _check_reloaded_bounds(plan: Plan, out_bytes: bytes) -> list[str]:
         tmp.write_bytes(out_bytes)
         reloaded = rd.load_project(tmp)
     problems = []
+    geo_out = None
     for pl in plan.layout.placements:
-        got = reloaded.item(pl.item_id).screen_bounds
         exp = pl.target_bounds
+        if pl.item_id in plan.rotations:
+            # natočený výrobek: skutečné křivky znovu načteného výstupu musí ležet v cílovém obdélníku
+            if geo_out is None:
+                geo_out = ItemGeometry(reloaded)
+            pts = geo_out.hull(pl.item_id)
+            q = round(plan.rotations[pl.item_id] / 90.0)
+            if abs(plan.rotations[pl.item_id] - 90.0 * q) < 1e-9:
+                got = reloaded.item(pl.item_id).screen_bounds
+            else:
+                got = Rect(min(x for x, _ in pts), min(y for _, y in pts), max(x for x, _ in pts), max(y for _, y in pts))
+                got = Rect(got.left - GEOMETRY_TOL, got.top - GEOMETRY_TOL, got.right + GEOMETRY_TOL, got.bottom + GEOMETRY_TOL)
+            tol = 1e-3 if abs(plan.rotations[pl.item_id] - 90.0 * q) < 1e-9 else 0.02
+        else:
+            got = reloaded.item(pl.item_id).screen_bounds
+            tol = 1e-3
         if got is None or max(abs(got.left - exp.left), abs(got.top - exp.top),
-                              abs(got.right - exp.right), abs(got.bottom - exp.bottom)) > 1e-3:
+                              abs(got.right - exp.right), abs(got.bottom - exp.bottom)) > tol:
             problems.append(f"outline_not_at_target: {pl.item_id}")
     for it in plan.project.items:
         if it.id not in plan.moves_file and it.supported:

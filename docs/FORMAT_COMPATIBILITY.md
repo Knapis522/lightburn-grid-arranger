@@ -92,3 +92,17 @@ Z A vytvořen `Kalibrace_C__grid_poc.lbrn2` posunem skupiny 8 o (+50, +30) metod
 - [ ] Negativní testy (poškozený / neznámý soubor, `.lbrn`, nepodporované Mirror) → přesunuto do automatických testů ADAPT-00 (T-FMT-02, 03, 05; T-MVP-25).
 
 **Stav brány KAL-00: SPLNĚNO 2026-10-16** pro LightBurn 2.2.00-RC-7 a kombinace Mirror True/True a False/True; negativní testy jsou podmínkou dokončení ADAPT-00.
+
+## KAL-01 — natočení skupin (2026-10-17, čeká na ověření v LightBurnu)
+
+Zápis natočení: `XForm' = T ∘ XForm` u nejvyšší skupiny i u `BackupPath` každého textu v ní (BackupPath je ve světových souřadnicích, KAL-00), kde `T` je natočení kolem středu obrysu (+ posun). Nástroj `tools/kal01/rotate_calibration.py` vytvořil z V-001 / V-003:
+
+- `Kalibrace_A__kal01_rot.lbrn2`, `Kalibrace_L_A__kal01_rot.lbrn2` — G1 90°, G2 30°, G3 180°, G4 −15° (v souřadnicích souboru); změněno přesně 8 `XForm` (4 skupiny + 4 BackupPath), nezávislá kontrola OK, po znovunačtení všechny výrobky podporované (BackupPath odpovídá složené transformaci textu).
+- `Kalibrace_A__kal01_rot__grid_001.lbrn2` — výstup aplikace s volbou *Libovolný úhel*: natočené kartičky srovnány zpět (G1 90°, G2 30°, G4 −15° v souřadnicích obrazovky), G3 (180°) ponechána — plochu nezmenší.
+
+### Otevřené body KAL-01
+
+- [ ] Otevření kalibračních souborů v LightBurnu (File → Open): kartičky celé, text na kartičce a natočený s ní, Preview v pořádku.
+- [ ] Směr natočení v LightBurnu pro kladný úhel v souřadnicích souboru (po / proti směru hodin) pro oba lasery.
+- [ ] Srovnaný výstup `__grid_001` vypadá jako původní kalibrace (kromě G3 vzhůru nohama).
+
