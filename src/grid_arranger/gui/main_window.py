@@ -5,12 +5,13 @@ from __future__ import annotations
 from pathlib import Path
 
 from PySide6 import __version__ as pyside_version
-from PySide6.QtCore import QEvent, QSize, QStandardPaths, Qt, QUrl, qVersion
+from PySide6.QtCore import QEvent, QItemSelectionModel, QSize, QStandardPaths, Qt, QUrl, qVersion
 from PySide6.QtGui import QAction, QActionGroup, QDesktopServices, QKeySequence, QPalette
 from PySide6.QtWidgets import (
     QApplication,
     QCheckBox,
     QComboBox,
+    QAbstractItemView,
     QDoubleSpinBox,
     QFileDialog,
     QGridLayout,
@@ -34,6 +35,7 @@ from ..adapters.lightburn.render import ProjectRenderer
 from ..adapters.lightburn.write import next_output_path
 from ..application.arrange_job import (
     ROTATION_MODES, ArrangeParams, ItemGeometry, MaterialInput, Plan, check_output_path, execute, make_plan, material_to_core,
+    normalize_angle,
 )
 from ..core.collision import usable_area
 from ..core.order import default_order, deselect, move_down, move_up, select, swap
@@ -63,7 +65,8 @@ class MainWindow(QMainWindow):
         self.plan_error: GridError | None = None
         self._rebuilding = False
         self._geometry = None
-        self.no_rotate: set[str] = set()
+        self.manual_angles: dict[str, float] = {}
+        """Ruční natočení výrobků (°, po směru hodin); 0 = nenatáčet."""
         self.updates = UpdateController(self, settings)
         self._build_ui()
         self.retranslate()
@@ -171,6 +174,12 @@ class MainWindow(QMainWindow):
         self.toolbar.addAction(self.act_help)
         self.addToolBar(Qt.ToolBarArea.TopToolBarArea, self.toolbar)
         self._toolbar_icons = {self.act_open: "open", self.act_save: "save_new", self.act_fit: "fit", self.act_help: "help"}
+        # Esc = zrušit výběr výrobků (v seznamu i v náhledu)
+        self.act_clear_selection = QAction(self)
+        self.act_clear_selection.setShortcut(QKeySequence(Qt.Key.Key_Escape))
+        self.act_clear_selection.setShortcutContext(Qt.ShortcutContext.WindowShortcut)
+        self.act_clear_selection.triggered.connect(self.clear_selection)
+        self.addAction(self.act_clear_selection)
 
         # --- levý panel: sbalitelné sekce (stav se pamatuje), kompaktní mřížka polí
         left = QWidget()
@@ -202,7 +211,9 @@ class MainWindow(QMainWindow):
         iv = QVBoxLayout(body)
         self.list_items = QListWidget()
         self.list_items.setMinimumHeight(180)
+        self.list_items.setSelectionMode(QAbstractItemView.SelectionMode.ExtendedSelection)
         self.list_items.itemChanged.connect(self._on_item_changed)
+        self.list_items.itemSelectionChanged.connect(self._on_list_selection)
         iv.addWidget(self.list_items)
         g = QGridLayout()
         self.btn_up, self.btn_down, self.btn_reset = QPushButton(), QPushButton(), QPushButton()
@@ -221,8 +232,30 @@ class MainWindow(QMainWindow):
         self.btn_norotate.setCheckable(True)
         self.btn_norotate.toggled.connect(self._toggle_no_rotate)
         g.addWidget(self.btn_norotate, 1, 2)
-        self.list_items.currentItemChanged.connect(lambda *_: self._sync_no_rotate_button())
+        # ruční natočení vybraných výrobků (výběr v seznamu nebo kliknutím v náhledu)
+        self.lbl_angle = QLabel()
+        self.spin_angle = QDoubleSpinBox()
+        self.spin_angle.setRange(-180.0, 180.0)
+        self.spin_angle.setDecimals(1)
+        self.spin_angle.setSingleStep(1.0)
+        self.spin_angle.setWrapping(True)
+        self.spin_angle.setSuffix(" °")
+        self.spin_angle.setKeyboardTracking(False)
+        self.spin_angle.setAlignment(Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter)
+        self.spin_angle.valueChanged.connect(self._on_angle_edited)
+        self.btn_rot_ccw, self.btn_rot_cw, self.btn_rot_auto = QPushButton("↺ 90°"), QPushButton("↻ 90°"), QPushButton()
+        self.btn_rot_ccw.clicked.connect(lambda: self._turn_selected(-90.0))
+        self.btn_rot_cw.clicked.connect(lambda: self._turn_selected(90.0))
+        self.btn_rot_auto.clicked.connect(self._auto_selected)
+        g.addWidget(self.btn_rot_ccw, 2, 0)
+        g.addWidget(self.btn_rot_cw, 2, 1)
+        g.addWidget(self.btn_rot_auto, 2, 2)
         iv.addLayout(g)
+        rot = QHBoxLayout()
+        rot.addWidget(self.lbl_angle)
+        rot.addWidget(self.spin_angle)
+        rot.addStretch(1)
+        iv.addLayout(rot)
         self.lbl_count = QLabel()
         iv.addWidget(self.lbl_count)
         self.chk_art = QCheckBox()  # v hlavičce sekce Výrobky (vykreslení motivů v náhledu)
@@ -301,6 +334,7 @@ class MainWindow(QMainWindow):
         rv = QVBoxLayout(right)
         self.preview = PreviewView()
         self.preview.itemDropped.connect(self._on_item_dropped)
+        self.preview.itemClicked.connect(self._on_preview_clicked)
         rv.addWidget(self.preview, 1)
         bar = QHBoxLayout()
         self.lbl_summary = QLabel()
@@ -393,7 +427,15 @@ class MainWindow(QMainWindow):
             "Rotate items to save material: each item is turned so that the rectangle around it is as small as possible, "
             "and the orientation giving the smallest grid is chosen. Exceptions: select an item and click “No rotation”."))
         self.btn_norotate.setText(self.tr("No rotation"))
-        self.btn_norotate.setToolTip(self.tr("The selected item will never be rotated."))
+        self.btn_norotate.setToolTip(self.tr("The selected items will never be rotated."))
+        self.lbl_angle.setText(self.tr("Angle of selected:"))
+        self.spin_angle.setToolTip(self.tr(
+            "Rotation of the selected items in degrees (positive = clockwise). Select items in the list or by clicking "
+            "them in the preview (Ctrl+click adds more). A manual angle is kept as entered."))
+        self.btn_rot_ccw.setToolTip(self.tr("Rotate the selected items 90° anticlockwise"))
+        self.btn_rot_cw.setToolTip(self.tr("Rotate the selected items 90° clockwise"))
+        self.btn_rot_auto.setText(self.tr("Auto"))
+        self.btn_rot_auto.setToolTip(self.tr("Remove the manual angle: the selected items are rotated automatically again"))
         self._fill_combo(self.combo_fill, FILL_KEYS, [self.tr("From the laser origin"), self.tr("Reading order (from top left)")])
 
         self.box_place.setTitle(self.tr("Placement"))
@@ -523,7 +565,8 @@ class MainWindow(QMainWindow):
         self.project = project
         self.renderer = ProjectRenderer(project)
         self._geometry = ItemGeometry(project)
-        self.no_rotate = set()
+        self.manual_angles = {}
+        self.preview.set_selection(set())
         self.preview.clear_cache()
         self._refit = True
         self.order = default_order(it for it in project.items if it.supported)
@@ -551,7 +594,9 @@ class MainWindow(QMainWindow):
     # ====================================================================== seznam výrobků
     def _rebuild_item_list(self, keep: str | None = None) -> None:
         cur = keep or (self.list_items.currentItem().data(Qt.ItemDataRole.UserRole) if self.list_items.currentItem() else None)
+        chosen = self.selected_ids() if keep is None else {keep}
         self._rebuilding = True
+        self.list_items.blockSignals(True)
         self.list_items.clear()
         if self.project is None:
             self.lbl_count.setText("")
@@ -577,10 +622,13 @@ class MainWindow(QMainWindow):
             self.list_items.addItem(li)
             if it.id == cur:
                 self.list_items.setCurrentItem(li)
+            li.setSelected(it.id in chosen)
         n_sup = sum(1 for it in self.project.items if it.supported)
         self.lbl_count.setText(
             self.tr("Selected %n item(s)", "", len(self.order)) + " / " + self.tr("supported: {s}, total: {t}").format(s=n_sup, t=len(self.project.items)))
+        self.list_items.blockSignals(False)
         self._rebuilding = False
+        self._on_list_selection()
 
     def _item_text(self, it) -> str:
         selected = it.id in self.order
@@ -591,11 +639,14 @@ class MainWindow(QMainWindow):
                                                     unit=self.unit.suffix)
             text = f"{num}{it.id}  {it.label}  —  {size}"
             angle = self.plan.rotations.get(it.id) if self.plan is not None else None
-            if it.id in self.no_rotate:
+            manual = it.id in self.manual_angles
+            if manual and not self.manual_angles[it.id]:
                 text += "  " + self.tr("(no rotation)")
             elif angle:
                 deg = self.locale_mgr.qlocale().toString(abs(angle), "f", 1).rstrip("0").rstrip(",.")
                 text += f"  {'↻' if angle > 0 else '↺'} {deg}°"
+                if manual:
+                    text += " " + self.tr("(manual)")
         else:
             text = f"{it.id}  {it.label}  —  " + self.tr("cannot be moved")
         if it.warnings:
@@ -617,22 +668,89 @@ class MainWindow(QMainWindow):
         li = self.list_items.currentItem()
         return li.data(Qt.ItemDataRole.UserRole) if li is not None else None
 
+    def selected_ids(self) -> set[str]:
+        return {li.data(Qt.ItemDataRole.UserRole) for li in self.list_items.selectedItems()}
+
+    def _rotatable_selection(self) -> list[str]:
+        """Vybrané výrobky, které se rozmisťují (jen ty lze natáčet)."""
+        return [i for i in self.order if i in self.selected_ids()]
+
+    def _effective_angle(self, iid: str) -> float:
+        if iid in self.manual_angles:
+            return self.manual_angles[iid]
+        return self.plan.rotations.get(iid, 0.0) if self.plan is not None else 0.0
+
+    def _on_list_selection(self) -> None:
+        if self._rebuilding:
+            return
+        self.preview.set_selection(self.selected_ids() & set(self.order))
+        self._sync_no_rotate_button()
+
+    def clear_selection(self) -> None:
+        self.list_items.clearSelection()
+        self._on_list_selection()
+
+    def _on_preview_clicked(self, iid: str, additive: bool) -> None:
+        """Kliknutí na výrobek v náhledu = výběr v seznamu (Ctrl přidá / odebere)."""
+        for i in range(self.list_items.count()):
+            li = self.list_items.item(i)
+            if li.data(Qt.ItemDataRole.UserRole) != iid:
+                continue
+            self.list_items.blockSignals(True)
+            if additive:
+                li.setSelected(not li.isSelected())
+            else:
+                self.list_items.clearSelection()
+                li.setSelected(True)
+            self.list_items.setCurrentItem(li, QItemSelectionModel.SelectionFlag.NoUpdate)
+            self.list_items.blockSignals(False)
+            self.list_items.scrollToItem(li)
+            self._on_list_selection()
+            return
+
     def _sync_no_rotate_button(self) -> None:
-        iid = self._current_item_id()
-        ok = iid is not None and self.project is not None and self.project.item(iid).supported
+        ids = self._rotatable_selection()
+        ok = bool(ids) and self.project is not None
         self.btn_norotate.blockSignals(True)
-        self.btn_norotate.setEnabled(ok and (self.combo_rotation.currentData() or "none") != "none")
-        self.btn_norotate.setChecked(ok and iid in self.no_rotate)
+        self.btn_norotate.setEnabled(ok)
+        self.btn_norotate.setChecked(ok and all(self.manual_angles.get(i) == 0.0 for i in ids))
         self.btn_norotate.blockSignals(False)
+        for w in (self.spin_angle, self.btn_rot_ccw, self.btn_rot_cw):
+            w.setEnabled(ok)
+        self.btn_rot_auto.setEnabled(ok and any(i in self.manual_angles for i in ids))
+        self.spin_angle.blockSignals(True)
+        self.spin_angle.setValue(self._effective_angle(ids[0]) if ok else 0.0)
+        self.spin_angle.blockSignals(False)
+
+    def _set_manual(self, angles: dict[str, float]) -> None:
+        for iid, a in angles.items():
+            self.manual_angles[iid] = normalize_angle(round(a, 6))
+        self.recompute()
 
     def _toggle_no_rotate(self, on: bool) -> None:
-        iid = self._current_item_id()
-        if iid is None:
+        ids = self._rotatable_selection()
+        if not ids:
             return
         if on:
-            self.no_rotate.add(iid)
+            self._set_manual({i: 0.0 for i in ids})
         else:
-            self.no_rotate.discard(iid)
+            for i in ids:
+                self.manual_angles.pop(i, None)
+            self.recompute()
+
+    def _on_angle_edited(self, value: float) -> None:
+        ids = self._rotatable_selection()
+        if ids:
+            self._set_manual({i: value for i in ids})
+
+    def _turn_selected(self, step: float) -> None:
+        ids = self._rotatable_selection()
+        if ids:
+            self._set_manual({i: self._effective_angle(i) + step for i in ids})
+
+    def _auto_selected(self) -> None:
+        for i in self._rotatable_selection():
+            self.manual_angles.pop(i, None)
         self.recompute()
 
     def _on_rotation_changed(self) -> None:
@@ -717,7 +835,7 @@ class MainWindow(QMainWindow):
             start=(self.spin_start_x.mm(), self.spin_start_y.mm()),
             fill=self.combo_fill.currentData() or "origin",
             rotation=self.combo_rotation.currentData() or "none",
-            no_rotate=frozenset(self.no_rotate),
+            angles={k: v for k, v in self.manual_angles.items() if k in self.order},
         )
 
     def recompute(self) -> None:

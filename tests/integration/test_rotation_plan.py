@@ -93,3 +93,29 @@ def test_cli_rotate_and_protocol(tmp_path, capsys):
     proto = json.loads(next(tmp_path.glob("*__grid_001.json")).read_text(encoding="utf-8"))
     assert proto["parameters"]["rotation_mode"] == "any"
     assert all(p["rotation_deg_screen_clockwise"] != 0 and len(p["transform_lightburn"]) == 6 for p in proto["placements"])
+
+
+def test_manual_angles_apply_even_without_automatic_rotation(tmp_path):
+    src = write(tmp_path, project([tilted(0, 0), tilted(300, 0), tilted(0, 300)]))
+    p = params(rotation="none", angles={"G2": 45.0, "G3": 400.0})  # 400° = 40°
+    plan = make_plan(load_project(src), p)
+    assert plan.rotations == {"G2": 45.0, "G3": pytest.approx(40.0)} and plan.manual == {"G2", "G3"}
+    res = run(src, p, out_dir=tmp_path)
+    assert res.problems == []  # nezávislá kontrola i poloha křivek po znovunačtení
+
+
+def test_manual_angle_wins_over_automatic_and_orientation(tmp_path):
+    src = write(tmp_path, project([tilted(0, 0), tilted(300, 0), tilted(0, 300)]))
+    auto = make_plan(load_project(src), params())
+    plan = make_plan(load_project(src), params(angles={"G1": 7.5}))
+    assert plan.rotations["G1"] == 7.5
+    assert plan.rotations["G2"] == pytest.approx(auto.rotations["G2"])
+
+
+def test_invalid_manual_angle_is_refused(tmp_path):
+    from grid_arranger.domain.errors import GridError
+
+    src = write(tmp_path, project([tilted(0, 0)]))
+    with pytest.raises(GridError) as e:
+        make_plan(load_project(src), params(angles={"G1": float("nan")}))
+    assert e.value.code == "invalid_rotation"

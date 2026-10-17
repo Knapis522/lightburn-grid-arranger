@@ -486,11 +486,98 @@ def test_rotation_combo_exceptions_and_list_markers(make_window, tmp_path, setti
     w.list_items.setCurrentRow(1)
     assert w.btn_norotate.isEnabled() and not w.btn_norotate.isChecked()
     w.btn_norotate.click()
-    assert w.no_rotate == {"G2"} and "G2" not in w.plan.rotations and "(no rotation)" in w.list_items.item(1).text()
+    assert w.manual_angles == {"G2": 0.0} and "G2" not in w.plan.rotations and "(no rotation)" in w.list_items.item(1).text()
     w.combo_rotation.setCurrentIndex(w.combo_rotation.findData("none"))
     assert settings.rotation_mode() == "none" and w.plan.rotations == {}
-    assert not w.btn_norotate.isEnabled()
     settings.set_rotation_mode("any")
+
+
+def _row(w, iid):
+    from PySide6.QtCore import Qt
+
+    return next(w.list_items.item(i) for i in range(w.list_items.count())
+                if w.list_items.item(i).data(Qt.ItemDataRole.UserRole) == iid)
+
+
+def test_click_in_preview_selects_item_and_ctrl_adds(make_window, tmp_path):
+    w = make_window("en")
+    w.open_project(write(tmp_path, project([card(0, 0), card(200, 0), card(0, 200)])))
+    w.preview.itemClicked.emit("G2", False)
+    assert w.selected_ids() == {"G2"} and w.preview.selection() == {"G2"}
+    w.preview.itemClicked.emit("G3", True)
+    assert w.selected_ids() == {"G2", "G3"} and w.preview.selection() == {"G2", "G3"}
+    w.preview.itemClicked.emit("G2", True)  # Ctrl+klik na vybraný = odebrat
+    assert w.selected_ids() == {"G3"}
+    w.recompute()  # překreslení výběr zachová
+    assert w.preview.selection() == {"G3"}
+    from PySide6.QtTest import QTest
+
+    w.show()
+    w.activateWindow()
+    QTest.qWaitForWindowActive(w, 1000)
+    w.preview.setFocus()
+    QTest.keyClick(w.preview, Qt.Key.Key_Escape)  # Esc zruší výběr
+    assert w.selected_ids() == set() and w.preview.selection() == set()
+    assert not w.spin_angle.isEnabled()
+
+
+def test_click_without_moving_is_selection_not_swap(make_window, tmp_path):
+    w = make_window("en")
+    w.open_project(write(tmp_path, project([card(0, 0), card(200, 0)])))
+    order = w.order
+    clicked = []
+    w.preview.itemClicked.connect(lambda i, a: clicked.append(i))
+    r = w.preview._rects["G1"]
+    w.preview.start_drag(r.center())
+    w.preview.drag_to(r.center())
+    w.preview.finish_drag(r.center())
+    assert clicked == ["G1"] and w.order == order
+
+
+def test_manual_angle_buttons_and_auto(make_window, tmp_path):
+    from tests.integration.test_rotation_plan import tilted
+
+    w = make_window("en")
+    w.combo_rotation.setCurrentIndex(w.combo_rotation.findData("none"))
+    w.open_project(write(tmp_path, project([tilted(0, 0), tilted(300, 0), tilted(0, 300)])))
+    assert w.plan.rotations == {} and not w.spin_angle.isEnabled()
+    w.preview.itemClicked.emit("G1", False)
+    w.preview.itemClicked.emit("G3", True)
+    assert w.spin_angle.isEnabled() and not w.btn_rot_auto.isEnabled()
+    w.btn_rot_cw.click()  # ruční úhel platí i v režimu Nenatáčet
+    assert w.plan.rotations == {"G1": 90.0, "G3": 90.0} and w.plan.manual == {"G1", "G3"}
+    assert "(manual)" in _row(w, "G1").text() and "(manual)" not in _row(w, "G2").text()
+    w.btn_rot_ccw.click()
+    w.btn_rot_ccw.click()
+    assert w.plan.rotations == {"G1": -90.0, "G3": -90.0}
+    w.spin_angle.setValue(-30.0)
+    assert w.plan.rotations == {"G1": -30.0, "G3": -30.0} and w.plan.report.can_save
+    w.btn_rot_auto.click()
+    assert w.manual_angles == {} and w.plan.rotations == {}
+    w.btn_rot_ccw.click()
+    w.btn_rot_ccw.click()
+    w.btn_rot_ccw.click()  # −270° → +90°
+    assert w.plan.rotations == {"G1": 90.0, "G3": 90.0}
+    w.combo_rotation.setCurrentIndex(w.combo_rotation.findData("any"))
+
+
+def test_manual_angle_survives_auto_mode_and_is_saved(make_window, tmp_path):
+    from grid_arranger.adapters.lightburn.read import load_project
+
+    from tests.integration.test_rotation_plan import tilted
+
+    w = make_window("en")
+    w.combo_rotation.setCurrentIndex(w.combo_rotation.findData("any"))
+    w.open_project(write(tmp_path, project([tilted(0, 0), tilted(300, 0)])))
+    auto = dict(w.plan.rotations)
+    w.preview.itemClicked.emit("G2", False)
+    w.spin_angle.setValue(auto["G2"] + 180.0 if auto["G2"] <= 0 else auto["G2"] - 180.0)  # otočit vzhůru nohama
+    assert w.plan.rotations["G1"] == pytest.approx(auto["G1"])
+    assert abs(w.plan.rotations["G2"] - auto["G2"]) == pytest.approx(180.0)
+    out = tmp_path / "manual.lbrn2"
+    w._save_answers = [out]
+    w.save_new_project()
+    assert out.exists() and all(it.supported for it in load_project(out).items)
 
 
 def test_rotated_items_drawn_rotated_in_preview(make_window, tmp_path):

@@ -24,6 +24,19 @@ from .version import display_version
 ORIGIN_TEXT = {"top_right": "top right", "top_left": "top left", "bottom_left": "bottom left", "bottom_right": "bottom right"}
 
 
+def _angles(specs: list[str]) -> dict[str, float]:
+    out: dict[str, float] = {}
+    for spec in specs:
+        iid, sep, deg = spec.partition("=")
+        try:
+            out[iid.strip()] = float(deg)
+        except ValueError:
+            raise SystemExit(f"--angle: expected ID=DEG, got {spec!r}") from None
+        if not sep or not iid.strip():
+            raise SystemExit(f"--angle: expected ID=DEG, got {spec!r}")
+    return out
+
+
 def _cmd_info(a: argparse.Namespace) -> int:
     p = load_project(a.file)
     i = p.info
@@ -67,6 +80,7 @@ def _cmd_arrange(a: argparse.Namespace) -> int:
         fill=a.fill,
         rotation=a.rotate,
         no_rotate=frozenset(a.no_rotate.split(",")) if a.no_rotate else frozenset(),
+        angles=_angles(a.angle),
     )
     plan = make_plan(project, params)
     lay = plan.layout
@@ -115,6 +129,8 @@ def main(argv: list[str] | None = None) -> int:
     pa.add_argument("--rotate", choices=ROTATION_MODES, default="none",
                     help="rotate items to save material: none (default), 90 (in 90° steps), any (smallest bounding box)")
     pa.add_argument("--no-rotate", help="comma-separated item ids that must never be rotated")
+    pa.add_argument("--angle", action="append", default=[], metavar="ID=DEG",
+                    help="manual rotation of one item in degrees, clockwise on screen (e.g. G3=90); repeatable")
     pa.add_argument("--out-dir")
     pa.add_argument("--dry-run", action="store_true")
     a = ap.parse_args(argv)

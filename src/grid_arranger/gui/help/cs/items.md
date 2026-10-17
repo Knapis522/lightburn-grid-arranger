@@ -9,7 +9,14 @@ Po otevření projektu (ikona **Otevřít projekt** na nástrojové liště, **S
 
 Pořadí: **chyťte kartičku v náhledu myší a přetáhněte ji na místo jiné kartičky** — zelený rámeček ukazuje, kam dopadne; **obě kartičky si prohodí místa**, ostatní zůstanou, kde jsou, a seznam se přečísluje. Puštění mimo kartičky tažení zruší. Nebo vyberte položku v seznamu a použijte **Nahoru / Dolů**. Nově zaškrtnutý výrobek se zařadí na konec. **Výchozí pořadí** vrátí pořadí ze souboru. **Vybrat vše / Zrušit výběr** hromadně mění výběr.
 
-**Natočení:** u natočeného výrobku je v seznamu šipka a úhel (↻ po směru, ↺ proti směru hodinových ručiček). Pokud se některý výrobek natáčet nesmí (směr textu, struktura materiálu), vyberte ho a klikněte na **Nenatáčet** — u položky se objeví „(nenatáčet)“; dalším kliknutím výjimku zrušíte. Viz [mřížka](grid.md).
+**Natočení:** u natočeného výrobku je v seznamu šipka a úhel (↻ po směru, ↺ proti směru hodinových ručiček). Výrobek vyberete **kliknutím v náhledu** (oranžový rámeček) nebo v seznamu; **Ctrl+klik** přidá další, **Esc** výběr zruší. Pro vybrané výrobky:
+
+- **↺ 90° / ↻ 90°** — otočí o 90° (např. aby měly všechny klíčenky očko nahoře);
+- **Úhel vybraných** — zadejte libovolný úhel ve stupních (kladný = po směru hodinových ručiček);
+- **Nenatáčet** — výrobek zůstane, jak je v projektu (směr textu, struktura materiálu);
+- **Automaticky** — zruší ruční úhel, výrobek natočí aplikace.
+
+Ručně zadaný úhel je v seznamu označen „(ručně)“, aplikace ho nemění a platí i při volbě Natočení *Nenatáčet*. Úhel se počítá od polohy v původním projektu. Po otevření jiného projektu se ruční úhly zruší. Viz [mřížka](grid.md).
 
 Číslo **1** se umístí do rohu mřížky podle volby *Pořadí plnění* (viz [mřížka](grid.md)).
 

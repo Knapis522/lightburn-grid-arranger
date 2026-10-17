@@ -79,6 +79,9 @@ class ArrangeParams:
     """``none`` | ``90`` | ``any`` (spec. v1.13)."""
     no_rotate: frozenset[str] = frozenset()
     """Výrobky, které se nikdy nenatáčí (výjimky v seznamu)."""
+    angles: dict[str, float] = field(default_factory=dict)
+    """Ruční natočení výrobků ve stupních (jádro, kladně po směru hodin) — přednost před automatikou,
+    platí i v režimu ``none`` (spec. v1.15 kap. 7.6)."""
 
 
 class ItemGeometry:
@@ -121,14 +124,27 @@ def _turned_bounds(it, angle: float, geometry: ItemGeometry) -> Rect:
 SQUARE_TOL = 0.01  # mm
 
 
+def normalize_angle(deg: float) -> float:
+    """Úhel do intervalu (−180°, 180°]."""
+    d = math.fmod(deg, 360.0)
+    if d > 180.0:
+        d -= 360.0
+    elif d <= -180.0:
+        d += 360.0
+    return 0.0 if abs(d) < 1e-9 else d
+
+
 def _choose_rotations(project: LoadedProject, params: ArrangeParams, order: tuple[str, ...], corner: Corner,
                       geometry: ItemGeometry, fit: tuple[float, float] | None) -> dict[str, float]:
-    """Úhel pro každý vybraný výrobek (0 = beze změny)."""
+    """Úhel pro každý vybraný výrobek (0 = beze změny). Ruční úhly se nikdy nemění."""
+    manual = {iid: normalize_angle(a) for iid, a in params.angles.items() if iid in order}
     if params.rotation == "none":
-        return {}
+        return {iid: a for iid, a in manual.items() if a}
     base = {}
     for iid in order:
-        if iid in params.no_rotate:
+        if iid in manual:
+            base[iid] = manual[iid]
+        elif iid in params.no_rotate:
             base[iid] = 0.0
         else:
             base[iid] = geometry.min_angle(iid) if params.rotation == "any" else 0.0
@@ -136,7 +152,7 @@ def _choose_rotations(project: LoadedProject, params: ArrangeParams, order: tupl
     def variant(kind: str) -> dict[str, float]:
         out = {}
         for iid, a in base.items():
-            if iid in params.no_rotate or kind == "keep":
+            if iid in params.no_rotate or iid in manual or kind == "keep":
                 out[iid] = a
                 continue
             r = _turned_bounds(project.item(iid), a, geometry)
@@ -152,7 +168,7 @@ def _choose_rotations(project: LoadedProject, params: ArrangeParams, order: tupl
     candidates = []
     # „original“ = nic nenatáčet: natočení se použije, jen když mřížka opravdu vyjde menší
     for kind in ("original", "keep", "landscape", "portrait"):
-        angles = {iid: 0.0 for iid in base} if kind == "original" else variant(kind)
+        angles = {iid: manual.get(iid, 0.0) for iid in base} if kind == "original" else variant(kind)
         items = [Item(it.id, _turned_bounds(it, angles.get(it.id, 0.0), geometry) if it.id in angles else it.screen_bounds,
                       it.label, it.source_order) for it in project.items if it.supported]
         lay = arrange_to_grid(items, GridRequest(order, params.columns, params.gap_x, params.gap_y, 0.0, 0.0, fill_from=corner))
@@ -201,6 +217,8 @@ class Plan:
     pivots: dict[str, tuple[float, float]] = field(default_factory=dict)
     """Střed natočení (střed obrysu v původní poloze, souřadnice jádra)."""
     rotation_mode: str = "none"
+    manual: frozenset[str] = frozenset()
+    """Výrobky s ručně zadaným úhlem."""
 
 
 @dataclass(slots=True)
@@ -229,6 +247,8 @@ def make_plan(project: LoadedProject, params: ArrangeParams, geometry: ItemGeome
         raise GridError("invalid_fill_corner", "Neznámé pořadí plnění.", fill=params.fill)
     if params.rotation not in ROTATION_MODES:
         raise GridError("invalid_rotation", "Neznámý režim natočení.", rotation=params.rotation)
+    if not all(math.isfinite(a) for a in params.angles.values()):
+        raise GridError("invalid_rotation", "Neplatný úhel natočení.")
     supported = [it for it in project.items if it.supported]
     order = params.order if params.order is not None else tuple(it.id for it in supported)
     for item_id in order:
@@ -244,7 +264,7 @@ def make_plan(project: LoadedProject, params: ArrangeParams, geometry: ItemGeome
     material = material_to_core(project, params.material) if params.material else None
 
     rotations: dict[str, float] = {}
-    if params.rotation != "none":
+    if params.rotation != "none" or params.angles:
         geometry = geometry or ItemGeometry(project)
         fit = None
         if material is not None and params.anchor in ("origin", "center"):
@@ -297,7 +317,8 @@ def make_plan(project: LoadedProject, params: ArrangeParams, geometry: ItemGeome
     g = layout.grid_bounds
     corner_screen = (g.right if right else g.left, g.top)
     return Plan(project, req, layout, report, moves, o.to_file_point(*corner_screen), params.anchor, params.fill,
-                {k: v for k, v in rotations.items() if k in moves}, pivots, params.rotation)
+                {k: v for k, v in rotations.items() if k in moves}, pivots, params.rotation,
+                frozenset(k for k in params.angles if k in moves))
 
 
 def _move_xy(m: tuple[float, ...]) -> tuple[float, float]:
@@ -332,6 +353,7 @@ def _protocol(plan: Plan, output: Path, out_bytes: bytes, problems: list[str]) -
              "row": pl.row + 1, "column_from_fill_corner": pl.column + 1,
              "move_lightburn_xy_mm": _move_xy(plan.moves_file[pl.item_id]),
              "rotation_deg_screen_clockwise": plan.rotations.get(pl.item_id, 0.0),
+             "rotation_manual": pl.item_id in plan.manual,
              "transform_lightburn": list(plan.moves_file[pl.item_id]) if len(plan.moves_file[pl.item_id]) == 6 else None,
              "size_mm": [pl.target_bounds.width, pl.target_bounds.height]}
             for pl in plan.layout.placements

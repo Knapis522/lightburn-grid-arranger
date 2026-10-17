@@ -1,7 +1,7 @@
 # Stav projektu
 
 **Aktualizováno:** 2026-10-17
-**Verze specifikace:** 1.14 (`docs/specification.md`)
+**Verze specifikace:** 1.15 (`docs/specification.md`)
 **Verze aplikace:** `0.1.0-alpha.2` — zveřejněno 2026-10-17 jako GitHub Pre-release (tag `v0.1.0-alpha.2`, commit `d8c0cc9`; instalátor, ZIP, SHA256SUMS). Předchozí: `v0.1.0-alpha.1` (2026-10-16, `64a5d00`)
 
 > Tento soubor je hlavní předávací dokument. Při navázání práce: přečíst tento soubor → `ROADMAP.md` → relevantní kapitolu specifikace. Nepředpokládat, že funkce funguje jen proto, že existuje kód.
@@ -56,3 +56,4 @@
 - 2026-10-17 — spec. v1.14 (**SHAPES-00**): tvary nakreslené přímo v LightBurnu — `Ellipse`, `Rect` bez zaoblení, `Polygon` se 6 stranami — jako obrys i obsah, vnořené skupiny (klíčenky); příznak hladkého uzlu `S`. Ověřeno automaticky na vzorcích C (oba lasery, všech 8 + 8 + 8 výrobků podporováno; náš posun shodný s přesunem v LightBurnu). Natočení: použije se jen při menší mřížce, kulaté výrobky bez otočení o 90°, hezký úhel. Jiné mnohoúhelníky a zaoblené rohy blokovány do KAL-02 (`tools/kal02`). 411 testů. Čeká: kontrola výstupů vzorků C v LightBurnu, KAL-02.
 - 2026-10-17 — vlastník ověřil výstupy vzorků C v LightBurnu (v pořádku) a dodal tvary z KAL-02 převedené na křivky: vzorec vrcholů mnohoúhelníku opraven (`90° + 180°/N + k·360°/N`; dřívější platil jen pro N = 6), poloměr rohu = mm s omezením na polovinu kratší strany. Všech 12 tvarů shodných s LightBurnem (0,0000 mm) → **KAL-02 splněno**, povoleny všechny mnohoúhelníky a zaoblené rohy. 419 testů. Další krok: vydání `v0.1.0-alpha.3`.
 - 2026-10-17 — vlastník nahlásil příliš velký rámeček klíčenky G5 (Test_klicenky): AABB cest byl obal řídicích bodů Bézierových křivek (u šikmo nakreslených kruhů až o 1,9 mm na každé straně). Nyní přesně podle extrémů křivky (spec. kap. 5 bod 2); G5 40 × 40 mm místo 43,75 × 43,75; ostatní vzorky beze změny (kartičky V-001, KAL-01). 423 testů.
+- 2026-10-17 — spec. v1.15 (přání vlastníka): **výběr výrobku kliknutím v náhledu** (Ctrl+klik přidá, oranžový rámeček, propojeno se seznamem) a **ruční natočení** vybraných výrobků — Úhel vybraných, ↺ 90° / ↻ 90°, Nenatáčet (= 0°), Automaticky; ruční úhel má přednost a platí i v režimu Nenatáčet; CLI `--angle`. 430 testů. Čeká ruční vyzkoušení vlastníkem.

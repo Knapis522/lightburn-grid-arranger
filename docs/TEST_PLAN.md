@@ -27,6 +27,7 @@
 | Řízení | T-PLAN-01 – T-PLAN-06 | 39.6 | kontrola | nezahájeno | — |
 | GitHub / distribuce | GH-01, GH-02 | 34 | ruční | prochází | protokol níže |
 | Natočení (automatické) | spec. v1.13 kap. 7.6 | 7.6 | automatický | prochází | `tests/unit/test_rotation.py`, `tests/integration/test_rotation_plan.py`, `tests/gui/test_main_window.py` |
+| Ruční natočení a výběr v náhledu (automatické) | spec. v1.15 kap. 7.6 | 7.6 | automatický | prochází | `tests/integration/test_rotation_plan.py`, `tests/gui/test_main_window.py` |
 | Natočení v LightBurnu | KAL-01 | 7.6 | ruční | ruční – ověřeno | `docs/FORMAT_COMPATIBILITY.md`, protokol níže |
 | Nativní tvary (automatické) | spec. v1.14 kap. 5 body 8–9 | 5 | automatický | prochází | `tests/unit/test_shapes.py`, `tests/integration/test_native_shapes.py`, `tests/integration/test_real_projects.py` (vzorky C, s `GRID_ARRANGER_REAL_DATA`) |
 | Nativní tvary v LightBurnu | vzorky C (výstupy), KAL-02 | 5 | ruční | ruční – ověřeno | `docs/FORMAT_COMPATIBILITY.md` (vzorky C, KAL-02) |

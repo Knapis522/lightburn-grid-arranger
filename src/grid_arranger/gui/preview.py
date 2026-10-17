@@ -54,10 +54,13 @@ def strokes_to_paths(strokes: list[Stroke]) -> dict[str, QPainterPath]:
 class PreviewView(QGraphicsView):
     """Tažením výrobku na místo jiného výrobku vznikne signál ``itemDropped(přetažený, cílový)``.
 
+    Kliknutí na výrobek (bez tažení) = ``itemClicked(id, přidat)`` — výběr; s Ctrl přidá / odebere.
     Tažení po prázdném místě posouvá pohled, kolečko myši přibližuje.
     """
 
     itemDropped = Signal(str, str)
+    itemClicked = Signal(str, bool)
+    CLICK_TOLERANCE_PX = 4
 
     def __init__(self, parent=None) -> None:
         super().__init__(parent)
@@ -82,13 +85,35 @@ class PreviewView(QGraphicsView):
         self._rects: dict[str, QRectF] = {}
         self._drag: dict | None = None
         self._drop_marker: QGraphicsRectItem | None = None
+        self._selected: set[str] = set()
+        self._sel_marks: list[QGraphicsRectItem] = []
 
     def clear_cache(self) -> None:
         self._paths.clear()
 
     def clear(self) -> None:
         self.scene().clear()
+        self._sel_marks = []
         self._has_content = False
+
+    def set_selection(self, ids: set[str]) -> None:
+        """Zvýraznit vybrané výrobky (oranžový rámeček, stejná šířka při každém přiblížení)."""
+        self._selected = set(ids)
+        for m in self._sel_marks:
+            if m.scene() is self.scene():
+                self.scene().removeItem(m)
+        self._sel_marks = []
+        pen = QPen(QColor("#ff7f0e"), 2.5)
+        pen.setCosmetic(True)
+        for iid in self._selected:
+            r = self._rects.get(iid)
+            if r is not None:
+                m = self.scene().addRect(r, pen, QBrush(QColor(255, 127, 14, 30)))
+                m.setZValue(25)
+                self._sel_marks.append(m)
+
+    def selection(self) -> set[str]:
+        return set(self._selected)
 
     def _label(self, text: str, x: float, y: float, bold: bool = False, color: str = "#222", bg: bool = False) -> QGraphicsSimpleTextItem:
         t = QGraphicsSimpleTextItem(text)
@@ -139,6 +164,7 @@ class PreviewView(QGraphicsView):
         """``items``: (id, pořadí, cílový obdélník, křivky v původní poloze, dx, dy[, úhel, (cx, cy)])."""
         s = self.scene()
         s.clear()
+        self._sel_marks = []
         self._graphics.clear()
         self._rects.clear()
         self._drag = None
@@ -185,6 +211,7 @@ class PreviewView(QGraphicsView):
         if not content.isEmpty():  # pevná oblast posouvání: obsah + polovina rozměru na každou stranu
             m = max(content.width(), content.height()) * 0.5
             s.setSceneRect(content.adjusted(-m, -m, m, m))
+        self.set_selection(self._selected)
         first = not self._has_content
         self._has_content = True
         if refit or first:
@@ -240,7 +267,7 @@ class PreviewView(QGraphicsView):
         iid = self.item_at(scene_pos)
         if iid is None:
             return False
-        self._drag = {"id": iid, "start": scene_pos, "last": scene_pos}
+        self._drag = {"id": iid, "start": scene_pos, "last": scene_pos, "moved": False}
         for g in self._graphics[iid]:
             g.setZValue(g.zValue() + 20)
             g.setOpacity(0.75)
@@ -251,6 +278,11 @@ class PreviewView(QGraphicsView):
         d = self._drag
         if d is None:
             return
+        if not d["moved"]:
+            px = self.mapFromScene(scene_pos) - self.mapFromScene(d["start"])
+            if px.manhattanLength() < self.CLICK_TOLERANCE_PX:
+                return  # zatím jen kliknutí, ne tažení
+            d["moved"] = True
         delta = scene_pos - d["last"]
         for g in self._graphics[d["id"]]:
             g.moveBy(delta.x(), delta.y())
@@ -265,10 +297,16 @@ class PreviewView(QGraphicsView):
         if target is not None:
             self._drop_marker.setRect(self._rects[target])
 
-    def finish_drag(self, scene_pos: QPointF) -> None:
+    def finish_drag(self, scene_pos: QPointF, additive: bool = False) -> None:
         d, self._drag = self._drag, None
         self.viewport().unsetCursor()
         if d is None:
+            return
+        if not d["moved"]:  # kliknutí bez tažení = výběr
+            for g in self._graphics[d["id"]]:
+                g.setZValue(g.zValue() - 20)
+                g.setOpacity(1.0)
+            self.itemClicked.emit(d["id"], additive)
             return
         target = self.item_at(scene_pos, exclude=d["id"])
         if self._drop_marker is not None:
@@ -298,7 +336,8 @@ class PreviewView(QGraphicsView):
 
     def mouseReleaseEvent(self, event) -> None:  # noqa: N802
         if self._drag is not None and event.button() == Qt.MouseButton.LeftButton:
-            self.finish_drag(self.mapToScene(event.position().toPoint()))
+            self.finish_drag(self.mapToScene(event.position().toPoint()),
+                             bool(event.modifiers() & Qt.KeyboardModifier.ControlModifier))
             self.setDragMode(QGraphicsView.DragMode.ScrollHandDrag)
             event.accept()
             return

@@ -9,7 +9,14 @@ After opening a project (the **Open project** toolbar icon, **File → Open proj
 
 Order: **grab an item in the preview with the mouse and drag it onto the place of another item** — a green frame shows where it will land; **the two items swap places**, all others stay where they are and the list is renumbered. Releasing outside the items cancels the drag. Or select an item in the list and use **Up / Down**. A newly checked item is added at the end. **Default order** restores the order from the file. **Select all / Select none** change the selection at once.
 
-**Rotation:** a rotated item shows an arrow and the angle in the list (↻ clockwise, ↺ anticlockwise). If an item must not be rotated (text direction, material grain), select it and click **No rotation** — the item shows “(no rotation)”; click again to remove the exception. See [grid](grid.md).
+**Rotation:** a rotated item shows an arrow and the angle in the list (↻ clockwise, ↺ anticlockwise). Select an item by **clicking it in the preview** (orange frame) or in the list; **Ctrl+click** adds more, **Esc** clears the selection. For the selected items:
+
+- **↺ 90° / ↻ 90°** — turn by 90° (e.g. so that all key rings have the hole at the top);
+- **Angle of selected** — enter any angle in degrees (positive = clockwise);
+- **No rotation** — the item stays as it is in the project (text direction, material grain);
+- **Auto** — removes the manual angle; the application rotates the item again.
+
+A manual angle is marked “(manual)” in the list; the application never changes it and it also applies with Rotation *Do not rotate*. The angle is measured from the position in the original project. Opening another project clears manual angles. See [grid](grid.md).
 
 Item number **1** is placed in the grid corner given by *Fill order* (see [grid](grid.md)).
 
