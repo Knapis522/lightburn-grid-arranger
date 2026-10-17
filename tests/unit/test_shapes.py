@@ -139,3 +139,23 @@ def test_vertlist_accepts_smooth_node_flag():
     assert [(p.x, p.y) for p in v] == [(347, 178), (327, 198)] and v[0].c0 == (347, 189.0457)
     with pytest.raises(geo.GeometryError):
         geo.parse_vertlist("V1 2X")
+
+
+@pytest.mark.parametrize("deg", [0.0, 45.0, 30.0])
+def test_bezier_path_bbox_is_exact_not_control_point_hull(deg):
+    # kruh r = 20 ze 4 Bézierových úseků natočený o 45°: obal řídicích bodů je o ~1,8 mm větší na každé straně
+    # (klíčenka G5 v Test_klicenky — rámeček 43,75 mm místo 40 mm)
+    verts, prims = shapes.native_path(shapes.Native("Ellipse", rx=20, ry=20))
+    m = rot(deg, 100, 100)
+    exact = geo.path_bbox(verts, m, prims)
+    assert exact == pytest.approx((80, 80, 120, 120), abs=20 * 3e-4)
+    hull = geo.path_bbox(verts, m)  # bez PrimList: konzervativně
+    if deg == 45.0:
+        assert hull[2] - hull[0] > 43
+
+
+def test_bbox_falls_back_to_control_points_for_unknown_primlist():
+    verts = geo.parse_vertlist("V0 0c0x5c0y10c1x1V10 0c0x1c1x5c1y10")
+    assert geo.path_bbox(verts, geo.IDENTITY, "X0 1") == (0, 0, 10, 10)
+    assert geo.path_bbox(verts, geo.IDENTITY, "B0 1")[3] == pytest.approx(7.5)  # vrchol křivky 3/4 výšky řídicích bodů
+    assert geo.path_bbox(verts, geo.IDENTITY, "L0 1") == (0, 0, 10, 0)

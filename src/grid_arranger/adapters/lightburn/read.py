@@ -198,7 +198,7 @@ def _measure(shape: Node, parent_m: geo.Affine, ctx: _Ctx, acc: _Measure) -> Non
             acc.blocking.append(Reason("unknown_element", {"in": "Path", "tags": sorted(extra)}))
         try:
             verts, prims = ctx.path_geometry(shape)
-            acc.boxes.append((geo.path_bbox(verts, m), shape, geo.is_closed(prims, len(verts))))
+            acc.boxes.append((geo.path_bbox(verts, m, prims), shape, geo.is_closed(prims, len(verts))))
         except geo.GeometryError as e:
             acc.unmeasurable += 1
             acc.blocking.append(Reason("unreadable_path", {"detail": str(e)}))
@@ -222,8 +222,8 @@ def _measure(shape: Node, parent_m: geo.Affine, ctx: _Ctx, acc: _Measure) -> Non
             if any(abs(u - v) > BACKUP_TOLERANCE for u, v in zip(b, m)):
                 acc.blocking.append(Reason("text_backup_mismatch", {"text": acc.texts[-1]}))
                 return
-            verts, _ = ctx.path_geometry(bp)
-            acc.boxes.append((geo.path_bbox(verts, b), bp, False))
+            verts, bprims = ctx.path_geometry(bp)
+            acc.boxes.append((geo.path_bbox(verts, b, bprims), bp, False))
         except geo.GeometryError as e:
             acc.unmeasurable += 1
             acc.warnings.append(Reason("text_unmeasurable", {"text": acc.texts[-1], "detail": str(e)}))

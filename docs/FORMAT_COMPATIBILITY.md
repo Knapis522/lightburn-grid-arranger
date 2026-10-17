@@ -81,7 +81,7 @@ Z A vytvořen `Kalibrace_C__grid_poc.lbrn2` posunem skupiny 8 o (+50, +30) metod
 
 ## Bézierovy úseky (ověřeno vykreslením V-001, 2026-10-16)
 
-Úsek `B i j` v `PrimList` = kubická Bézierova křivka z vrcholu *i* do *j* s řídicími body **`c0` vrcholu *i*** (odchozí) a **`c1` vrcholu *j*** (příchozí); `c0x1` / `c1x1` = řídicí bod chybí (= vrchol). Ověřeno na textu „SESTAV SI SÁM“ (`BackupPath`): s tímto přiřazením je písmo hladké, s opačným lomené. Používá se jen pro náhled; AABB zůstává konzervativní (obal řídicích bodů).
+Úsek `B i j` v `PrimList` = kubická Bézierova křivka z vrcholu *i* do *j* s řídicími body **`c0` vrcholu *i*** (odchozí) a **`c1` vrcholu *j*** (příchozí); `c0x1` / `c1x1` = řídicí bod chybí (= vrchol). Ověřeno na textu „SESTAV SI SÁM“ (`BackupPath`): s tímto přiřazením je písmo hladké, s opačným lomené. Používá se pro náhled a od 2026-10-17 i pro AABB: rozměr výrobku podle skutečných extrémů křivky (dříve obal řídicích bodů — u natočené klíčenky Test_klicenky G5 o 3,75 mm větší rámeček); obal řídicích bodů jen u nečitelného `PrimList`.
 
 ### Otevřené body KAL-00
 

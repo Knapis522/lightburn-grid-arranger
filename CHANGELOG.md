@@ -21,6 +21,7 @@ Formát podle [Keep a Changelog](https://keepachangelog.com/), verze podle SemVe
 - Samokontrola sestavení ověřuje i vykreslení ikon lišty (plugin SVG v balíčku).
 
 ### Opraveno
+- Rozměr výrobku s oblým obrysem (Bézierovy křivky) se počítá přesně podle křivky, ne podle jejích řídicích bodů — natočená klíčenka měla rámeček 43,75 mm místo 40 mm a mřížka zbytečně rostla (nahlásil vlastník, Test_klicenky G5).
 - Křivky s hladkými uzly (příznak `S` za vrcholem, např. upravené klíčenky) se už nehlásí jako „nečitelná křivka“.
 - Natočení *Libovolný úhel* se použije jen tehdy, když mřížka opravdu vyjde menší (dříve mohlo natočení jednoho výrobku mřížku rozšířit); kulaté výrobky se neotáčí o 90°; úhel oblých tvarů se zaokrouhlí (30° místo 29,6°).
 

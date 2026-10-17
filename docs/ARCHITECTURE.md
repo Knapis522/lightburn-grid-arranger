@@ -40,7 +40,7 @@ Převod (ověřeno v KAL-00, spec. kap. 8): `screen_x = MirrorX ? −x : +x`, `s
 | `core/rotation.py` | `min_area_angle` (konvexní obal + hrany obalu, úspora ≥ 0,5 %), `rotated_bounds`, `rotate_point` (kladně po směru hodin, osa Y dolů) | spec. v1.13 kap. 7.6 |
 | `core/tolerance.py` | `EPSILON = 0.001 mm` | kap. 7.4 |
 | `adapters/lightburn/xmltree.py` | bezpečné parsování (`expat`, zákaz DTD/entit, jen UTF-8) do stromu s bajtovými pozicemi obsahu | kap. 9.1, ADR-0002 |
-| `adapters/lightburn/geometry.py` | `XForm`, `VertList` (řídicí body), `PrimList` (`LineClosed`, `L`/`B` řetězec), konzervativní AABB, `fmt_num` (8 platných číslic) | kap. 5, 7.4 |
+| `adapters/lightburn/geometry.py` | `XForm`, `VertList` (řídicí body), `PrimList` (`LineClosed`, `L`/`B` řetězec), přesný AABB podle extrémů Bézierových úseků (konzervativní jen u nečitelného `PrimList`), `fmt_num` (8 platných číslic) | kap. 5, 7.4 |
 | `adapters/lightburn/coords.py` | `Orientation` — převod soubor ↔ jádro podle `MirrorX/MirrorY` | kap. 8 |
 | `adapters/lightburn/read.py` | `load_project` — brány verze/orientace/neznámých prvků, výrobky (obrys = uzavřená cesta obsahující vše ostatní), důvody blokace, varování, překážky | kap. 5, 9.1, 41 |
 | `adapters/lightburn/shapes.py` | Nativní tvary `Ellipse` / `Rect` / `Polygon`: rozměry z atributů, přesný AABB, ekvivalentní cesta pro náhled a natočení (shodná s Convert to Path v LightBurnu, KAL-02) | kap. 5 (v1.14) |

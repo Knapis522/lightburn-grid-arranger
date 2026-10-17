@@ -8,8 +8,8 @@ Formát ověřený v KAL-00 (LightBurn 2.2.00, `docs/FORMAT_COMPATIBILITY.md`):
   ``S`` (hladký uzel, jen pro úpravy v LightBurnu — geometrii nemění; KAL-02).
 * ``PrimList``: ``LineClosed`` nebo posloupnost ``L<i> <j>`` / ``B<i> <j>``.
 
-AABB je **konzervativní**: obsahuje vrcholy i všechny řídicí body (konvexní obal
-Bézierovy křivky), takže rozměr nikdy nepodhodnotí (spec. v1.9, kap. 5).
+AABB je **přesný** podle extrémů Bézierových úseků (spec. kap. 5 bod 2); jen u nečitelného
+``PrimList`` konzervativní obal vrcholů a řídicích bodů, takže rozměr nikdy nepodhodnotí.
 """
 
 from __future__ import annotations
@@ -112,16 +112,68 @@ def is_closed(primlist: str | None, n_vertices: int) -> bool:
     return chained and idx[-1][1] == idx[0][0]
 
 
-def path_bbox(vertices: list[Vertex], m: Affine) -> BBox:
-    pts = []
-    for v in vertices:
-        pts.append(apply(m, v.x, v.y))
-        if v.c0:
-            pts.append(apply(m, *v.c0))
-        if v.c1:
-            pts.append(apply(m, *v.c1))
-    xs = [p[0] for p in pts]
-    ys = [p[1] for p in pts]
+def _cubic_extrema(a: float, b: float, c: float, d: float) -> list[float]:
+    """Hodnoty kubické Bézierovy křivky (1D) v koncích a v bodech, kde je derivace nulová."""
+    out = [a, d]
+    # B'(t)/3 = (b−a)(1−t)² + 2(c−b)(1−t)t + (d−c)t² = A·t² + B·t + C
+    A = (b - a) - 2 * (c - b) + (d - c)
+    B = 2 * ((c - b) - (b - a))
+    C = b - a
+    roots: list[float] = []
+    if abs(A) < 1e-12:
+        if abs(B) > 1e-12:
+            roots.append(-C / B)
+    else:
+        disc = B * B - 4 * A * C
+        if disc >= 0:
+            sq = math.sqrt(disc)
+            roots += [(-B + sq) / (2 * A), (-B - sq) / (2 * A)]
+    for t in roots:
+        if 0.0 < t < 1.0:
+            u = 1.0 - t
+            out.append(u * u * u * a + 3 * u * u * t * b + 3 * u * t * t * c + t * t * t * d)
+    return out
+
+
+def path_bbox(vertices: list[Vertex], m: Affine, primlist: str | None = None) -> BBox:
+    """AABB cesty po transformaci ``m``.
+
+    S čitelným ``PrimList`` přesně podle extrémů Bézierových úseků (spec. kap. 5 bod 2); řídicí
+    body neovlivní úsečky ani ``LineClosed``. Bez něj / s neznámým zápisem konzervativně z obalu
+    vrcholů a řídicích bodů (křivka vždy leží v konvexním obalu svých řídicích bodů).
+    """
+    t = (primlist or "").strip()
+    prims = _PRIM.findall(t) if t and t != "LineClosed" else []
+    exact = t == "LineClosed" or (
+        prims and "".join(f"{k}{i} {j}" for k, i, j in prims) == t
+        and all(int(i) < len(vertices) and int(j) < len(vertices) for _, i, j in prims))
+    if not exact:
+        pts = []
+        for v in vertices:
+            pts.append(apply(m, v.x, v.y))
+            if v.c0:
+                pts.append(apply(m, *v.c0))
+            if v.c1:
+                pts.append(apply(m, *v.c1))
+        xs = [p[0] for p in pts]
+        ys = [p[1] for p in pts]
+        return min(xs), min(ys), max(xs), max(ys)
+    xs: list[float] = []
+    ys: list[float] = []
+    for v in vertices:  # u LineClosed i u L/B jsou krajními body vrcholy
+        x, y = apply(m, v.x, v.y)
+        xs.append(x)
+        ys.append(y)
+    for kind, si, sj in prims:
+        if kind != "B":
+            continue
+        a, b = vertices[int(si)], vertices[int(sj)]
+        p0 = apply(m, a.x, a.y)
+        p1 = apply(m, *a.c0) if a.c0 else p0
+        p3 = apply(m, b.x, b.y)
+        p2 = apply(m, *b.c1) if b.c1 else p3
+        xs += _cubic_extrema(p0[0], p1[0], p2[0], p3[0])
+        ys += _cubic_extrema(p0[1], p1[1], p2[1], p3[1])
     return min(xs), min(ys), max(xs), max(ys)
 
 

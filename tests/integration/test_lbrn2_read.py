@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import math
+
 import pytest
 
 from grid_arranger.adapters.lightburn.read import load_project
@@ -177,11 +179,13 @@ def test_shared_vertlist_by_id(write_project):
     assert p.items[1].supported and p.items[1].file_bbox == (300, 0, 400, 60)
 
 
-def test_bezier_outline_closed_chain_and_conservative_bbox(write_project):
+def test_bezier_outline_closed_chain_and_exact_bbox(write_project):
     o = rect(0, 0, 100, 60, prims="B0 1B1 2B2 3B3 0", bezier_ctrl=True)
     it = load_project(write_project(project([Group([o])]))).items[0]
     assert it.supported
-    assert it.file_bbox == (-1, 0, 101, 60)  # řídicí body ±1 mm → nikdy nepodhodnoceno
+    # řídicí body ±1 mm vybočí křivku jen o max. 3·t(1−t)(1−2t) = √3/6 mm (extrém Bézierovy křivky)
+    bulge = math.sqrt(3) / 6
+    assert it.file_bbox == pytest.approx((-bulge, 0, 100 + bulge, 60))
 
 
 def test_scaled_group_transform_applies(write_project):
