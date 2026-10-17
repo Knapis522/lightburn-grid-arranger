@@ -439,7 +439,10 @@ def test_saved_board_and_preset_stay_in_mm_with_inches(make_window, tmp_path, se
 
 def test_compact_fields_and_collapsible_sections(make_window, settings):
     w = make_window("en")
-    assert all(s.width() < 130 for s in w.length_spins)  # pole pro 0000,00 mm, ne přes celou šířku
+    # pole na 0000,00 mm, ne přes celou šířku — měřeno písmem systému (Windows má jiné písmo a DPI než Linux)
+    for sp in w.length_spins:
+        assert sp.width() <= sp.fontMetrics().horizontalAdvance("0000,000 mm") + 16
+        assert sp.width() < w._left_scroll.minimumWidth() / 2
     assert w.spin_gap_y.parentWidget() is w.spin_gap_x.parentWidget()  # Mezera X a Y na jednom řádku
     assert w._left_scroll.horizontalScrollBarPolicy() == Qt.ScrollBarPolicy.ScrollBarAlwaysOff
     assert w.box_board.title() == "Board"
