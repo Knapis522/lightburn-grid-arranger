@@ -9,6 +9,7 @@
 | Pro 2.2.00-RC-7 (Qt 6.11.2) | 1 | Top-level `Group` s `Path` + `Text` (BackupPath); `MirrorX=True, MirrorY=True` | ověřeno | ověřeno | ověřeno (prototyp) | ověřeno (File → Open) | V-001, V-002 |
 | Pro 2.2.00-RC-7 (Qt 6.11.2) | 1 | totéž; `MirrorX=False, MirrorY=True` | ověřeno | ověřeno (LightBurn) | neověřeno | neověřeno | V-003 |
 | Pro 2.2.00-RC-7 (Qt 6.11.2) | 1 | Nativní tvary `Ellipse`, `Rect` (i se zaoblením `Cr`), `Polygon` (libovolné N) ve skupině, i ve vnořené skupině (klíčenky); oba lasery | ověřeno | ověřeno (shoda s přesunem v LightBurnu) | ověřeno | ověřeno (výstupy otevřeny vlastníkem) | Test_tvary_A / L_A / _posun, Test_klicenky, KAL-02 |
+| Pro 2.2.00-RC-7 (Qt 6.11.2) | 1 | Kopie výrobků jako nové skupiny (sdílená geometrie přes `VertID`/`PrimID`); oba lasery | ověřeno | ověřeno | ověřeno | ověřeno (KAL-03) | `KAL03\` |
 | — | — | `MirrorY=False` (jakékoli `MirrorX`) | — | — | — | — | **nepodporováno v MVP** (neověřeno) |
 
 ## Vzorek V-001 (KAL-00, pouze čtení)
@@ -149,7 +150,7 @@ Nástroj `tools/kal02/native_shapes_calibration.py <šablona.lbrn2>` vytvořil `
 
 **Stav brány KAL-02: SPLNĚNO 2026-10-17** (LightBurn 2.2.00-RC-7).
 
-## KAL-03 — kopie výrobků (2026-10-17, čeká na ověření)
+## KAL-03 — kopie výrobků (2026-10-17, ověřeno vlastníkem)
 
 Kopie se zapisují jako nové nejvyšší skupiny za poslední původní tvar (spec. v1.16 kap. 22.2). Cesty se sdíleným `VertID`/`PrimID` v kopii nemají `VertList`/`PrimList` — odkazují na definici v originálu (stejný zápis použil LightBurn v souboru z KAL-02 pro opakované tvary). Texty mají `BackupPath` přímo v kopii, nativní tvary nemají ID.
 
@@ -158,6 +159,8 @@ Kalibrační výstupy (datová složka, `KAL03\`):
 - `Test_tvary_A__kal03_kopie.lbrn2` — 2 kopie klíčenky K1 (vnořená skupina), kopie E2 (natočená elipsa, ručně 0°), šestiúhelníku a zaobleného obdélníku; vpravo nahoře;
 - `Test_tvary_L_A__kal03_kopie.lbrn2` — totéž pro laser vlevo nahoře.
 
-- [ ] Otevřít v LightBurnu (File → Open): kopie celé (obrysy, otvory, texty, motivy), na správných vrstvách, Preview v pořádku.
-- [ ] Kopii vybrat, posunout a upravit (editovatelnost); uložit a znovu otevřít — LightBurn sdílená ID přečísluje sám.
-- [ ] Zapsat výsledek; po splnění označit kopie za ověřené.
+- [x] Otevřít v LightBurnu (File → Open): kopie celé (obrysy, otvory, texty, motivy), na správných vrstvách, Preview v pořádku.
+- [x] Kopii vybrat, posunout a upravit (editovatelnost); uložit a znovu otevřít — LightBurn sdílená ID přečísluje sám.
+- [x] Ověřeno vlastníkem 2026-10-17 — v pořádku.
+
+**Stav brány KAL-03: SPLNĚNO 2026-10-17** (LightBurn 2.2.00-RC-7, oba lasery).
