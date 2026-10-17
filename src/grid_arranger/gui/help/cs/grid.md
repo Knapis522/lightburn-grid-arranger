@@ -2,7 +2,7 @@
 
 **Počet sloupců** — kolik výrobků bude v jednom řádku. Počet řádků se dopočítá.
 
-**Mezera X / Y** — vzdálenost mezi řeznými obrysy sousedních výrobků v mm (vodorovně / svisle). Mezera 0 je dovolená, ale aplikace upozorní na riziko při řezání. Desetinná čísla zadávejte s čárkou (česky) nebo tečkou (anglicky) podle jazyka aplikace.
+**Mezera X / Y** — vzdálenost mezi řeznými obrysy sousedních výrobků (vodorovně / svisle) ve zvolených jednotkách. Mezera 0 je dovolená, ale aplikace upozorní na riziko při řezání. Desetinná čísla zadávejte s čárkou (česky) nebo tečkou (anglicky) podle jazyka aplikace.
 
 Mají-li výrobky **různé rozměry**, šířka sloupce je podle nejširšího výrobku ve sloupci a výška řádku podle nejvyššího v řádku. Zadaná mezera je pak **minimální** — mezi menšími výrobky bude větší.
 

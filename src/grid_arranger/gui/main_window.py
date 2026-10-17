@@ -9,14 +9,11 @@ from PySide6.QtCore import QEvent, QSize, QStandardPaths, Qt, QUrl, qVersion
 from PySide6.QtGui import QAction, QActionGroup, QDesktopServices, QKeySequence, QPalette
 from PySide6.QtWidgets import (
     QApplication,
-    QAbstractSpinBox,
     QCheckBox,
     QComboBox,
     QDoubleSpinBox,
     QFileDialog,
-    QFormLayout,
     QGridLayout,
-    QGroupBox,
     QHBoxLayout,
     QLabel,
     QListWidget,
@@ -36,7 +33,7 @@ from ..adapters.lightburn.read import LoadedProject, load_project
 from ..adapters.lightburn.render import ProjectRenderer
 from ..adapters.lightburn.write import next_output_path
 from ..application.arrange_job import ArrangeParams, MaterialInput, Plan, check_output_path, execute, make_plan, material_to_core
-from ..core.collision import Severity, usable_area
+from ..core.collision import usable_area
 from ..core.order import default_order, deselect, move_down, move_up, select, swap
 from ..domain.errors import GridError
 from ..version import display_version
@@ -46,21 +43,11 @@ from .messages import issue_text, message
 from .preview import PreviewView
 from .settings import PROTOCOL_MODES, BoardPreset, UserSettings
 from .theme import THEMES, apply_theme
+from .widgets import UNITS, LengthSpin, Section, Unit, section_stylesheet
 from .updates_ui import UpdateController
 
 ANCHOR_KEYS = ("origin", "center", "manual", "selection")
 FILL_KEYS = ("origin", "reading")
-
-
-def _dspin(minimum: float, maximum: float, value: float, decimals: int = 2) -> QDoubleSpinBox:
-    s = QDoubleSpinBox()
-    s.setRange(minimum, maximum)
-    s.setDecimals(decimals)
-    s.setValue(value)
-    s.setSuffix(" mm")
-    s.setKeyboardTracking(False)  # přepočet až po dopsání hodnoty
-    s.setButtonSymbols(QAbstractSpinBox.ButtonSymbols.NoButtons)
-    return s
 
 
 class MainWindow(QMainWindow):
@@ -133,6 +120,14 @@ class MainWindow(QMainWindow):
         self.protocol_actions[self.settings.protocol_mode()].setChecked(True)
         self.act_open_protocols = QAction(self)
         self.act_open_protocols.triggered.connect(self.open_protocol_folder)
+        self.unit_group = QActionGroup(self)
+        self.unit_actions: dict[str, QAction] = {}
+        for key in UNITS:
+            a = QAction(self, checkable=True)
+            a.triggered.connect(lambda _=False, k=key: self.set_units(k))
+            self.unit_group.addAction(a)
+            self.unit_actions[key] = a
+        self.unit_actions[self.settings.units()].setChecked(True)
         self.act_check_updates = QAction(self)
         self.act_check_updates.triggered.connect(lambda: self.updates.check(manual=True))
 
@@ -146,6 +141,8 @@ class MainWindow(QMainWindow):
         self.menu_lang.addActions(list(self.lang_actions.values()))
         self.menu_theme = self.menu_settings.addMenu("")
         self.menu_theme.addActions(list(self.theme_actions.values()))
+        self.menu_units = self.menu_settings.addMenu("")
+        self.menu_units.addActions(list(self.unit_actions.values()))
         self.menu_protocol = self.menu_settings.addMenu("")
         self.menu_protocol.addActions(list(self.protocol_actions.values()))
         self.menu_protocol.addSeparator()
@@ -167,12 +164,24 @@ class MainWindow(QMainWindow):
         self.addToolBar(Qt.ToolBarArea.TopToolBarArea, self.toolbar)
         self._toolbar_icons = {self.act_open: "open", self.act_save: "save_new", self.act_help: "help"}
 
-        # --- levý panel
+        # --- levý panel: sbalitelné sekce (stav se pamatuje), kompaktní mřížka polí
         left = QWidget()
         lv = QVBoxLayout(left)
+        lv.setSpacing(2)
+        unit = UNITS[self.settings.units()]
 
-        self.box_project = QGroupBox()
-        pv = QVBoxLayout(self.box_project)
+        def section(key: str) -> tuple[Section, QWidget]:
+            sec = Section(key)
+            sec.setExpanded(self.settings.section_expanded(key))
+            sec.expandedChanged.connect(lambda on, k=key: self.settings.set_section_expanded(k, on))
+            lv.addWidget(sec)
+            return sec, sec.body
+
+        def length(lo: float, hi: float, value: float) -> LengthSpin:
+            return LengthSpin(lo, hi, value, unit)
+
+        self.box_project, body = section("project")
+        pv = QVBoxLayout(body)
         # otevření a uložení je na nástrojové liště (a v menu Soubor); zde jen údaje o projektu
         self.lbl_file = QLabel()
         self.lbl_file.setWordWrap(True)
@@ -180,10 +189,9 @@ class MainWindow(QMainWindow):
         self.lbl_device = QLabel()
         self.lbl_device.setWordWrap(True)
         pv.addWidget(self.lbl_device)
-        lv.addWidget(self.box_project)
 
-        self.box_items = QGroupBox()
-        iv = QVBoxLayout(self.box_items)
+        self.box_items, body = section("items")
+        iv = QVBoxLayout(body)
         self.list_items = QListWidget()
         self.list_items.setMinimumHeight(180)
         self.list_items.itemChanged.connect(self._on_item_changed)
@@ -204,53 +212,69 @@ class MainWindow(QMainWindow):
         iv.addLayout(g)
         self.lbl_count = QLabel()
         iv.addWidget(self.lbl_count)
-        lv.addWidget(self.box_items)
 
-        self.box_grid = QGroupBox()
-        self.form_grid = QFormLayout(self.box_grid)
+        # Mřížka: Sloupce | Mezera X, Y | Pořadí plnění
+        self.box_grid, body = section("grid")
+        gg = self._grid_layout(body)
         self.spin_cols = QSpinBox()
         self.spin_cols.setRange(1, 1000)
         self.spin_cols.setValue(3)
         self.spin_cols.setKeyboardTracking(False)
-        self.spin_gap_x = _dspin(0, 1000, 3.0)
-        self.spin_gap_y = _dspin(0, 1000, 3.0)
+        self.spin_cols.setAlignment(Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter)
+        self.spin_cols.setFixedWidth(self.spin_cols.fontMetrics().horizontalAdvance("0000") + 36)
+        self.spin_gap_x = length(0, 1000, 3.0)
+        self.spin_gap_y = length(0, 1000, 3.0)
         self.combo_fill = QComboBox()
-        self.lbls_grid = self._rows(self.form_grid, (self.spin_cols, self.spin_gap_x, self.spin_gap_y, self.combo_fill))
-        lv.addWidget(self.box_grid)
+        self.lbls_grid = [
+            self._cell(gg, 0, 0, self.spin_cols),
+            self._cell(gg, 1, 0, self.spin_gap_x), self._cell(gg, 1, 2, self.spin_gap_y),
+            self._cell(gg, 2, 0, self.combo_fill, span=3),
+        ]
 
-        self.box_place = QGroupBox()
-        self.form_place = QFormLayout(self.box_place)
+        # Umístění: způsob | Roh X, Y
+        self.box_place, body = section("placement")
+        gp = self._grid_layout(body)
         self.combo_anchor = QComboBox()
-        self.spin_start_x = _dspin(-100000, 100000, 5.0)
-        self.spin_start_y = _dspin(-100000, 100000, 5.0)
-        self.lbls_place = self._rows(self.form_place, (self.combo_anchor, self.spin_start_x, self.spin_start_y))
-        lv.addWidget(self.box_place)
+        self.spin_start_x = length(-100000, 100000, 5.0)
+        self.spin_start_y = length(-100000, 100000, 5.0)
+        self.lbls_place = [
+            self._cell(gp, 0, 0, self.combo_anchor, span=3),
+            self._cell(gp, 1, 0, self.spin_start_x), self._cell(gp, 1, 2, self.spin_start_y),
+        ]
 
-        self.box_board = QGroupBox()
-        self.form_board = QFormLayout(self.box_board)
-        self.spin_bw = _dspin(0, 100000, 700.0)
-        self.spin_bh = _dspin(0, 100000, 500.0)
-        self.spin_bx = _dspin(-100000, 100000, 0.0)
-        self.spin_by = _dspin(-100000, 100000, 0.0)
-        self.spin_ml, self.spin_mr, self.spin_mt, self.spin_mb = (_dspin(0, 10000, 5.0) for _ in range(4))
-        self.lbls_board = self._rows(self.form_board, (self.spin_bw, self.spin_bh, self.spin_bx, self.spin_by,
-                                                       self.spin_ml, self.spin_mr, self.spin_mt, self.spin_mb))
+        # Deska: Šířka, Výška | Roh X, Y | Okraje L, P | H, D
+        self.box_board, body = section("board")
+        gb = self._grid_layout(body)
+        self.spin_bw = length(0, 100000, 700.0)
+        self.spin_bh = length(0, 100000, 500.0)
+        self.spin_bx = length(-100000, 100000, 0.0)
+        self.spin_by = length(-100000, 100000, 0.0)
+        self.spin_ml, self.spin_mr, self.spin_mt, self.spin_mb = (length(0, 10000, 5.0) for _ in range(4))
+        self.lbls_board = [
+            self._cell(gb, 0, 0, self.spin_bw), self._cell(gb, 0, 2, self.spin_bh),
+            self._cell(gb, 1, 0, self.spin_bx), self._cell(gb, 1, 2, self.spin_by),
+            self._cell(gb, 2, 0, self.spin_ml), self._cell(gb, 2, 2, self.spin_mr),
+            self._cell(gb, 3, 0, self.spin_mt), self._cell(gb, 3, 2, self.spin_mb),
+        ]
         self.btn_board_default = QPushButton()
         self.btn_board_default.clicked.connect(self.save_board_default)
-        self.form_board.addRow(self.btn_board_default)
-        lv.addWidget(self.box_board)
+        gb.addWidget(self.btn_board_default, 4, 0, 1, 4)
         lv.addStretch(1)
 
-        for w in (self.spin_cols, self.spin_gap_x, self.spin_gap_y, self.spin_start_x, self.spin_start_y,
-                  self.spin_bw, self.spin_bh, self.spin_bx, self.spin_by, self.spin_ml, self.spin_mr, self.spin_mt, self.spin_mb):
-            w.valueChanged.connect(self.recompute)
+        self.length_spins = (self.spin_gap_x, self.spin_gap_y, self.spin_start_x, self.spin_start_y,
+                             self.spin_bw, self.spin_bh, self.spin_bx, self.spin_by,
+                             self.spin_ml, self.spin_mr, self.spin_mt, self.spin_mb)
+        self.spin_cols.valueChanged.connect(self.recompute)
+        for w in self.length_spins:
+            w.mmChanged.connect(self.recompute)
         self.combo_fill.currentIndexChanged.connect(self.recompute)
         self.combo_anchor.currentIndexChanged.connect(self._on_anchor_changed)
 
         scroll = QScrollArea()
         scroll.setWidgetResizable(True)
         scroll.setWidget(left)
-        scroll.setMinimumWidth(380)
+        scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        self._left_scroll, self._left_widget = scroll, left
 
         # --- pravý panel
         right = QWidget()
@@ -281,14 +305,21 @@ class MainWindow(QMainWindow):
         self.setCentralWidget(split)
 
     @staticmethod
-    def _rows(form: QFormLayout, widgets) -> list[QLabel]:
-        labels = []
-        for w in widgets:
-            lbl = QLabel()
-            lbl.setBuddy(w)
-            form.addRow(lbl, w)
-            labels.append(lbl)
-        return labels
+    def _grid_layout(body: QWidget) -> QGridLayout:
+        g = QGridLayout(body)
+        g.setHorizontalSpacing(8)
+        g.setColumnStretch(4, 1)  # pole zůstanou úzká, volné místo vpravo
+        return g
+
+    @staticmethod
+    def _cell(grid: QGridLayout, row: int, col: int, widget: QWidget, span: int = 1) -> QLabel:
+        """Popisek + pole do mřížky (sloupce 0–1 a 2–3); vrací popisek kvůli překladu."""
+        lbl = QLabel()
+        lbl.setBuddy(widget)
+        lbl.setAlignment(Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter)
+        grid.addWidget(lbl, row, col)
+        grid.addWidget(widget, row, col + 1, 1, span, Qt.AlignmentFlag.AlignLeft)
+        return lbl
 
     # ====================================================================== texty
     def retranslate(self) -> None:
@@ -306,6 +337,9 @@ class MainWindow(QMainWindow):
         self.theme_actions["auto"].setText(self.tr("Automatic (system)"))
         self.theme_actions["light"].setText(self.tr("Light"))
         self.theme_actions["dark"].setText(self.tr("Dark"))
+        self.menu_units.setTitle(self.tr("&Units"))
+        self.unit_actions["mm"].setText(self.tr("Millimetres (mm)"))
+        self.unit_actions["in"].setText(self.tr("Inches (in)"))
         self.menu_protocol.setTitle(self.tr("Save &protocol"))
         self.protocol_actions["none"].setText(self.tr("Do not save"))
         self.protocol_actions["beside"].setText(self.tr("Next to the saved project"))
@@ -333,13 +367,13 @@ class MainWindow(QMainWindow):
         self.btn_none.setText(self.tr("Select none"))
 
         self.box_grid.setTitle(self.tr("Grid"))
-        labels = [self.tr("Columns:"), self.tr("Gap X:"), self.tr("Gap Y:"), self.tr("Fill order:")]
+        labels = [self.tr("Columns:"), self.tr("Gap X:"), self.tr("Y:"), self.tr("Fill order:")]
         for lbl, t in zip(self.lbls_grid, labels):
             lbl.setText(t)
         self._fill_combo(self.combo_fill, FILL_KEYS, [self.tr("From the laser origin"), self.tr("Reading order (from top left)")])
 
         self.box_place.setTitle(self.tr("Placement"))
-        labels = [self.tr("Place grid:"), self.tr("Corner X:"), self.tr("Corner Y:")]
+        labels = [self.tr("Place grid:"), self.tr("Corner X:"), self.tr("Y:")]
         for lbl, t in zip(self.lbls_place, labels):
             lbl.setText(t)
         self._fill_combo(self.combo_anchor, ANCHOR_KEYS, [
@@ -353,8 +387,8 @@ class MainWindow(QMainWindow):
         self.spin_start_y.setToolTip(tip)
 
         self.box_board.setTitle(self.tr("Board"))
-        labels = [self.tr("Width:"), self.tr("Height:"), self.tr("Board corner X:"), self.tr("Board corner Y:"),
-                  self.tr("Margin left:"), self.tr("Margin right:"), self.tr("Margin top:"), self.tr("Margin bottom:")]
+        labels = [self.tr("Width:"), self.tr("Height:"), self.tr("Board corner X:"), self.tr("Y:"),
+                  self.tr("Margin left:"), self.tr("right:"), self.tr("Margin top:"), self.tr("bottom:")]
         for lbl, t in zip(self.lbls_board, labels):
             lbl.setText(t)
         self.btn_board_default.setText(self.tr("Save as default for this laser"))
@@ -363,6 +397,13 @@ class MainWindow(QMainWindow):
         self._update_project_labels()
         self._rebuild_item_list()
         self._refresh_issue_texts()
+        self._fit_left_panel()
+
+    def _fit_left_panel(self) -> None:
+        """Levý panel tak široký, aby se vešla pole vedle sebe (závisí na jazyku a jednotkách) — bez vodorovného posuvníku."""
+        self._left_widget.layout().activate()
+        need = max(self._left_widget.minimumSizeHint().width(), 340)
+        self._left_scroll.setMinimumWidth(need + self._left_scroll.verticalScrollBar().sizeHint().width() + 8)
 
     def _fill_combo(self, combo: QComboBox, keys: tuple[str, ...], texts: list[str]) -> None:
         current = combo.currentData() or keys[0]
@@ -382,6 +423,25 @@ class MainWindow(QMainWindow):
         loc = self.locale_mgr.qlocale()
         for w in self.findChildren(QDoubleSpinBox) + self.findChildren(QSpinBox):
             w.setLocale(loc)
+
+    @property
+    def unit(self) -> Unit:
+        return UNITS[self.settings.units()]
+
+    def _len(self, mm: float, short: bool = False) -> str:
+        """Délka v aktuálních jednotkách a formátu čísel jazyka (mm: 2 desetiny, palce: 3; ``short`` o jednu méně)."""
+        u = self.unit
+        return self.locale_mgr.qlocale().toString(u.to_display(mm), "f", u.decimals - (1 if short else 0))
+
+    def set_units(self, key: str) -> None:
+        """Milimetry / palce (jako v LightBurnu). Jen zobrazení — výpočet a soubor zůstávají v mm."""
+        self.settings.set_units(key)
+        self.unit_actions[key].setChecked(True)
+        for w in self.length_spins:
+            w.set_unit(UNITS[key])
+        self._rebuild_item_list()
+        self._refresh_issue_texts()
+        self._fit_left_panel()
 
     def _origin_text(self) -> str:
         o = self.project.info.orientation.origin if self.project else ""
@@ -447,21 +507,15 @@ class MainWindow(QMainWindow):
         return True
 
     def _set_board(self, p: BoardPreset) -> None:
-        widgets = (self.spin_bw, self.spin_bh, self.spin_ml, self.spin_mr, self.spin_mt, self.spin_mb)
-        for w in widgets:
-            w.blockSignals(True)
-        self.spin_bw.setValue(p.width)
-        self.spin_bh.setValue(p.height)
-        for w, v in zip(widgets[2:], p.margins):
-            w.setValue(v)
-        for w in widgets:
-            w.blockSignals(False)
+        values = (p.width, p.height, *p.margins)
+        for w, v in zip((self.spin_bw, self.spin_bh, self.spin_ml, self.spin_mr, self.spin_mt, self.spin_mb), values):
+            w.set_mm(v, emit=False)
 
     def save_board_default(self) -> None:
         if self.project is None:
             return
-        preset = BoardPreset(self.spin_bw.value(), self.spin_bh.value(),
-                             (self.spin_ml.value(), self.spin_mr.value(), self.spin_mt.value(), self.spin_mb.value()))
+        preset = BoardPreset(self.spin_bw.mm(), self.spin_bh.mm(),
+                             (self.spin_ml.mm(), self.spin_mr.mm(), self.spin_mt.mm(), self.spin_mb.mm()))
         self.settings.set_board_for(self.project.info.device_name, preset)
         self.statusBar().showMessage(self.tr("Board saved as default for {device}.").format(device=self.project.info.device_name), 5000)
 
@@ -483,8 +537,8 @@ class MainWindow(QMainWindow):
             num = f"{self.order.index(it.id) + 1}. " if selected else ""
             if it.supported:
                 b = it.file_bbox
-                size = self.tr("{w} × {h} mm").format(w=self.locale_mgr.qlocale().toString(b[2] - b[0], "f", 1),
-                                                    h=self.locale_mgr.qlocale().toString(b[3] - b[1], "f", 1))
+                size = self.tr("{w} × {h} {unit}").format(w=self._len(b[2] - b[0], short=True), h=self._len(b[3] - b[1], short=True),
+                                                        unit=self.unit.suffix)
                 text = f"{num}{it.id}  {it.label}  —  {size}"
             else:
                 text = f"{it.id}  {it.label}  —  " + self.tr("cannot be moved")
@@ -566,16 +620,16 @@ class MainWindow(QMainWindow):
 
     # ====================================================================== výpočet a náhled
     def params(self) -> ArrangeParams:
-        material = MaterialInput(self.spin_bw.value(), self.spin_bh.value(), self.spin_bx.value(), self.spin_by.value(),
-                                 self.spin_ml.value(), self.spin_mr.value(), self.spin_mt.value(), self.spin_mb.value())
+        material = MaterialInput(self.spin_bw.mm(), self.spin_bh.mm(), self.spin_bx.mm(), self.spin_by.mm(),
+                                 self.spin_ml.mm(), self.spin_mr.mm(), self.spin_mt.mm(), self.spin_mb.mm())
         return ArrangeParams(
             columns=self.spin_cols.value(),
-            gap_x=self.spin_gap_x.value(),
-            gap_y=self.spin_gap_y.value(),
+            gap_x=self.spin_gap_x.mm(),
+            gap_y=self.spin_gap_y.mm(),
             material=material,
             order=self.order,
             anchor=self.combo_anchor.currentData() or "origin",
-            start=(self.spin_start_x.value(), self.spin_start_y.value()),
+            start=(self.spin_start_x.mm(), self.spin_start_y.mm()),
             fill=self.combo_fill.currentData() or "origin",
         )
 
@@ -599,7 +653,7 @@ class MainWindow(QMainWindow):
         proj = self.project
         o = proj.info.orientation
         board = usable = None
-        if self.spin_bw.value() > 0 and self.spin_bh.value() > 0:
+        if self.spin_bw.mm() > 0 and self.spin_bh.mm() > 0:
             spec = material_to_core(proj, self.params().material)
             board = Rect(spec.board_left, spec.board_top, spec.board_left + spec.board_width, spec.board_top + spec.board_height)
             usable, _ = usable_area(spec)
@@ -633,12 +687,11 @@ class MainWindow(QMainWindow):
             self.list_issues.addItem("✖ " + message(self.plan_error.code, **self.plan_error.params))
         elif self.plan is not None:
             lay = self.plan.layout
-            loc = self.locale_mgr.qlocale()
             cx, cy = self.plan.origin_corner_lightburn
             self.lbl_summary.setText(
-                self.tr("Grid {c} × {r}: {w} × {h} mm. Corner at the origin side: X {x}, Y {y}.").format(
-                    c=lay.columns, r=lay.rows, w=loc.toString(lay.grid_bounds.width, "f", 2),
-                    h=loc.toString(lay.grid_bounds.height, "f", 2), x=loc.toString(cx, "f", 2), y=loc.toString(cy, "f", 2)))
+                self.tr("Grid {c} × {r}: {w} × {h} {unit}. Corner at the origin side: X {x}, Y {y}.").format(
+                    c=lay.columns, r=lay.rows, w=self._len(lay.grid_bounds.width), h=self._len(lay.grid_bounds.height),
+                    x=self._len(cx), y=self._len(cy), unit=self.unit.suffix))
             for i in self.plan.report.errors:
                 self.list_issues.addItem("✖ " + issue_text(i.code, i.item_ids, i.params))
             for i in self.plan.report.warnings:
@@ -717,8 +770,19 @@ class MainWindow(QMainWindow):
         try:
             self.is_dark = apply_theme(QApplication.instance(), key)
             self._refresh_icons()  # barva ikon podle vzhledu
+            self._apply_section_style()
         finally:
             self._theme_busy = False
+
+    def _apply_section_style(self) -> None:
+        pal = QApplication.palette()
+        c = lambda role: pal.color(role)  # noqa: E731
+        window, text = c(QPalette.ColorRole.Window), c(QPalette.ColorRole.WindowText)
+        header_bg = window.darker(108) if not self.is_dark else window.lighter(135)
+        body_bg = window.lighter(103) if not self.is_dark else window.lighter(112)
+        self.centralWidget().setStyleSheet(section_stylesheet(
+            window.name(), text.name(), c(QPalette.ColorRole.Mid).name() if self.is_dark else window.darker(118).name(),
+            c(QPalette.ColorRole.Highlight).name(), header_bg.name(), body_bg.name()))
 
     def _on_system_scheme_changed(self, *_args) -> None:
         if self.settings.theme() == "auto" and not getattr(self, "_theme_busy", False):

@@ -401,3 +401,50 @@ def test_invalid_protocol_setting_falls_back(settings):
     assert settings.protocol_mode() == "none"
     with pytest.raises(ValueError):
         settings.set_protocol_mode("everywhere")
+
+
+def test_units_inches_display_only_no_drift(make_window, tmp_path, settings):
+    w = make_window("en")
+    w.open_project(write(tmp_path, four()))
+    before = w.params()
+    w.unit_actions["in"].trigger()
+    assert settings.units() == "in"
+    assert w.spin_bw.suffix() == " in" and w.spin_bw.value() == pytest.approx(700 / 25.4, abs=0.0005)
+    assert " in." in w.lbl_summary.text() and " in" in w.list_items.item(0).text()
+    assert w.params() == before  # výpočet dál v mm, přepnutí nic nezmění
+    w.spin_gap_x.setValue(0.25)  # uživatel zadá palce
+    assert w.spin_gap_x.mm() == pytest.approx(6.35) and w.params().gap_x == pytest.approx(6.35)
+    for _ in range(5):  # opakované přepínání nemění hodnoty (žádné zaokrouhlovací posuny)
+        w.set_units("mm")
+        w.set_units("in")
+    assert w.spin_gap_x.mm() == pytest.approx(6.35) and w.spin_bw.mm() == 700
+    w.set_units("mm")
+    assert w.spin_gap_x.value() == pytest.approx(6.35) and w.spin_bw.suffix() == " mm"
+    settings.set_units("mm")
+
+
+def test_saved_board_and_preset_stay_in_mm_with_inches(make_window, tmp_path, settings):
+    from grid_arranger.gui.settings import BoardPreset
+
+    settings.set_board_for("Syntetický laser", BoardPreset(508, 254, (5, 5, 5, 5)))
+    settings.set_units("in")
+    w = make_window("en")
+    w.open_project(write(tmp_path, four()))
+    assert w.spin_bw.value() == pytest.approx(20.0) and w.spin_bw.mm() == 508
+    w.save_board_default()
+    assert settings.board_for("Syntetický laser").width == 508
+    settings.set_units("mm")
+
+
+def test_compact_fields_and_collapsible_sections(make_window, settings):
+    w = make_window("en")
+    assert all(s.width() < 130 for s in w.length_spins)  # pole pro 0000,00 mm, ne přes celou šířku
+    assert w.spin_gap_y.parentWidget() is w.spin_gap_x.parentWidget()  # Mezera X a Y na jednom řádku
+    assert w._left_scroll.horizontalScrollBarPolicy() == Qt.ScrollBarPolicy.ScrollBarAlwaysOff
+    assert w.box_board.title() == "Board"
+    w.box_items.header.click()
+    assert not w.box_items.isExpanded() and settings.section_expanded("items") is False
+    w2 = make_window("en")
+    assert not w2.box_items.isExpanded()  # stav sekce se pamatuje
+    w2.box_items.header.click()
+    assert w2.box_items.isExpanded() and settings.section_expanded("items") is True

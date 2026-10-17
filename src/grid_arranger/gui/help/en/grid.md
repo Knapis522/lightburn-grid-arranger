@@ -2,7 +2,7 @@
 
 **Columns** — how many items are in one row. The number of rows is calculated.
 
-**Gap X / Y** — distance between the cut outlines of neighbouring items in mm (horizontal / vertical). A gap of 0 is allowed, but the application warns about the risk when cutting. Enter decimals with a dot (English) or a comma (Czech) depending on the application language.
+**Gap X / Y** — distance between the cut outlines of neighbouring items in the selected units (horizontal / vertical). A gap of 0 is allowed, but the application warns about the risk when cutting. Enter decimals with a dot (English) or a comma (Czech) depending on the application language.
 
 If items have **different sizes**, a column is as wide as its widest item and a row as tall as its tallest item. The gap is then a **minimum** — it is larger between smaller items.
 

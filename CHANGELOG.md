@@ -7,6 +7,8 @@ Formát podle [Keep a Changelog](https://keepachangelog.com/), verze podle SemVe
 ## [0.1.0-alpha.3] — nevydáno
 
 ### Přidáno
+- Levý panel: sekce s výraznější, ale klidnou hlavičkou (tučný název, jemné pozadí, úzký barevný proužek), sbalitelné kliknutím (stav se pamatuje); pole hodnot úzká (pro 0000,00), dvojice vedle sebe (Mezera X/Y, Roh X/Y, Šířka/Výška, Okraje vlevo/vpravo a nahoře/dole); šířka panelu se přizpůsobí jazyku a jednotkám.
+- Jednotky **Nastavení → Jednotky**: milimetry / palce (jako v LightBurnu) — jen zobrazení a zadávání (palce na 3 desetiny); výpočty, uložené desky i projekt vždy v mm, opakované přepínání hodnoty nemění.
 - Nástrojová lišta s ikonami: Otevřít projekt, Uložit jako nový projekt, Uživatelská příručka (tipy se zkratkami). Vlastní jednobarevné ikony (`gui/icons.py`), barva podle světlého/tmavého vzhledu; další funkce lze přidat jako další ikony.
 - Uložit jako nový projekt otevře okno pro uložení: navržený název `původní__grid_NNN.lbrn2` vedle originálu, složku i název lze změnit (přípona `.lbrn2` se doplní). Existující soubor, jeho protokol `.json` ani originál se nikdy nepřepíší — aplikace požádá o jiný název. 
 - Nastavení → Protokol uložení: Neukládat (**výchozí**) / Vedle uloženého projektu / Do složky protokolů aplikace (`%LOCALAPPDATA%\GridArranger\GridArranger\protocols`, položka Otevřít složku protokolů). Protokoly se nikdy nepřepisují (ve složce aplikace `_2`, `_3`…).

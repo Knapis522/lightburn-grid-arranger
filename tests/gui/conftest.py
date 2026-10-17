@@ -69,6 +69,10 @@ def make_window(qapp, qm_dir, settings):
         return w
 
     yield _make
+    from PySide6.QtCore import QCoreApplication, QEvent
+
     for w, lm in windows:
         w.close()
+        w.deleteLater()  # okna se stylem by jinak zpomalovala další testy (přepínání vzhledu)
         lm.apply("en")
+    QCoreApplication.sendPostedEvents(None, QEvent.Type.DeferredDelete)

@@ -52,11 +52,12 @@ Převod (ověřeno v KAL-00, spec. kap. 8): `screen_x = MirrorX ? −x : +x`, `s
 | `gui/i18n.py` | `LocaleManager` (QTranslator, QLocale), `detect_system_language`, fallback do angličtiny; navíc katalog Qt `qtbase_<kód>` (tlačítka Ano/Ne) | MVP-07, kap. 36 |
 | `gui/messages.py` | lokalizované hlášky z kódů chyb (`QT_TRANSLATE_NOOP`) | kap. 36.4 |
 | `gui/theme.py` | světlý / tmavý / automatický vzhled (styl Fusion + explicitní paleta, `setColorScheme`, sleduje změnu v systému); náhled desky vždy světlý | — |
-| `gui/settings.py` | `UserSettings` (QSettings): jazyk, vzhled, výchozí desky podle `DeviceName`, aktualizace (automaticky, předběžné verze, přeskočená verze, čas poslední kontroly), protokol uložení (`none` výchozí / `beside` / `appdata`) | kap. 12.3, 36.3, 32 |
+| `gui/settings.py` | `UserSettings` (QSettings): jazyk, vzhled, výchozí desky podle `DeviceName`, aktualizace (automaticky, předběžné verze, přeskočená verze, čas poslední kontroly), protokol uložení (`none` výchozí / `beside` / `appdata`), jednotky (`mm`/`in`), sbalené sekce | kap. 12.3, 36.3, 32 |
 | `gui/help.py`, `gui/help/<cs|en>/*.md` | offline příručka: obsah, Zpět/Vpřed, hledání, F1, synchronizace jazyka | MVP-08, kap. 38 |
 | `gui/catalog_check.py`, `tools/build_translations.py` | kontrola úplnosti a zástupných symbolů `.ts`, sestavení `.qm` | T-I18N-14, 15 |
 | `gui/app.py` | spuštění, ikona okna, zachycení neočekávané chyby; argumenty `<soubor.lbrn2>` a `--self-test REPORT.json` | MVP-06 |
 | `updates.py` | aktualizace bez Qt: `SemVer` (SemVer 2.0), `parse_releases`, `find_update` (vždy nejnovější), `should_offer_automatically` (přeskočená verze), `auto_check_due`, `fetch_releases` (GitHub API, urllib), `download_installer` (ověření `SHA256SUMS.txt`), `installer_command` | spec. v1.11 kap. 32, ADR-0004 |
+| `gui/widgets.py` | `Section` (sbalitelná sekce panelu, styl hlavičky podle vzhledu), `LengthSpin` (délka držená v mm, zobrazení mm/palce bez zaokrouhlovacích posunů), `Unit` | MVP-06 |
 | `gui/icons.py` | vlastní jednobarevné SVG ikony nástrojové lišty, barva z palety vzhledu | MVP-06 |
 | `gui/updates_ui.py` | `UpdateController` (kontrola na pozadí, nabídka, stažení s průběhem, spuštění instalátoru a ukončení aplikace), `UpdateDialog` | kap. 32 |
 | `packaging/GridArranger.iss` | instalátor Inno Setup (per-user, stálé `AppId`, smazání `_internal` před instalací, znovuspuštění po tiché aktualizaci) | kap. 31.2, ADR-0004 |

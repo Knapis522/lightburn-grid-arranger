@@ -48,3 +48,4 @@
 - 2026-10-17 — podle připomínky vlastníka: nástrojová lišta s ikonami (Otevřít, Uložit jako nový, Příručka; vlastní SVG ikony podle vzhledu) a název projektu v titulku okna jako v LightBurnu. Rozpracovaná verze `0.1.0-alpha.3` (nevydaná); 343 testů.
 - 2026-10-17 — spec. v1.12: při ukládání volba složky a názvu (návrh `__grid_NNN` vedle originálu; nikdy nepřepsat existující soubor, protokol ani originál — vyžádá jiný název); tlačítka Otevřít/Uložit v okně odstraněna (lišta, menu, Ctrl+O/S). 347 testů.
 - 2026-10-17 — protokol uložení `.json` volitelný: Nastavení → Protokol uložení (Neukládat — výchozí / Vedle projektu / Složka aplikace). 350 testů.
+- 2026-10-17 — levý panel: sbalitelné sekce s výraznější hlavičkou, úzká pole, dvojice hodnot vedle sebe; jednotky mm/palce (Nastavení → Jednotky, jen zobrazení). 353 testů.
