@@ -30,9 +30,9 @@
 | Ruční natočení a výběr v náhledu (automatické) | spec. v1.15 kap. 7.6 | 7.6 | automatický | prochází | `tests/integration/test_rotation_plan.py`, `tests/gui/test_main_window.py` |
 | Kopie výrobků (automatické) | V11-02 / spec. v1.16 kap. 22.2 | 22.2 | automatický | prochází | `tests/integration/test_copies.py`, `tests/gui/test_main_window.py` |
 | Kopie výrobků v LightBurnu | KAL-03 | 22.2 | ruční | ruční – ověřeno | `…__kal03_kopie.lbrn2` (datová složka) |
-| Počátek dole v LightBurnu | KAL-04 | 9.1 | ruční | čeká | testovací zařízení GRBL vlevo dole / vpravo dole |
-| Převod na jiný laser v LightBurnu | KAL-05 | 9.1 | ruční | čeká | červený → modrý a zpět, laser s počátkem dole |
-| Automatické sloupce, vyplnění desky, profily (ruční) | T-11-01–05, T-11-14–20 (zjednodušeno) | 22.1, 22.3 | automaticky + ručně | automaticky prochází; ruční čeká | `test_auto_columns.py`, GUI testy |
+| Počátek dole v LightBurnu | KAL-04 | 9.1 | ruční | ruční – ověřeno | testovací zařízení GRBL vlevo dole / vpravo dole |
+| Převod na jiný laser v LightBurnu | KAL-05 | 9.1 | ruční | ruční – ověřeno | červený → modrý a zpět, laser s počátkem dole |
+| Automatické sloupce, vyplnění desky, profily (ruční) | T-11-01–05, T-11-14–20 (zjednodušeno) | 22.1, 22.3 | automaticky + ručně | ruční – ověřeno | `test_auto_columns.py`, GUI testy |
 | Natočení v LightBurnu | KAL-01 | 7.6 | ruční | ruční – ověřeno | `docs/FORMAT_COMPATIBILITY.md`, protokol níže |
 | Nativní tvary (automatické) | spec. v1.14 kap. 5 body 8–9 | 5 | automatický | prochází | `tests/unit/test_shapes.py`, `tests/integration/test_native_shapes.py`, `tests/integration/test_real_projects.py` (vzorky C, s `GRID_ARRANGER_REAL_DATA`) |
 | Nativní tvary v LightBurnu | vzorky C (výstupy), KAL-02 | 5 | ruční | ruční – ověřeno | `docs/FORMAT_COMPATIBILITY.md` (vzorky C, KAL-02) |
@@ -71,6 +71,7 @@
 | 2026-10-17 | Vzorky C (automaticky) | 2.2.00-RC-7 | Test_tvary_A, Test_tvary_L_A, Test_tvary_A_posun, Test_klicenky, Kalibrace_A_rot30 | prochází | Všechny výrobky podporované (Ellipse, Rect, Polygon N=6, vnořené skupiny, příznak `S`); náš posun K1 = přesun v LightBurnu (tytéž 2 řádky, rozdíl jen v posledním řádu); klíčenky s natočením −18,5 % plochy mřížky; 411 testů + 6 na reálných datech |
 | 2026-10-17 | Vzorky C (výstupy v LightBurnu) | 2.2.00-RC-7 | `C_vystupy\` (Test_tvary_A 4 sl. bez natočení, 2 sl. libovolný úhel; Test_tvary_L_A; Test_klicenky libovolný úhel a po 90°) | ruční – ověřeno | Vlastník: v pořádku |
 | 2026-10-17 | KAL-02 | 2.2.00-RC-7 | Test_tvary_A__kal02_tvary, …_prevedeno (Convert to Path) | prochází | 12/12 tvarů odchylka 0,0000 mm po opravě vzorce mnohoúhelníku; zaoblené rohy a všechna N povolena |
+| 2026-10-18 | Ruční testy alpha.5 (43 kroků) | 2.2.00-RC-7 | reálné projekty, Kalibrace_A__BL/__BR | ruční – ověřeno | 40 OK, 2 připomínky opraveny: B4 Zrušit po Použít (tlačítko se přejmenuje na Zavřít), H7 náhled při odmítnutém převodu (původní polohy na desce projektu, zalomená hlášení). KAL-04 i KAL-05 v pořádku. Sestavení (J1) čeká |
 | 2026-10-18 | T-UPD-07 (aktualizace z aplikace) | — | — | ruční – ověřeno | PC u laseru: alpha.3 nabídla alpha.4, stažení, ověření součtu, instalace a nové spuštění v pořádku (vlastník). Připomínka: kontrolovat při každém spuštění → spec. v1.21 |
 | 2026-10-18 | GH-06 / GH-07 | — | — | prochází | Tag `v0.1.0-alpha.4`, Pre-release s instalátorem, ZIPem a `SHA256SUMS.txt`; sestavení po opravě testu velikosti okna (nezávislý na velikosti obrazovky) |
 | 2026-10-18 | GUI ruční (Windows), alpha.4 | 2.2.00-RC-7 | reálné projekty | ruční – ověřeno | Vlastník: Otevřít v LightBurnu (nahradí projekt, upozorní na neuložené změny), okno si pamatuje velikost a maximalizaci, krok zpět/vpřed, přeuspořádání lišty, titulek „naposledy uloženo jako“ a pokračování s uloženým souborem, okno Nastavení, panel vpravo, výška seznamu hlášení — v pořádku |

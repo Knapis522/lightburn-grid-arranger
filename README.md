@@ -16,7 +16,7 @@ Windows desktop application that arranges the items (groups) of a **LightBurn `.
 - **Rotation to save material:** automatic (any angle or 90° steps), manual angle per item, or none.
 - **Copies** to fill the board (Ctrl+C / Ctrl+V or *Create copies…*), or **Fill the board** with as many copies as fit.
 - **Automatic number of columns** (as many as fit the board width) and named **layout profiles**.
-- **Prepare a project for another laser** from a laser catalogue (e.g. origin top right → top left): the items are mirrored so that they look the same on the target laser (new in v0.1.0-alpha.5, awaiting verification in LightBurn).
+- **Prepare a project for another laser** from a laser catalogue (e.g. origin top right → top left): the items are mirrored so that they look the same on the target laser (new in v0.1.0-alpha.5).
 - Collision and board checks, including objects that are not moved.
 - Safe saving: a new file only, independent verification of the output before it is written, optional save protocol.
 - Millimetres or inches, light/dark appearance, Czech and English, offline user guide (F1), optional update check.
@@ -36,7 +36,7 @@ Newer versions are offered by the application itself (*Settings → Updates*); n
 ## Supported projects
 
 - LightBurn 2.2.x projects saved as `.lbrn2`.
-- Lasers with the origin in any corner: **top left, top right**, and — new in v0.1.0-alpha.5, still awaiting verification in LightBurn — **bottom left, bottom right** (typical for diode lasers).
+- Lasers with the origin in any corner: **top left, top right, bottom left, bottom right** (bottom origins are typical for diode lasers; new in v0.1.0-alpha.5).
 - Projects with several pages, unknown object types (e.g. bitmaps inside items) or unverified constructions are refused or the affected items are blocked — the application never guesses.
 
 ## Safety

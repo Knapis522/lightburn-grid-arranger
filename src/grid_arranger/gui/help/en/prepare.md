@@ -5,7 +5,7 @@
 3. Save the project (**Save As**) as `.lbrn2`. The application reads only the saved file — it cannot see unsaved changes in LightBurn.
 4. Save the project for the laser you will cut on. The application detects the laser and its origin (top left, top right, bottom left or bottom right — e.g. diode lasers) from the project. **After switching the laser in LightBurn, save the project again** and reopen it.
 
-Supported: LightBurn 2.2, `.lbrn2` projects, lasers with the origin in any corner (the bottom origins are still awaiting verification in LightBurn — the application shows a warning). Legacy `.lbrn` files are refused — save the project in LightBurn as `.lbrn2`.
+Supported: LightBurn 2.2, `.lbrn2` projects, lasers with the origin in any corner. Legacy `.lbrn` files are refused — save the project in LightBurn as `.lbrn2`.
 
 ## Project for another laser
 

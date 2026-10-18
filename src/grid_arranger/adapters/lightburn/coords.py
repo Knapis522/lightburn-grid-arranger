@@ -24,7 +24,7 @@ ORIGIN_NAMES = {
     (False, False): "bottom_left",
     (True, False): "bottom_right",
 }
-VERIFIED = {(True, True), (False, True)}
+VERIFIED = {(True, True), (False, True), (False, False), (True, False)}  # spodní rohy: KAL-04 (2026-10-18)
 
 
 @dataclass(frozen=True, slots=True)

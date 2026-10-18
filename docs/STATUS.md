@@ -71,3 +71,4 @@
 - 2026-10-18 — spec. v1.22: **počátek laseru vlevo dole / vpravo dole** (diodové lasery) — plnění od rohu u počátku, umístění, ruční roh, natočení; testy pro všechny 4 rohy (zápis, nezávislá kontrola, poloha po načtení). Čeká na KAL-04 v LightBurnu, do té doby upozornění. 462 testů.
 - 2026-10-18 — spec. v1.23: **projekt pro jiný laser** (*Připravit pro:*, zrcadlení výrobků, hlavička cílového laseru, kontrola hlavičky) a **katalog laserů** (Nastavení → Lasery). Čeká na KAL-05 v LightBurnu. 485 testů.
 - 2026-10-18 — spec. v1.24: **automatický počet sloupců** podle šířky desky, **Vyplnit desku kopiemi**, **profily rozložení**. 498 testů. Dál: sestavení a ruční testy (KAL-04, KAL-05, nové funkce), pak alpha.5.
+- 2026-10-18 — **ruční testy alpha.5:** 40/43 OK; **KAL-04 a KAL-05 ověřeny** (upozornění na neověřený počátek dole odstraněno); opraveny B4 (po Použít je Zrušit → Zavřít) a H7 (náhled při odmítnutém převodu, zalomení hlášení). Zbývá sestavení a vydání alpha.5.

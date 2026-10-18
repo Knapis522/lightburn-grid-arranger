@@ -7,7 +7,7 @@ from html import escape
 from pathlib import Path
 
 from PySide6 import __version__ as pyside_version
-from PySide6.QtCore import QByteArray, QEvent, QItemSelectionModel, QSize, QStandardPaths, Qt, QUrl, qVersion
+from PySide6.QtCore import QByteArray, QEvent, QItemSelectionModel, QRect, QSize, QStandardPaths, Qt, QUrl, Signal, qVersion
 from PySide6.QtGui import QAction, QDesktopServices, QKeySequence, QPalette
 from PySide6.QtWidgets import (
     QApplication,
@@ -20,6 +20,7 @@ from PySide6.QtWidgets import (
     QGridLayout,
     QHBoxLayout,
     QLabel,
+    QListView,
     QListWidget,
     QListWidgetItem,
     QMainWindow,
@@ -28,7 +29,6 @@ from PySide6.QtWidgets import (
     QScrollArea,
     QSpinBox,
     QSplitter,
-    QToolBar,
     QVBoxLayout,
     QWidget,
 )
@@ -58,6 +58,17 @@ from .updates_ui import UpdateController
 
 ANCHOR_KEYS = ("origin", "center", "manual", "selection")
 FILL_KEYS = ("origin", "reading")
+
+
+class IssueList(QListWidget):
+    """Seznam hlášení pod náhledem; při změně šířky ohlásí, že se má přepočítat výška."""
+
+    widthChanged = Signal()
+
+    def resizeEvent(self, event) -> None:  # noqa: N802
+        super().resizeEvent(event)
+        if event.oldSize().width() != event.size().width():
+            self.widthChanged.emit()
 
 
 class MainWindow(QMainWindow):
@@ -392,8 +403,11 @@ class MainWindow(QMainWindow):
         self.act_fit.triggered.connect(self.preview.fit)
         bar.addWidget(self.lbl_summary, 1)
         rv.addLayout(bar)
-        self.list_issues = QListWidget()  # výsledek kontroly: výška podle počtu hlášení (viz _fit_issue_list)
-        self.list_issues.setWordWrap(True)
+        self.list_issues = IssueList()  # výsledek kontroly: výška podle počtu hlášení (viz _fit_issue_list)
+        self.list_issues.setWordWrap(True)  # dlouhé hlášení se zalomí, nic se neusekne
+        self.list_issues.setResizeMode(QListView.ResizeMode.Adjust)
+        self.list_issues.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        self.list_issues.widthChanged.connect(self._fit_issue_list)  # jiná šířka = jiné zalomení
         rv.addWidget(self.list_issues)
 
         split = QSplitter()
@@ -1389,7 +1403,8 @@ class MainWindow(QMainWindow):
         board = usable = None
         if self.spin_bw.mm() > 0 and self.spin_bh.mm() > 0:
             spec = material_to_core(proj, self.params().material,
-                                    self.plan.orientation if self.plan is not None else self._output_orientation())
+                                    # bez platného plánu ukazuje náhled původní stav → deska podle projektu
+                                    self.plan.orientation if self.plan is not None else proj.info.orientation)
             board = Rect(spec.board_left, spec.board_top, spec.board_left + spec.board_width, spec.board_top + spec.board_height)
             usable, _ = usable_area(spec)
         sel = set(self.order)
@@ -1461,9 +1476,14 @@ class MainWindow(QMainWindow):
         lst.setVisible(n > 0)
         if n == 0:
             return
-        rows = sum(lst.sizeHintForRow(i) if lst.sizeHintForRow(i) > 0 else lst.fontMetrics().height() + 2
+        fm = lst.fontMetrics()
+        width = max(lst.viewport().width() - 8, 100)
+        rows = sum(fm.boundingRect(QRect(0, 0, width, 100000), Qt.TextFlag.TextWordWrap, lst.item(i).text()).height() + 2
                    for i in range(min(n, self.ISSUE_ROWS_MAX)))
-        lst.setFixedHeight(rows + 2 * lst.frameWidth() + 2)
+        h = rows + 2 * lst.frameWidth() + 2
+        if lst.height() != h:
+            lst.setFixedHeight(h)
+
 
     # ====================================================================== uložení
     def save_new_project(self, confirm: bool = True) -> Path | None:

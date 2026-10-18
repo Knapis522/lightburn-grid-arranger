@@ -4,14 +4,21 @@ Formát podle [Keep a Changelog](https://keepachangelog.com/), verze podle SemVe
 
 ## [Unreleased]
 
-## [0.1.0-alpha.5] — nevydáno
+## [0.1.0-alpha.5] — 2026-10-18
+
+Předběžné vydání (GitHub Pre-release). Release notes: `docs/releases/v0.1.0-alpha.5.md`.
 
 ### Přidáno
 - **Automatický počet sloupců** (spec. v1.24, V11-03): zaškrtávátko *Automaticky* u Počtu sloupců — tolik sloupců, kolik se vejde na šířku využitelné plochy desky (i s natočením a kopiemi); pole ukazuje vypočtený počet. CLI `--columns auto`.
 - **Vyplnit desku kopiemi** (ikona na liště, Ctrl+Shift+D, menu Úpravy): přidá maximální počet kopií vybraných výrobků (střídavě), při kterém rozložení projde kontrolou; jeden krok zpět.
 - **Profily rozložení** (V11-01): nová sekce *Profil rozložení* — uložit / použít / smazat pojmenované nastavení (sloupce nebo automaticky, mezery, pořadí plnění, natočení, umístění). Deska v profilu není (patří k laseru v katalogu).
-- **Projekt pro jiný laser a katalog laserů** (spec. v1.23): v sekci Projekt volba **Připravit pro:** laser z katalogu. Aplikace nabídne jeho desku, mřížku plní od jeho počátku a uloží výstup rovnou pro něj (`…__Nazev_laseru__grid_NNN.lbrn2`): v hlavičce `DeviceName`/`MirrorX`/`MirrorY` cílového laseru a výrobky zrcadlově převrácené (`S_cíl ∘ T ∘ S_zdroj`), aby na něm vypadaly stejně — bez ručního převracení v LightBurnu. Při jiném počátku musí být vybrány všechny výrobky a projekt nesmí mít jiné objekty. Nezávislá kontrola ověřuje i změnu hlavičky (jen tyto tři atributy). Nastavení vrstev se nepřevádí (upozornění). Katalog: **Nastavení → Lasery** (název jako v LightBurnu, roh počátku, deska s okraji; lasery z otevřených projektů se přidají samy). Čeká na ověření KAL-05 v LightBurnu.
-- **Lasery s počátkem dole** (vlevo dole / vpravo dole, typicky diodové lasery s GRBL; spec. v1.22): projekt se načte, mřížka se plní od rohu u počátku (první řádek dole, další nad ním), umístění do rohu desky u počátku, ruční roh i natočení fungují stejně jako u počátku nahoře; nezávislá kontrola výstupu beze změny. Dokud kalibrace KAL-04 v LightBurnu neproběhne, aplikace u těchto projektů zobrazí upozornění (uložení neblokuje).
+- **Projekt pro jiný laser a katalog laserů** (spec. v1.23): v sekci Projekt volba **Připravit pro:** laser z katalogu. Aplikace nabídne jeho desku, mřížku plní od jeho počátku a uloží výstup rovnou pro něj (`…__Nazev_laseru__grid_NNN.lbrn2`): v hlavičce `DeviceName`/`MirrorX`/`MirrorY` cílového laseru a výrobky zrcadlově převrácené (`S_cíl ∘ T ∘ S_zdroj`), aby na něm vypadaly stejně — bez ručního převracení v LightBurnu. Při jiném počátku musí být vybrány všechny výrobky a projekt nesmí mít jiné objekty. Nezávislá kontrola ověřuje i změnu hlavičky (jen tyto tři atributy). Nastavení vrstev se nepřevádí (upozornění). Katalog: **Nastavení → Lasery** (název jako v LightBurnu, roh počátku, deska s okraji; lasery z otevřených projektů se přidají samy). Ověřeno v LightBurnu oběma směry mezi červeným a modrým laserem, i s natočením a kopiemi (KAL-05, 2026-10-18).
+- **Lasery s počátkem dole** (vlevo dole / vpravo dole, typicky diodové lasery s GRBL; spec. v1.22): projekt se načte, mřížka se plní od rohu u počátku (první řádek dole, další nad ním), umístění do rohu desky u počátku, ruční roh i natočení fungují stejně jako u počátku nahoře; nezávislá kontrola výstupu beze změny. Ověřeno v LightBurnu s testovacími zařízeními (KAL-04, 2026-10-18).
+
+### Opraveno
+- Nastavení: po *Použít* se tlačítko *Zrušit* přejmenuje na *Zavřít* — použité změny platí (připomínka z ručních testů B4).
+- Dlouhá hlášení pod náhledem se zalomí, místo aby se usekla.
+- Když mřížku nejde spočítat (např. převod na jiný laser bez všech výrobků), náhled ukáže původní polohy na desce projektu, ne mimo desku cílového laseru (H7).
 
 ### Změněno
 - Automatická kontrola aktualizací proběhne **při každém spuštění** aplikace (dříve nejvýš jednou za ~20 hodin), takže nová verze se nabídne hned při dalším spuštění. Vypnout ji lze v Nastavení → Aktualizace.

@@ -52,7 +52,7 @@ def test_lb06_verified_orientations(write_project, mx, origin, expected):
 def test_bottom_origins_are_loaded_with_y_up(write_project, mx, origin, expected):
     # diodové lasery (GRBL) mají počátek často vlevo / vpravo dole: osa Y souboru míří nahoru (spec. v1.22)
     p = load_project(write_project(project([card(10, 20)], mirror_x=mx, mirror_y=False)))
-    assert p.info.orientation.origin == origin and not p.info.orientation.verified
+    assert p.info.orientation.origin == origin and p.info.orientation.verified  # KAL-04
     assert p.items[0].screen_bounds == expected
 
 

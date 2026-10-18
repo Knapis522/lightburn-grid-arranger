@@ -164,6 +164,9 @@ class SettingsDialog(QDialog):
     # ====================================================================== texty
     def retranslate(self) -> None:
         self.setWindowTitle(self.tr("Settings"))
+        if getattr(self, "_applied", False):
+            # po Použít už nejde nic „zrušit“ — použité změny platí; tlačítko jen zavře okno
+            self.buttons.button(QDialogButtonBox.StandardButton.Cancel).setText(self.tr("Close"))
         for i, t in enumerate((self.tr("General"), self.tr("Lasers"), self.tr("Saving"), self.tr("Updates"))):
             self.pages.item(i).setText(t)
         self.lbl_lasers_note.setText(self.tr(
@@ -238,6 +241,7 @@ class SettingsDialog(QDialog):
 
     def apply(self) -> None:
         self.win.apply_settings(self.values())
+        self._applied = True
         self.retranslate()  # po změně jazyka hned (událost LanguageChange přijde až později)
         self._sync_buttons()
 

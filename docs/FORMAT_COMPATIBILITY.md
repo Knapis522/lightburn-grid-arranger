@@ -10,7 +10,7 @@
 | Pro 2.2.00-RC-7 (Qt 6.11.2) | 1 | totéž; `MirrorX=False, MirrorY=True` | ověřeno | ověřeno (LightBurn) | neověřeno | neověřeno | V-003 |
 | Pro 2.2.00-RC-7 (Qt 6.11.2) | 1 | Nativní tvary `Ellipse`, `Rect` (i se zaoblením `Cr`), `Polygon` (libovolné N) ve skupině, i ve vnořené skupině (klíčenky); oba lasery | ověřeno | ověřeno (shoda s přesunem v LightBurnu) | ověřeno | ověřeno (výstupy otevřeny vlastníkem) | Test_tvary_A / L_A / _posun, Test_klicenky, KAL-02 |
 | Pro 2.2.00-RC-7 (Qt 6.11.2) | 1 | Kopie výrobků jako nové skupiny (sdílená geometrie přes `VertID`/`PrimID`); oba lasery | ověřeno | ověřeno | ověřeno | ověřeno (KAL-03) | `KAL03\` |
-| Pro 2.2.00-RC-7 (Qt 6.11.2) | 1 | `MirrorY=False` (počátek vlevo dole / vpravo dole, např. diodové lasery) | implementováno (spec. v1.22) | testy syntetické | — | — | **čeká na KAL-04**; aplikace zobrazí upozornění |
+| Pro 2.2.00-RC-7 (Qt 6.11.2) | 1 | `MirrorY=False` (počátek vlevo dole / vpravo dole, např. diodové lasery) | ověřeno | ověřeno | ověřeno | ověřeno (KAL-04, testovací zařízení) | KAL-04 2026-10-18 |
 
 ## Vzorek V-001 (KAL-00, pouze čtení)
 
@@ -165,21 +165,25 @@ Kalibrační výstupy (datová složka, `KAL03\`):
 
 **Stav brány KAL-03: SPLNĚNO 2026-10-17** (LightBurn 2.2.00-RC-7, oba lasery).
 
-## KAL-04 — počátek dole (spec. v1.22, čeká na ověření)
+## KAL-04 — počátek dole (spec. v1.22, ověřeno vlastníkem 2026-10-18)
 
 Podle V-003 příznaky `MirrorX/MirrorY` mění jen zobrazení, souřadnice souboru zůstávají (X/Y v UI = soubor). Pro `MirrorY=False` z toho plyne osa Y souboru nahoru: `screen_y = −y` (stejný vzorec, kap. 8). Transformace natočení `S ∘ T ∘ S` je pro determinant ±1 už ověřena (vlevo nahoře det +1, vpravo nahoře det −1; vlevo dole −1, vpravo dole +1).
 
 **Postup ověření (vlastník, bez stroje):** v LightBurnu vytvořit testovací zařízení (Devices → Create Manually → GRBL, počátek *Front Left* / *Front Right*, libovolná plocha), s ním znovu uložit kalibrační projekt (`Kalibrace_A__BL.lbrn2`, `Kalibrace_A__BR.lbrn2`), v aplikaci rozložit (deska, roh u počátku, natočení, kopie) a výstup otevřít v LightBurnu se stejným zařízením: mřížka v rohu u počátku s okrajem, souřadnice prvního výrobku X 5 / Y 5, natočení a texty, Preview. Potom vrátit skutečný laser.
 
-- [ ] vlevo dole (`MirrorX=False, MirrorY=False`)
-- [ ] vpravo dole (`MirrorX=True, MirrorY=False`)
+- [x] vlevo dole (`MirrorX=False, MirrorY=False`)
+- [x] vpravo dole (`MirrorX=True, MirrorY=False`)
 
-## KAL-05 — převod projektu na jiný laser (spec. v1.23, čeká na ověření)
+Výsledek: mřížka v rohu u počátku, první výrobek X 5 / Y 5, natočení, kopie, texty a Preview v pořádku (testovací zařízení GRBL v LightBurnu, bez řezání na diodovém laseru). Upozornění „neověřený počátek“ odstraněno.
+
+## KAL-05 — převod projektu na jiný laser (spec. v1.23, ověřeno vlastníkem 2026-10-18)
 
 Výstup pro cílový laser mění v hlavičce jen `DeviceName`, `MirrorX`, `MirrorY` (jako přepnutí zařízení v LightBurnu podle V-003; `Thumbnail` a přečíslování `VertID`/`PrimID` aplikace nedělá) a výrobky dostanou `XForm' = S_cíl ∘ T ∘ S_zdroj ∘ XForm` — při jiné orientaci se zrcadlením (záporný determinant), stejně jako po *Flip Horizontal/Vertical* v LightBurnu.
 
 **Postup ověření (vlastník):** projekt pro červený laser (vpravo nahoře) → v aplikaci *Připravit pro:* modrý laser (vlevo nahoře) → uložit → otevřít v LightBurnu s modrým laserem: texty a motivy nejsou zrcadlově, mřížka v rohu u počátku, Preview v pořádku; porovnat s ručním postupem (přepnutí zařízení + Flip). Totéž s natočeným výrobkem, kopiemi a s textem; případně i diodový laser (vlevo dole).
 
-- [ ] vpravo nahoře → vlevo nahoře (červený → modrý)
-- [ ] vlevo nahoře → vpravo nahoře (modrý → červený)
-- [ ] na laser s počátkem dole (testovací zařízení)
+- [x] vpravo nahoře → vlevo nahoře (červený → modrý)
+- [x] vlevo nahoře → vpravo nahoře (modrý → červený)
+- [ ] na laser s počátkem dole (testovací zařízení) — netestováno samostatně; vzorce shodné, automatické testy všech 16 kombinací
+
+Výsledek: texty a motivy nejsou zrcadlově, mřížka v rohu u počátku (X 5 / Y 5), Preview v pořádku, i s natočeným výrobkem a kopiemi.
