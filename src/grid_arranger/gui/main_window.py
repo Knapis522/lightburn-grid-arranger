@@ -358,8 +358,8 @@ class MainWindow(QMainWindow):
         self.act_fit.triggered.connect(self.preview.fit)
         bar.addWidget(self.lbl_summary, 1)
         rv.addLayout(bar)
-        self.list_issues = QListWidget()
-        self.list_issues.setMaximumHeight(150)
+        self.list_issues = QListWidget()  # výsledek kontroly: výška podle počtu hlášení (viz _fit_issue_list)
+        self.list_issues.setWordWrap(True)
         rv.addWidget(self.list_issues)
 
         split = QSplitter()
@@ -1153,6 +1153,21 @@ class MainWindow(QMainWindow):
             if can_save and not self.plan.report.errors:
                 self.list_issues.insertItem(0, "✔ " + self.tr("The layout passed all checks."))
         self.act_save.setEnabled(can_save)
+        self._fit_issue_list()
+
+    ISSUE_ROWS_MAX = 6
+
+    def _fit_issue_list(self) -> None:
+        """Seznam hlášení jen tak vysoký, kolik má řádků (nejvýš ``ISSUE_ROWS_MAX``, pak posuvník);
+        bez hlášení (žádný projekt) se skryje a místo dostane náhled."""
+        lst = self.list_issues
+        n = lst.count()
+        lst.setVisible(n > 0)
+        if n == 0:
+            return
+        rows = sum(lst.sizeHintForRow(i) if lst.sizeHintForRow(i) > 0 else lst.fontMetrics().height() + 2
+                   for i in range(min(n, self.ISSUE_ROWS_MAX)))
+        lst.setFixedHeight(rows + 2 * lst.frameWidth() + 2)
 
     # ====================================================================== uložení
     def save_new_project(self, confirm: bool = True) -> Path | None:

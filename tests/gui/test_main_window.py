@@ -837,3 +837,19 @@ def test_toolbar_can_be_rearranged_and_order_is_remembered(make_window, settings
     w2.reset_toolbar()
     assert w2.toolbar.order() == w2.TOOLBAR_DEFAULT and settings.toolbar_order() == []
     assert not w2.toolbar.move_action("help", "help")
+
+
+def test_issue_list_height_follows_number_of_messages(make_window, tmp_path):
+    w = make_window("en")
+    assert w.list_issues.isHidden()  # bez projektu žádná hlášení → seznam skrytý, místo dostane náhled
+    w.open_project(write(tmp_path, four()))
+    assert not w.list_issues.isHidden() and w.list_issues.count() >= 1
+    w.list_issues.clear()
+    w.list_issues.addItem("✔ ok")
+    w._fit_issue_list()
+    one = w.list_issues.height()
+    assert one < 40  # jeden řádek „prošlo kontrolou“, ne 150 px
+    for i in range(10):
+        w.list_issues.addItem(f"⚠ {i}")
+    w._fit_issue_list()
+    assert one < w.list_issues.height() <= one * w.ISSUE_ROWS_MAX + 10  # roste nejvýš na 6 řádků, pak posuvník

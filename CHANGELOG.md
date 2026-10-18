@@ -15,6 +15,7 @@ Formát podle [Keep a Changelog](https://keepachangelog.com/), verze podle SemVe
 - **Otevřít v LightBurnu:** v hlášení o uložení tlačítko, ikona na nástrojové liště a Soubor → Otevřít uložený projekt v LightBurnu (Ctrl+L). Uložený projekt se otevře programem přiřazeným k `.lbrn2`, stejně jako dvojklikem v Průzkumníku: běžící LightBurn ho otevře místo aktuálního projektu a na neuložené změny se zeptá sám (ověřeno vlastníkem). Bez párování a bez REST API LightBurnu.
 
 ### Opraveno
+- Seznam výsledků kontroly pod náhledem je jen tak vysoký, kolik má hlášení (nejvýš 6 řádků, pak posuvník; dřív pevně 150 px), bez otevřeného projektu se skryje — náhled dostane víc místa.
 - Aplikace si pamatuje velikost a polohu okna včetně maximalizace (přes celou obrazovku) a šířku levého panelu; otevře se tak, jak byla naposledy zavřena. Okno mimo připojené monitory se vrátí na obrazovku.
 
 ## [0.1.0-alpha.3] — 2026-10-17
