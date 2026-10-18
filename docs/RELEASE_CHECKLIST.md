@@ -18,6 +18,8 @@ Podle spec. kap. 30.3, 31.3 a brány REL-01 (kap. 33.1). Popisy na GitHubu (comm
 5. github.com → **Releases** → **Draft a new release** → zvolit tag → titulek `Grid Arranger v<verze>` → text z `RELEASE_NOTES.md` ve složce verze → přiložit **instalátor, ZIP a `SHA256SUMS.txt`** (bez instalátoru a součtů aplikace aktualizaci jen nabídne ke stažení) → u předběžné verze zaškrtnout **Set as a pre-release** → **Publish release** (u soukromého repozitáře vidí jen vlastník a přizvaní).
 6. Stáhnout instalátor z GitHubu, ověřit `Get-FileHash` proti `SHA256SUMS.txt`, nainstalovat na počítači bez Pythonu a projít ruční scénář (GH-05, T-I18N-16, HELP-01); po zveřejnění repozitáře ověřit i aktualizaci ze starší verze přes Nápověda → Zkontrolovat aktualizace (T-UPD-07). Výsledek zapsat do `TEST_PLAN.md`.
 
+**PUB-00 splněno 2026-10-18** — repozitář veřejný, vydání alpha.1–alpha.3 jako Pre-release.
+
 ## REL-01 pro interní předběžnou verzi (kontrola před krokem 5)
 
 - [ ] Všechny automatické testy prošly (součást `build_exe.bat`).
@@ -33,7 +35,7 @@ Podle spec. kap. 30.3, 31.3 a brány REL-01 (kap. 33.1). Popisy na GitHubu (comm
 - [x] Audit celé historie (`git log --all --name-only`): žádné `.lbrn2`, zákaznická data, tokeny, firemní dokumenty, cizí grafika — 2026-10-18.
 - [x] `LICENSE` (MIT), `THIRD_PARTY_NOTICES.md`, `LICENSE.txt` v sestavení.
 - [x] Anglický `README.md` (stav alpha, instalace, omezení, kontrola v LightBurnu, neoficiální nástroj), `SECURITY.md`.
-- [ ] Commit a push; github.com → repozitář → **Settings → General → Danger Zone → Change visibility → Make public**.
-- [ ] **Settings → Code security → Private vulnerability reporting → Enable** (odkaz v `SECURITY.md`).
-- [ ] Volitelně: **Settings (profil) → Emails → Keep my email addresses private** pro další commity.
-- [ ] V aplikaci **Zkontrolovat aktualizace** — místo „vydání nejsou veřejná“ ohlásí aktuální verzi (T-UPD-07 částečně); zapsat do `TEST_PLAN.md`.
+- [x] Commit a push; github.com → repozitář → **Settings → General → Danger Zone → Change visibility → Make public**.
+- [x] **Settings → Advanced Security → Private vulnerability reporting → Enable** (odkaz v `SECURITY.md`).
+- [x] Volitelně: **Settings (profil) → Emails → Keep my email addresses private** pro další commity.
+- [x] V aplikaci **Zkontrolovat aktualizace** — místo „vydání nejsou veřejná“ ohlásí aktuální verzi (T-UPD-07 částečně); zapsat do `TEST_PLAN.md`.
