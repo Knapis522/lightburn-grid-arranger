@@ -32,6 +32,14 @@ class Orientation:
     mirror_x: bool
     mirror_y: bool
 
+    @classmethod
+    def from_origin(cls, origin: str) -> Orientation:
+        """``top_left`` | ``top_right`` | ``bottom_left`` | ``bottom_right`` → příznaky MirrorX/MirrorY."""
+        for (mx, my), name in ORIGIN_NAMES.items():
+            if name == origin:
+                return cls(mx, my)
+        raise ValueError(origin)
+
     @property
     def sx(self) -> float:
         return -1.0 if self.mirror_x else 1.0

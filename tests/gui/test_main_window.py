@@ -636,7 +636,7 @@ def test_settings_dialog_is_modal_and_applies_on_ok_or_apply(make_window, tmp_pa
     w.act_settings.trigger()  # ikona na liště / Ctrl+,
     assert len(shown) == 2 and w.act_settings.shortcut().toString() == "Ctrl+,"
     dlg = shown[0]
-    assert isinstance(dlg, SettingsDialog) and dlg.isModal() and dlg.pages.count() == 3
+    assert isinstance(dlg, SettingsDialog) and dlg.isModal() and dlg.pages.count() == 4
     assert dlg.values() == dlg.current()
     apply_btn = dlg.buttons.button(QDialogButtonBox.StandardButton.Apply)
     assert not apply_btn.isEnabled()
@@ -873,3 +873,52 @@ def test_bottom_origin_project_opens_with_verification_warning(make_window, tmp_
     w2 = make_window("cs")
     w2.open_project(write(tmp_path, data, "b.lbrn2"))
     assert "vlevo dole" in w2.lbl_device.text() or "vpravo dole" in w2.lbl_device.text()
+
+
+def test_laser_catalog_learns_lasers_and_is_edited_in_settings(make_window, tmp_path, settings):
+    from grid_arranger.gui.settings import BoardPreset, LaserProfile
+    from grid_arranger.gui.settings_dialog import SettingsDialog
+
+    w = make_window("en")
+    w.open_project(write(tmp_path, four()))
+    assert [(p.name, p.origin) for p in settings.lasers()] == [("Syntetický laser", "top_right")]  # naučeno z projektu
+    dlg = SettingsDialog(w)
+    dlg.show_page("lasers")
+    assert dlg.list_lasers.count() == 1
+    diode = LaserProfile("Diodový laser", "bottom_left", BoardPreset(400, 400, (2, 2, 2, 2)))
+    dlg._ask_laser = lambda profile: diode
+    dlg.add_laser()
+    assert settings.laser("Diodový laser") is None  # až po Použít / OK
+    dlg.buttons.button(dlg.buttons.StandardButton.Ok).click()
+    assert settings.laser("Diodový laser") == diode
+    assert w.combo_target.findData("Diodový laser") > 0  # nabízí se jako cílový laser
+    dlg = SettingsDialog(w)
+    dlg.list_lasers.setCurrentRow([p.name for p in dlg._lasers].index("Diodový laser"))
+    dlg.remove_laser()
+    dlg.apply()
+    assert settings.laser("Diodový laser") is None and settings.board_for("Diodový laser") is None
+    assert w.combo_target.findData("Diodový laser") < 0
+
+
+def test_prepare_for_other_laser_mirrors_and_sets_header(make_window, tmp_path, settings):
+    from grid_arranger.adapters.lightburn.read import load_project
+    from grid_arranger.gui.settings import BoardPreset, LaserProfile
+
+    settings.set_lasers([LaserProfile("Modrý Ruida 643XG", "top_left", BoardPreset(500, 400, (5, 5, 5, 5)))])
+    w = make_window("en")
+    src = write(tmp_path, project([card(10, 20, text="A"), card(300, 100, text="B")]))
+    w.open_project(src)
+    w.set_target("Modrý Ruida 643XG")
+    assert (w.spin_bw.mm(), w.spin_bh.mm()) == (500, 400)  # deska cílového laseru
+    assert any("prepared for the laser Modrý Ruida 643XG" in t for t in w.issues())
+    out = w.save_new_project(confirm=False)
+    assert out.name == "karty__Modry_Ruida_643XG__grid_001.lbrn2"
+    o = load_project(out)
+    assert o.info.device_name == "Modrý Ruida 643XG" and o.info.orientation.origin == "top_left"
+    assert o.items[0].file_bbox[:2] == pytest.approx((5, 5))
+    w.undo()  # krok zpět vrátí i cílový laser
+    assert w.target_name is None and w.combo_target.currentIndex() == 0
+    w.set_target(None)
+    w.order = ("G1",)
+    w.set_target("Modrý Ruida 643XG")  # jen část projektu: zrcadlový převod odmítnut s vysvětlením
+    assert w.plan is None and w.plan_error.code == "convert_needs_whole_project" and not w.act_save.isEnabled()

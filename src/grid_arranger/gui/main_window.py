@@ -33,12 +33,13 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
+from ..adapters.lightburn.coords import Orientation
 from ..adapters.lightburn.read import LoadedProject, load_project
 from ..adapters.lightburn.render import ProjectRenderer
-from ..adapters.lightburn.write import next_output_path
+from ..adapters.lightburn.write import name_tag, next_output_path
 from ..application.arrange_job import (
-    ROTATION_MODES, ArrangeParams, ItemGeometry, MaterialInput, Plan, check_output_path, execute, make_plan, material_to_core,
-    normalize_angle,
+    ROTATION_MODES, ArrangeParams, ItemGeometry, MaterialInput, Plan, TargetLaser, check_output_path, execute, make_plan,
+    material_to_core, normalize_angle,
 )
 from ..core.collision import usable_area
 from ..core.order import default_order, deselect, move_down, move_up, select, swap
@@ -222,6 +223,18 @@ class MainWindow(QMainWindow):
         self.lbl_device = QLabel()
         self.lbl_device.setWordWrap(True)
         pv.addWidget(self.lbl_device)
+        # cílový laser (spec. v1.23): výstup připravit pro jiný laser z katalogu
+        trow = QHBoxLayout()
+        self.lbl_target = QLabel()
+        self.combo_target = QComboBox()
+        self.combo_target.setSizeAdjustPolicy(QComboBox.SizeAdjustPolicy.AdjustToContents)
+        self.combo_target.activated.connect(self._on_target_chosen)
+        self.lbl_target.setBuddy(self.combo_target)
+        trow.addWidget(self.lbl_target)
+        trow.addWidget(self.combo_target)
+        trow.addStretch(1)
+        pv.addLayout(trow)
+        self.target_name: str | None = None
 
         self.box_items, body = section("items")
         iv = QVBoxLayout(body)
@@ -418,6 +431,7 @@ class MainWindow(QMainWindow):
             act.setToolTip((f"{tip} ({keys})" if keys else tip) + "\n" + self.tr("Drag to rearrange the toolbar"))
 
         self.box_project.setTitle(self.tr("Project"))
+        self.lbl_target.setText(self.tr("Prepare for:"))
         self.box_items.setTitle(self.tr("Items (groups)"))
         self.btn_up.setText(self.tr("Up"))
         self.btn_down.setText(self.tr("Down"))
@@ -552,8 +566,8 @@ class MainWindow(QMainWindow):
         self._refresh_issue_texts()
         self._fit_left_panel()
 
-    def _origin_text(self) -> str:
-        o = self.project.info.orientation.origin if self.project else ""
+    def _origin_text(self, origin: str | None = None) -> str:
+        o = origin if origin is not None else (self.project.info.orientation.origin if self.project else "")
         return {
             "top_right": self.tr("top right"),
             "top_left": self.tr("top left"),
@@ -587,6 +601,7 @@ class MainWindow(QMainWindow):
 
     def _update_project_labels(self) -> None:
         self._update_title()
+        self._fill_target_combo()
         if self.project is None:
             self.lbl_file.setText(self.tr("No project open. Save the project in LightBurn first, then open the saved .lbrn2 file."))
             self.lbl_device.setText("")
@@ -619,6 +634,8 @@ class MainWindow(QMainWindow):
             self._error(message(e.code, **e.params))
             return False
         self.project = project
+        self.settings.remember_laser(project.info.device_name, project.info.orientation.origin)
+        self.target_name = None
         self.last_saved = None
         self.act_open_in_lb.setEnabled(False)
         self.renderer = ProjectRenderer(project)
@@ -649,8 +666,71 @@ class MainWindow(QMainWindow):
             return
         preset = BoardPreset(self.spin_bw.mm(), self.spin_bh.mm(),
                              (self.spin_ml.mm(), self.spin_mr.mm(), self.spin_mt.mm(), self.spin_mb.mm()))
-        self.settings.set_board_for(self.project.info.device_name, preset)
-        self.statusBar().showMessage(self.tr("Board saved as default for {device}.").format(device=self.project.info.device_name), 5000)
+        device = self.target_name or self.project.info.device_name  # deska laseru, pro který se připravuje
+        self.settings.set_board_for(device, preset)
+        self.statusBar().showMessage(self.tr("Board saved as default for {device}.").format(device=device), 5000)
+
+    # ====================================================================== cílový laser
+    MANAGE_LASERS = "__manage__"
+
+    def _fill_target_combo(self) -> None:
+        c = self.combo_target
+        c.blockSignals(True)
+        c.clear()
+        if self.project is None:
+            c.setEnabled(False)
+            c.blockSignals(False)
+            return
+        c.setEnabled(True)
+        info = self.project.info
+        c.addItem(self.tr("As in the project ({device})").format(device=info.device_name), None)
+        for p in self.settings.lasers():
+            if p.name == info.device_name and p.origin == info.orientation.origin:
+                continue
+            c.addItem(f"{p.name} ({self._origin_text(p.origin)})", p.name)
+        c.insertSeparator(c.count())
+        c.addItem(self.tr("Manage lasers…"), self.MANAGE_LASERS)
+        i = c.findData(self.target_name) if self.target_name else 0
+        if i < 0:  # laser mezitím z katalogu odebrán
+            self.target_name, i = None, 0
+        c.setCurrentIndex(i)
+        c.setToolTip(self.tr("Prepare the output for another laser from the catalogue. Items are mirrored so that "
+                             "they look the same on a laser with a different origin."))
+        c.blockSignals(False)
+
+    def _on_target_chosen(self, index: int) -> None:
+        data = self.combo_target.itemData(index)
+        if data == self.MANAGE_LASERS:
+            self.show_settings("lasers")
+            self._fill_target_combo()
+            self.recompute()
+            return
+        self.set_target(data)
+
+    def set_target(self, name: str | None) -> None:
+        """Cílový laser z katalogu (None = laser projektu); deska se nastaví podle něj."""
+        if self.project is None:
+            return
+        self.target_name = name or None
+        self._fill_target_combo()
+        preset = self.settings.board_for(self.target_name or self.project.info.device_name)
+        if preset is not None:
+            self._set_board(preset)
+        self._refit = True
+        self.recompute()
+
+    def _target(self) -> TargetLaser | None:
+        if not self.target_name:
+            return None
+        p = self.settings.laser(self.target_name)
+        return TargetLaser(p.name, Orientation.from_origin(p.origin)) if p else None
+
+    def _output_orientation(self) -> Orientation:
+        t = self._target()
+        return t.orientation if t else self.project.info.orientation
+
+    def _target_tag(self) -> str:
+        return name_tag(self.plan.target.device_name) if self.plan is not None and self.plan.target else ""
 
     # ====================================================================== seznam výrobků
     def _rebuild_item_list(self, keep: str | None = None) -> None:
@@ -764,6 +844,7 @@ class MainWindow(QMainWindow):
             (round(self.spin_start_x.mm(), 6), round(self.spin_start_y.mm(), 6)) if manual else None,
             tuple(round(w.mm(), 6) for w in (self.spin_bw, self.spin_bh, self.spin_bx, self.spin_by,
                                               self.spin_ml, self.spin_mr, self.spin_mt, self.spin_mb)),
+            self.target_name,
         )
 
     def _record_history(self) -> None:
@@ -779,10 +860,12 @@ class MainWindow(QMainWindow):
     def _restore(self, state: tuple | None) -> None:
         if state is None:
             return
-        order, copies, angles, cols, gx, gy, fill, rotation, anchor, start, board = state
+        order, copies, angles, cols, gx, gy, fill, rotation, anchor, start, board, target = state
         self._restoring = True
         try:
             self.order, self.copies, self.manual_angles = tuple(order), dict(copies), dict(angles)
+            self.target_name = target
+            self._fill_target_combo()
             widgets = [self.spin_cols, self.combo_fill, self.combo_rotation, self.combo_anchor]
             for w in widgets:
                 w.blockSignals(True)
@@ -1079,6 +1162,7 @@ class MainWindow(QMainWindow):
             rotation=self.combo_rotation.currentData() or "none",
             angles={k: v for k, v in self.manual_angles.items() if k in self.order},
             copies={k: v for k, v in self.copies.items() if k in self.order},
+            target=self._target(),
         )
 
     def recompute(self) -> None:
@@ -1105,7 +1189,8 @@ class MainWindow(QMainWindow):
         o = proj.info.orientation
         board = usable = None
         if self.spin_bw.mm() > 0 and self.spin_bh.mm() > 0:
-            spec = material_to_core(proj, self.params().material)
+            spec = material_to_core(proj, self.params().material,
+                                    self.plan.orientation if self.plan is not None else self._output_orientation())
             board = Rect(spec.board_left, spec.board_top, spec.board_left + spec.board_width, spec.board_top + spec.board_height)
             usable, _ = usable_area(spec)
         sel = set(self.order)
@@ -1132,8 +1217,16 @@ class MainWindow(QMainWindow):
         can_save = False
         if self.locale_mgr.missing_catalog:
             self.list_issues.addItem("⚠ " + self.tr("Translation catalogue is missing; showing English."))
-        if self.project is not None and not self.project.info.orientation.verified:
-            self.list_issues.addItem("⚠ " + message("origin_unverified", origin=self._origin_text()))
+        if self.project is not None:
+            out_o = self._output_orientation()
+            for o in dict.fromkeys((self.project.info.orientation, out_o)):
+                if not o.verified:
+                    self.list_issues.addItem("⚠ " + message("origin_unverified", origin=self._origin_text(o.origin)))
+            if self.plan is not None and self.plan.target is not None:
+                t = self.plan.target
+                self.list_issues.addItem("ℹ " + self.tr(
+                    "The output is prepared for the laser {laser} (origin {origin}). Layer settings (power, speed) stay "
+                    "as in the project — check them in LightBurn.").format(laser=t.device_name, origin=self._origin_text(t.orientation.origin)))
         if self.project is None:
             self.lbl_summary.setText("")
         elif self.plan_error is not None:
@@ -1178,7 +1271,7 @@ class MainWindow(QMainWindow):
         if self.plan is None or not self.plan.report.can_save:
             return None
         src = self.project.info.path
-        target: Path | None = next_output_path(src)  # návrh: puvodni__grid_NNN.lbrn2 vedle originálu
+        target: Path | None = next_output_path(src, tag=self._target_tag())  # návrh: puvodni__grid_NNN.lbrn2 vedle originálu
         while confirm:
             target = self._ask_save_path(target)
             if target is None:
@@ -1292,6 +1385,11 @@ class MainWindow(QMainWindow):
             s.set_update_auto(values["update_auto"])
         if values["update_pre"] != s.update_prerelease():
             s.set_update_prerelease(values["update_pre"])
+        if "lasers" in values and tuple(values["lasers"]) != tuple(s.lasers()):
+            s.set_lasers(list(values["lasers"]))
+            if self.project is not None:
+                self._fill_target_combo()
+                self.recompute()
 
     # ====================================================================== jazyk, nápověda
     def set_language(self, key: str) -> None:

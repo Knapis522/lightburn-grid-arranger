@@ -7,6 +7,7 @@ Formát podle [Keep a Changelog](https://keepachangelog.com/), verze podle SemVe
 ## [0.1.0-alpha.5] — nevydáno
 
 ### Přidáno
+- **Projekt pro jiný laser a katalog laserů** (spec. v1.23): v sekci Projekt volba **Připravit pro:** laser z katalogu. Aplikace nabídne jeho desku, mřížku plní od jeho počátku a uloží výstup rovnou pro něj (`…__Nazev_laseru__grid_NNN.lbrn2`): v hlavičce `DeviceName`/`MirrorX`/`MirrorY` cílového laseru a výrobky zrcadlově převrácené (`S_cíl ∘ T ∘ S_zdroj`), aby na něm vypadaly stejně — bez ručního převracení v LightBurnu. Při jiném počátku musí být vybrány všechny výrobky a projekt nesmí mít jiné objekty. Nezávislá kontrola ověřuje i změnu hlavičky (jen tyto tři atributy). Nastavení vrstev se nepřevádí (upozornění). Katalog: **Nastavení → Lasery** (název jako v LightBurnu, roh počátku, deska s okraji; lasery z otevřených projektů se přidají samy). Čeká na ověření KAL-05 v LightBurnu.
 - **Lasery s počátkem dole** (vlevo dole / vpravo dole, typicky diodové lasery s GRBL; spec. v1.22): projekt se načte, mřížka se plní od rohu u počátku (první řádek dole, další nad ním), umístění do rohu desky u počátku, ruční roh i natočení fungují stejně jako u počátku nahoře; nezávislá kontrola výstupu beze změny. Dokud kalibrace KAL-04 v LightBurnu neproběhne, aplikace u těchto projektů zobrazí upozornění (uložení neblokuje).
 
 ### Změněno

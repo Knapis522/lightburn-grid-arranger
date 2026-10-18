@@ -5,6 +5,8 @@ aplikace — přežije přesun i výměnu ZIPu. Nic z toho se nezapisuje do `.lb
 
 * ``ui/language`` — ``auto`` | ``cs`` | ``en``
 * ``boards/<laser>/…`` — výchozí deska pro laser podle ``DeviceName`` z projektu
+* ``lasers/<laser>/…`` — katalog laserů (spec. v1.23): název jako v LightBurnu a roh počátku;
+  deska laseru je v ``boards/<laser>``. Lasery z otevřených projektů se přidávají samy.
 * ``layout/rotation`` — natočení výrobků: ``any`` (výchozí, rozhodnutí vlastníka) | ``90`` | ``none``
 * ``ui/units`` — ``mm`` (výchozí) | ``in`` — jen zobrazení, výpočty a soubor jsou vždy v mm
 * ``ui/sections/<klíč>`` — sbalené/rozbalené sekce panelu nastavení rozložení
@@ -26,6 +28,7 @@ THEMES = ("auto", "light", "dark")
 PROTOCOL_MODES = ("none", "beside", "appdata")
 UNIT_KEYS = ("mm", "in")
 PANEL_SIDES = ("left", "right")
+ORIGINS = ("top_left", "top_right", "bottom_left", "bottom_right")
 ROTATION_KEYS = ("none", "90", "any")  # protokol uložení: vůbec / vedle výstupu / ve složce aplikace
 
 # Výchozí desky vlastníka (spec. v1.10). Před veřejným vydáním nahradit prázdným výchozím stavem.
@@ -44,6 +47,15 @@ class BoardPreset:
     """Vlevo, vpravo, nahoře, dole (vizuálně na obrazovce)."""
 
 
+@dataclass(frozen=True, slots=True)
+class LaserProfile:
+    """Laser v katalogu: ``name`` = ``DeviceName`` v LightBurnu, ``origin`` = roh počátku (``ORIGINS``)."""
+
+    name: str
+    origin: str
+    board: BoardPreset | None = None
+
+
 def _bool(value: object, default: bool) -> bool:
     if isinstance(value, bool):
         return value
@@ -54,9 +66,17 @@ def _bool(value: object, default: bool) -> bool:
     return default
 
 
-def _key(device: str) -> str:
+def _safe(device: str) -> str:
     # QSettings klíče: lomítka a zpětná lomítka nahradit, aby nevznikly podskupiny
-    return "boards/" + device.replace("/", "_").replace("\\", "_")
+    return device.replace("/", "_").replace("\\", "_")
+
+
+def _key(device: str) -> str:
+    return "boards/" + _safe(device)
+
+
+def _laser_key(device: str) -> str:
+    return "lasers/" + _safe(device)
 
 
 class UserSettings:
@@ -109,6 +129,52 @@ class UserSettings:
         self._s.setValue(k + "/height", preset.height)
         for side, v in zip(("left", "right", "top", "bottom"), preset.margins):
             self._s.setValue(f"{k}/margin_{side}", v)
+        self._s.sync()
+
+    def remove_board_for(self, device: str) -> None:
+        self._s.remove(_key(device))
+        self._s.sync()
+
+    # --- katalog laserů (spec. v1.23) ------------------------------------------------------------
+    def lasers(self) -> list[LaserProfile]:
+        out = []
+        self._s.beginGroup("lasers")
+        keys = self._s.childGroups()
+        self._s.endGroup()
+        for k in keys:
+            name = str(self._s.value(f"lasers/{k}/name", "") or "")
+            origin = str(self._s.value(f"lasers/{k}/origin", ""))
+            if name and origin in ORIGINS:
+                out.append(LaserProfile(name, origin, self.board_for(name)))
+        return sorted(out, key=lambda p: p.name.casefold())
+
+    def laser(self, name: str) -> LaserProfile | None:
+        return next((p for p in self.lasers() if p.name == name), None)
+
+    def remember_laser(self, name: str, origin: str) -> None:
+        """Laser z otevřeného projektu: přidá ho do katalogu, případně opraví roh počátku podle projektu."""
+        if not name or origin not in ORIGINS:
+            return
+        known = self.laser(name)
+        if known is None or known.origin != origin:
+            self._s.setValue(_laser_key(name) + "/name", name)
+            self._s.setValue(_laser_key(name) + "/origin", origin)
+            self._s.sync()
+
+    def set_lasers(self, profiles: list[LaserProfile]) -> None:
+        """Nahradí celý katalog (okno Nastavení → Lasery); desky odebraných laserů smaže."""
+        keep = {p.name for p in profiles}
+        for old in self.lasers():
+            if old.name not in keep:
+                self._s.remove(_laser_key(old.name))
+                self._s.remove(_key(old.name))
+        for p in profiles:
+            if p.origin not in ORIGINS or not p.name:
+                raise ValueError(p)
+            self._s.setValue(_laser_key(p.name) + "/name", p.name)
+            self._s.setValue(_laser_key(p.name) + "/origin", p.origin)
+            if p.board is not None:
+                self.set_board_for(p.name, p.board)
         self._s.sync()
 
     # --- aktualizace (spec. v1.11 kap. 32) ---------------------------------------------------

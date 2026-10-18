@@ -7,4 +7,12 @@
 
 Podporováno: LightBurn 2.2, projekty `.lbrn2`, laser s počátkem v kterémkoli rohu (počátek dole zatím čeká na ověření v LightBurnu — aplikace na to upozorní). Starší `.lbrn` aplikace neotevře — uložte projekt v LightBurnu jako `.lbrn2`.
 
+## Projekt pro jiný laser
+
+Projekt uložený pro jeden laser můžete připravit pro jiný, např. z laseru s počátkem vpravo nahoře pro laser s počátkem vlevo nahoře — bez přepínání zařízení a ručního převracení v LightBurnu. V sekci **Projekt** zvolte **Připravit pro:** laser z katalogu. Aplikace nabídne jeho desku, mřížku plní od jeho počátku a uložený soubor (`…__Nazev_laseru__grid_001.lbrn2`) je rovnou pro něj: v souboru je cílový laser a výrobky jsou zrcadlově převrácené tak, aby na něm vypadaly stejně (texty čitelné).
+
+- Katalog laserů: **Nastavení → Lasery** (nebo *Spravovat lasery…* v nabídce). Lasery z otevřených projektů se přidají samy; další (např. diodový) přidáte ručně — **název musí odpovídat zařízení v LightBurnu**, zvolte roh počátku a desku.
+- Při jiném počátku musí být vybrány **všechny výrobky** a projekt nesmí obsahovat jiné objekty (na druhém laseru by zůstaly zrcadlově).
+- **Nastavení vrstev (výkon, rychlost) se nepřevádí** — zůstává z původního projektu. Výstup otevřete v LightBurnu s cílovým laserem a vrstvy zkontrolujte.
+
 [← Úvod](index.md) · [Další: výběr a pořadí →](items.md)

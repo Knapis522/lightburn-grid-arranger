@@ -24,6 +24,8 @@ TEMPLATES: dict[str, str] = {
     "unknown_orientation": QT_TRANSLATE_NOOP("Messages", "The project has an invalid mirror setting."),
     "unknown_project_attribute": QT_TRANSLATE_NOOP("Messages", "The project contains unknown properties ({attrs}) and cannot be processed safely."),
     "multi_page_unsupported": QT_TRANSLATE_NOOP("Messages", "Projects with several pages are not supported."),
+    "convert_needs_whole_project": QT_TRANSLATE_NOOP("Messages", "To prepare the project for a laser with a different origin, all items must be selected and the project must not contain other objects ({objects}) — they would be mirrored on the other laser."),
+    "bad_header_change": QT_TRANSLATE_NOOP("Messages", "The project header could not be changed for the target laser ({attr})."),
     # výrobek
     "unknown_element": QT_TRANSLATE_NOOP("Messages", "Contains unknown data that could be damaged by moving."),
     "unknown_group_attribute": QT_TRANSLATE_NOOP("Messages", "The group has unknown properties (for example locked): {attrs}."),

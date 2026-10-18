@@ -173,3 +173,13 @@ Podle V-003 příznaky `MirrorX/MirrorY` mění jen zobrazení, souřadnice soub
 
 - [ ] vlevo dole (`MirrorX=False, MirrorY=False`)
 - [ ] vpravo dole (`MirrorX=True, MirrorY=False`)
+
+## KAL-05 — převod projektu na jiný laser (spec. v1.23, čeká na ověření)
+
+Výstup pro cílový laser mění v hlavičce jen `DeviceName`, `MirrorX`, `MirrorY` (jako přepnutí zařízení v LightBurnu podle V-003; `Thumbnail` a přečíslování `VertID`/`PrimID` aplikace nedělá) a výrobky dostanou `XForm' = S_cíl ∘ T ∘ S_zdroj ∘ XForm` — při jiné orientaci se zrcadlením (záporný determinant), stejně jako po *Flip Horizontal/Vertical* v LightBurnu.
+
+**Postup ověření (vlastník):** projekt pro červený laser (vpravo nahoře) → v aplikaci *Připravit pro:* modrý laser (vlevo nahoře) → uložit → otevřít v LightBurnu s modrým laserem: texty a motivy nejsou zrcadlově, mřížka v rohu u počátku, Preview v pořádku; porovnat s ručním postupem (přepnutí zařízení + Flip). Totéž s natočeným výrobkem, kopiemi a s textem; případně i diodový laser (vlevo dole).
+
+- [ ] vpravo nahoře → vlevo nahoře (červený → modrý)
+- [ ] vlevo nahoře → vpravo nahoře (modrý → červený)
+- [ ] na laser s počátkem dole (testovací zařízení)

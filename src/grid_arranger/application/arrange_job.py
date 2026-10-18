@@ -28,8 +28,9 @@ from dataclasses import dataclass, field, replace
 from datetime import datetime, timezone
 from pathlib import Path
 
+from ..adapters.lightburn.coords import Orientation
 from ..adapters.lightburn.read import LoadedProject, load_project
-from ..adapters.lightburn.write import apply_with_copies, next_output_path, plan_patches, write_new_file
+from ..adapters.lightburn.write import apply_with_copies, header_patches, next_output_path, plan_patches, write_new_file
 from ..core import arrange_to_grid, validate_layout
 from ..core.rotation import min_area_angle, rotated_bounds
 from ..core.collision import ValidationReport, usable_area
@@ -63,6 +64,18 @@ class MaterialInput:
     margin_bottom: float = DEFAULT_MARGIN_MM
 
 
+@dataclass(frozen=True, slots=True)
+class TargetLaser:
+    """Laser, pro který se výstup připraví (spec. v1.23): ``DeviceName`` a roh počátku.
+
+    Liší-li se počátek od projektu, výrobky se v souboru zrcadlově převrátí tak, aby na cílovém
+    laseru vypadaly stejně (texty čitelné), a hlavička dostane ``DeviceName``/``MirrorX``/``MirrorY``
+    cílového laseru — stejně, jako když uživatel v LightBurnu přepne zařízení a návrh převrátí."""
+
+    device_name: str
+    orientation: Orientation
+
+
 @dataclass(slots=True)
 class ArrangeParams:
     columns: int
@@ -85,6 +98,8 @@ class ArrangeParams:
     copies: dict[str, str] = field(default_factory=dict)
     """Kopie výrobků: ``{id kopie: id zdrojového výrobku}`` (spec. v1.16). Kopie se rozmisťuje jako
     samostatný výrobek, jen pokud je v ``order``; do výstupu se zapíše jako nová skupina."""
+    target: TargetLaser | None = None
+    """Jiný laser, pro který se výstup připraví; None = laser projektu (spec. v1.23)."""
 
 
 class ItemGeometry:
@@ -200,11 +215,13 @@ def _cos_sin(deg: float) -> tuple[float, float]:
     return math.cos(r), math.sin(r)
 
 
-def _screen_to_file(t: tuple[float, ...], sx: float, sy: float) -> tuple[float, ...]:
-    """Transformace v souřadnicích jádra → souboru: ``S ∘ T ∘ S`` pro ``S = diag(sx, sy)``."""
+def _screen_to_file(t: tuple[float, ...], src: Orientation, dst: Orientation) -> tuple[float, ...]:
+    """Transformace jádra → souboru při převodu na jinou orientaci: ``S_cíl ∘ T ∘ S_zdroj``.
+
+    Pro stejnou orientaci je to ``S ∘ T ∘ S``; pro jinou obsahuje zrcadlení, díky
+    kterému výrobek na cílovém laseru vypadá stejně jako na původním."""
     a, b, c, d, e, f = t
-    k = sx * sy
-    return (a, k * b, k * c, d, sx * e, sy * f)
+    return (dst.sx * a * src.sx, dst.sy * b * src.sx, dst.sx * c * src.sy, dst.sy * d * src.sy, dst.sx * e, dst.sy * f)
 
 
 @dataclass(slots=True)
@@ -228,6 +245,13 @@ class Plan:
     """Výrobky s ručně zadaným úhlem."""
     copies: dict[str, str] = field(default_factory=dict)
     """Rozmístěné kopie ``{id kopie: zdroj}`` v pořadí zápisu do výstupu."""
+    target: TargetLaser | None = None
+    """Cílový laser, liší-li se od projektu (hlavička výstupu a zrcadlení výrobků)."""
+
+    @property
+    def orientation(self) -> Orientation:
+        """Orientace výstupu (cílového laseru)."""
+        return self.target.orientation if self.target else self.project.info.orientation
 
 
 @dataclass(slots=True)
@@ -238,19 +262,20 @@ class JobResult:
     problems: list[str] = field(default_factory=list)
 
 
-def material_to_core(project: LoadedProject, m: MaterialInput) -> MaterialSpec:
+def material_to_core(project: LoadedProject, m: MaterialInput, o: Orientation | None = None) -> MaterialSpec:
     """Převede desku do souřadnic jádra. Neplatné rozměry nechá na validátoru (chyba invalid_material)."""
-    o = project.info.orientation
+    o = o or project.info.orientation
     r = o.to_screen_rect((m.x, m.y, m.x + max(m.width, 0.0), m.y + max(m.height, 0.0)))
     return MaterialSpec(r.left, r.top, m.width, m.height, m.margin_left, m.margin_right, m.margin_top, m.margin_bottom)
 
 
-def _origin_on_right(project: LoadedProject) -> bool:
-    return project.info.orientation.mirror_x
-
-
-def _origin_at_bottom(project: LoadedProject) -> bool:
-    return not project.info.orientation.mirror_y
+def effective_target(project: LoadedProject, target: TargetLaser | None) -> TargetLaser | None:
+    """Cílový laser, jen pokud se od laseru projektu liší názvem nebo počátkem."""
+    if target is None:
+        return None
+    if target.orientation == project.info.orientation and target.device_name == project.info.device_name:
+        return None
+    return target
 
 
 ORIGIN_CORNERS = {(False, False): Corner.TOP_LEFT, (True, False): Corner.TOP_RIGHT,
@@ -281,10 +306,19 @@ def make_plan(project: LoadedProject, params: ArrangeParams, geometry: ItemGeome
     if not order:
         raise GridError("empty_selection", "Není vybrán žádný výrobek.")
 
-    o = project.info.orientation
-    right, bottom = _origin_on_right(project), _origin_at_bottom(project)
+    src_o = project.info.orientation
+    target = effective_target(project, params.target)
+    o = target.orientation if target else src_o
+    mirrored = o != src_o
+    if mirrored:
+        # zrcadlený převod: nevybrané výrobky ani volné objekty by zůstaly zrcadlově → jen celý projekt
+        rest = [ob.id for ob in project.obstacles_for(set(order))]
+        if rest:
+            raise GridError("convert_needs_whole_project", "Pro převod na laser s jiným počátkem musí být vybrány "
+                            "všechny objekty projektu.", objects=rest)
+    right, bottom = o.mirror_x, not o.mirror_y
     corner = ORIGIN_CORNERS[(right, bottom)] if params.fill == "origin" else Corner.TOP_LEFT
-    material = material_to_core(project, params.material) if params.material else None
+    material = material_to_core(project, params.material, o) if params.material else None
 
     rotations: dict[str, float] = {}
     if params.rotation != "none" or params.angles:
@@ -330,21 +364,24 @@ def make_plan(project: LoadedProject, params: ArrangeParams, geometry: ItemGeome
     pivots: dict[str, tuple[float, float]] = {}
     for p in layout.placements:
         if p.item_id not in rotations:
-            moves[p.item_id] = o.to_file_delta(p.dx, p.dy)
+            if mirrored:  # bez natočení, ale se zrcadlením mezi orientacemi: celá afinní transformace
+                moves[p.item_id] = _screen_to_file((1.0, 0.0, 0.0, 1.0, p.dx, p.dy), src_o, o)
+            else:
+                moves[p.item_id] = o.to_file_delta(p.dx, p.dy)
             continue
         b = project.item(p.item_id).screen_bounds
         cx, cy = (b.left + b.right) / 2.0, (b.top + b.bottom) / 2.0
         cs, sn = _cos_sin(rotations[p.item_id])
         # jádro: T = Tr(dx, dy) ∘ Tr(c) ∘ R ∘ Tr(−c);  x' = a·x + c·y + e
         t = (cs, sn, -sn, cs, cx - cs * cx + sn * cy + p.dx, cy - sn * cx - cs * cy + p.dy)
-        moves[p.item_id] = _screen_to_file(t, o.sx, o.sy)
+        moves[p.item_id] = _screen_to_file(t, src_o, o)
         pivots[p.item_id] = (cx, cy)
     g = layout.grid_bounds
     corner_screen = (g.right if right else g.left, g.bottom if bottom else g.top)
     return Plan(project, req, layout, report, moves, o.to_file_point(*corner_screen), params.anchor, params.fill,
                 {k: v for k, v in rotations.items() if k in moves}, pivots, params.rotation,
                 frozenset(k for k in params.angles if k in moves),
-                {cid: copies[cid] for cid in order if cid in copies})
+                {cid: copies[cid] for cid in order if cid in copies}, target)
 
 
 def _with_copies(project: LoadedProject, copies: dict[str, str]) -> LoadedProject:
@@ -379,6 +416,8 @@ def _protocol(plan: Plan, output: Path, out_bytes: bytes, problems: list[str]) -
         "output": {"path": str(output), "sha256": hashlib.sha256(out_bytes).hexdigest(), "bytes": len(out_bytes)},
         "lightburn": {"app_version": info.app_version, "format_version": info.format_version,
                       "device": info.device_name, "origin": o.origin, "origin_verified": o.verified},
+        "target_laser": ({"device": plan.target.device_name, "origin": plan.target.orientation.origin}
+                         if plan.target else None),
         "parameters": {
             "columns": plan.request.columns, "gap_x_mm": plan.request.gap_x, "gap_y_mm": plan.request.gap_y,
             "anchor": plan.anchor, "fill": plan.fill, "order": list(plan.request.ordered_item_ids),
@@ -453,12 +492,13 @@ def execute(plan: Plan, out_dir: Path | None = None, output: Path | None = None,
 
     originals = {k: v for k, v in plan.moves_file.items() if k not in plan.copies}
     copy_moves = [(src, plan.moves_file[cid]) for cid, src in plan.copies.items()]
-    ops = plan_patches(project, originals)
+    header = _target_header(plan)
+    ops = sorted(plan_patches(project, originals) + header_patches(project, header), key=lambda op: op.start)
     out_bytes = apply_with_copies(project, ops, copy_moves)
 
     tops = {it.id: it.source_order for it in project.items if it.id not in plan.copies}
     problems = verify_output(project.data, out_bytes, {tops[k]: v for k, v in originals.items()},
-                             [(tops[src], move) for src, move in copy_moves])
+                             [(tops[src], move) for src, move in copy_moves], header=header)
     if not problems:
         problems += _check_reloaded_bounds(plan, out_bytes)
     if problems:
@@ -479,6 +519,14 @@ def execute(plan: Plan, out_dir: Path | None = None, output: Path | None = None,
     return JobResult(plan, target, proto_path, problems)
 
 
+def _target_header(plan: Plan) -> dict[str, str]:
+    """Atributy hlavičky výstupu pro cílový laser (prázdné = beze změny)."""
+    if plan.target is None:
+        return {}
+    o = plan.target.orientation
+    return {"DeviceName": plan.target.device_name, "MirrorX": str(o.mirror_x), "MirrorY": str(o.mirror_y)}
+
+
 def _check_reloaded_bounds(plan: Plan, out_bytes: bytes) -> list[str]:
     import tempfile
 
@@ -489,6 +537,10 @@ def _check_reloaded_bounds(plan: Plan, out_bytes: bytes) -> list[str]:
         tmp.write_bytes(out_bytes)
         reloaded = rd.load_project(tmp)
     problems = []
+    if reloaded.info.orientation != plan.orientation:
+        problems.append("target_orientation_mismatch")
+    if plan.target is not None and reloaded.info.device_name != plan.target.device_name:
+        problems.append("target_device_mismatch")
     geo_out = None
     n_top = len(plan.project.root.findall("Shape"))
     reload_id = {cid: f"G{n_top + k}" for k, cid in enumerate(plan.copies, start=1)}
@@ -530,4 +582,4 @@ def run(path: str | Path, params: ArrangeParams, write: bool = True, out_dir: Pa
     return execute(plan, out_dir)
 
 
-__all__ = ["ANCHORS", "FILL_MODES", "ArrangeParams", "JobResult", "MaterialInput", "Plan", "execute", "make_plan", "run"]
+__all__ = ["ANCHORS", "FILL_MODES", "ArrangeParams", "TargetLaser", "JobResult", "MaterialInput", "Plan", "execute", "make_plan", "run"]

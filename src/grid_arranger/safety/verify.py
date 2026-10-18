@@ -13,10 +13,14 @@ Kontrola **nepoužívá plán přepisů** — oba soubory znovu rozparsuje a por
    splnit body 1–3. Každá kopie musí být bajtově shodná se svým zdrojovým elementem mimo obsah
    ``XForm`` a bez ``VertList`` / ``PrimList`` tvarů se sdíleným ID; tato ID musí být v původním
    souboru definována. ``XForm`` skupiny a ``BackupPath`` = ``T ∘ původní``, ostatní beze změny.
+5. Cílový laser (v1.23): v hlavičce ``<LightBurnProject>`` smí být změněny jen atributy
+   ``DeviceName``, ``MirrorX``, ``MirrorY`` přesně na očekávané hodnoty; ostatní atributy i jejich
+   pořadí zůstávají. Po vrácení původní hlavičky musí výstup splnit body 1–4.
 """
 
 from __future__ import annotations
 
+import re
 from dataclasses import dataclass
 
 from ..adapters.lightburn import geometry as geo
@@ -186,8 +190,30 @@ def _check_copy(src_data: bytes, src: Node, out_data: bytes, cp: Node, t: tuple[
     return problems
 
 
+def _check_header(source: bytes, output: bytes, header: dict[str, str]) -> tuple[list[str], bytes]:
+    """Ověří změnu hlavičky a vrátí výstup s původní hlavičkou (pro další, bajtové kontroly)."""
+    r_src, r_out = parse(source), parse(output)
+    if r_out.content_start is None or r_src.content_start is None:
+        return ["header_unreadable"], output
+    expected = dict(r_src.attrs)
+    for k, v in header.items():
+        if k not in ("DeviceName", "MirrorX", "MirrorY") or k not in expected:
+            return [f"header_attr_not_allowed: {k}"], output
+        expected[k] = v
+    problems = []
+    if r_out.attrs != expected or list(r_out.attrs) != list(r_src.attrs):
+        problems.append("header_mismatch")
+    # mimo hodnoty změněných atributů musí být začáteční tag bajtově shodný
+    pat = rb'(\s(?:' + b"|".join(k.encode("ascii") for k in header) + rb')=")[^"]*(")'
+    src_tag = source[r_src.start:r_src.content_start]
+    out_tag = output[r_out.start:r_out.content_start]
+    if re.sub(pat, rb"\1\2", src_tag) != re.sub(pat, rb"\1\2", out_tag):
+        problems.append("header_bytes_changed")
+    return problems, output[:r_out.start] + src_tag + output[r_out.content_start:]
+
+
 def verify_output(source: bytes, output: bytes, moves_file: dict[int, tuple[float, ...]],
-                  copies: list[tuple[int, tuple[float, ...]]] = ()) -> list[str]:
+                  copies: list[tuple[int, tuple[float, ...]]] = (), header: dict[str, str] | None = None) -> list[str]:
     """Vrátí seznam nalezených problémů (prázdný = v pořádku).
 
     ``moves_file`` mapuje pořadí nejvyšší skupiny (1-based) na posun ``(dx, dy)`` nebo afinní
@@ -199,6 +225,10 @@ def verify_output(source: bytes, output: bytes, moves_file: dict[int, tuple[floa
         r_src, r_out = parse(source), parse(output)
     except GridError as e:
         return [f"output_unreadable: {e}"]
+    if header:
+        found, output = _check_header(source, output, header)
+        problems += found
+        r_out = parse(output)
     if copies:
         src_tops, out_tops = r_src.findall("Shape"), r_out.findall("Shape")
         if len(out_tops) != len(src_tops) + len(copies):

@@ -40,7 +40,7 @@ class PatchOp:
     old: bytes
     new: bytes
     item_id: str
-    role: str  # "group" | "text_backup"
+    role: str  # "group" | "text_backup" | "header"
 
 
 def _xform_node(shape: Node) -> Node:
@@ -100,6 +100,36 @@ def plan_patches(project: LoadedProject, moves_file: dict[str, tuple[float, ...]
         if b.start < a.end:
             raise GridError("overlapping_patch", "Interní chyba: překrývající se přepisy.")
     return ops
+
+
+HEADER_ATTRS = ("DeviceName", "MirrorX", "MirrorY")
+
+
+def _xml_attr(value: str) -> bytes:
+    return (value.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;").replace('"', "&quot;")
+            .encode("utf-8"))
+
+
+def header_patches(project: LoadedProject, attrs: dict[str, str]) -> list[PatchOp]:
+    """Přepis hodnot atributů hlavičky ``<LightBurnProject …>`` pro cílový laser (spec. v1.23).
+
+    Dovoleny jsou jen ``HEADER_ATTRS``; každý musí v hlavičce existovat právě jednou."""
+    ops: list[PatchOp] = []
+    root = project.root
+    if root.content_start is None:
+        raise GridError("xml_malformed", "Projekt nemá obsah.")
+    tag_start, tag_end = root.start, root.content_start
+    tag = project.data[tag_start:tag_end]
+    for name, value in attrs.items():
+        if name not in HEADER_ATTRS:
+            raise GridError("bad_header_change", "Nepovolená změna hlavičky projektu.", attr=name)
+        found = list(re.finditer(rb'\s' + name.encode("ascii") + rb'="([^"]*)"', tag))
+        if len(found) != 1:
+            raise GridError("bad_header_change", "Atribut hlavičky nenalezen.", attr=name)
+        m = found[0]
+        start, end = tag_start + m.start(1), tag_start + m.end(1)
+        ops.append(PatchOp(start, end, project.data[start:end], _xml_attr(value), "", "header"))
+    return sorted(ops, key=lambda o: o.start)
 
 
 def apply_patches(data: bytes, ops: list[PatchOp]) -> bytes:
@@ -206,13 +236,24 @@ def apply_with_copies(project: LoadedProject, ops: list[PatchOp], copies: list[t
     return out[:pos] + block + out[pos:]
 
 
-def next_output_path(source: Path, out_dir: Path | None = None) -> Path:
+def name_tag(text: str, limit: int = 30) -> str:
+    """Krátká značka do názvu souboru (bez diakritiky a mezer): „Modrý Ruida 643XG“ → ``Modry_Ruida_643XG``."""
+    import unicodedata
+
+    ascii_text = unicodedata.normalize("NFKD", text).encode("ascii", "ignore").decode("ascii")
+    return "_".join(re.findall(r"[A-Za-z0-9]+", ascii_text))[:limit].strip("_")
+
+
+def next_output_path(source: Path, out_dir: Path | None = None, tag: str = "") -> Path:
     """``puvodni__grid_001.lbrn2``, ``…_002``, … — první neexistující (spec. kap. 9.4).
 
     Je‑li zdrojem už uložený výstup (``puvodni__grid_001``), číslo se nepřidává podruhé, ale
-    pokračuje se v řadě originálu (``puvodni__grid_002``)."""
+    pokračuje se v řadě originálu (``puvodni__grid_002``). ``tag`` = značka cílového laseru
+    (``puvodni__Modry_Ruida__grid_001``, spec. v1.23)."""
     folder = out_dir or source.parent
     stem = re.sub(r"__grid_\d{3}$", "", source.stem) or source.stem
+    if tag and not stem.endswith(f"__{tag}"):
+        stem = f"{stem}__{tag}"
     for i in range(1, MAX_OUTPUT_INDEX + 1):
         cand = folder / f"{stem}__grid_{i:03d}.lbrn2"
         if not cand.exists() and not cand.with_suffix(".json").exists():
