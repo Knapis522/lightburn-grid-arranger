@@ -697,6 +697,36 @@ def test_open_saved_project_in_lightburn(make_window, tmp_path):
     assert not w.open_in_lightburn() and "not found" in w._dialogs[-1][1]
 
 
+def test_title_shows_saved_copy_and_original_stays_open(make_window, tmp_path):
+    w = make_window("en")
+    src = write(tmp_path, four())
+    w.open_project(src)
+    out = w.save_new_project(confirm=False)
+    assert w.project.info.path == src  # dál se pracuje s originálem
+    assert w.windowTitle().endswith(f"- {src.name} (last saved as {out.name})")
+    assert out.name in w.lbl_file.text() and "next save creates another file" in w.lbl_file.text()
+    assert w.save_new_project(confirm=False).name == "karty__grid_002.lbrn2"
+    w.open_project(src)  # nově otevřený projekt: žádné „naposledy uloženo“
+    assert w.windowTitle().endswith(f"- {src.name}") and w.last_saved is None and not w.act_open_in_lb.isEnabled()
+
+
+def test_continue_with_saved_file(make_window, tmp_path):
+    w = make_window("en")
+    src = write(tmp_path, four())
+    before = src.read_bytes()
+    w.open_project(src)
+    w.add_copies([w.order[0]], 2)
+    w._switch_answer = True  # v hlášení zaškrtnuto „Pokračovat s uloženým souborem“
+    out = w.save_new_project(confirm=False)
+    assert w.project.info.path == out and w.last_saved == out and w.act_open_in_lb.isEnabled()
+    assert w.windowTitle().endswith(f"- {out.name}") and "last saved" not in w.windowTitle()
+    assert w.copies == {} and len(w.order) == 6  # kopie jsou teď v souboru napevno
+    assert not w.act_undo.isEnabled()
+    assert src.read_bytes() == before
+    w._switch_answer = False
+    assert w.save_new_project(confirm=False).name == "karty__grid_002.lbrn2"  # řada originálu, ne __grid_001__grid_001
+
+
 def test_undo_redo_of_layout_changes(make_window, tmp_path):
     w = make_window("en")
     w.open_project(write(tmp_path, project([card(0, 0), card(200, 0), card(0, 200)])))

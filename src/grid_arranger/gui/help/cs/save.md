@@ -9,6 +9,8 @@ Ikona **Uložit jako nový projekt** na nástrojové liště (nebo **Soubor → 
 
 **Protokol uložení** (`.json`) — záznam o tom, z čeho a jak výstup vznikl: kontrolní součty, laser, nastavení mřížky, posuny výrobků a výsledek kontroly (žádné motivy ani texty výrobků). Hodí se pro dohledání nebo hlášení chyby. Nastavení → **Protokol uložení**: *Neukládat* (výchozí), *Vedle uloženého projektu* (`<název>.json`), nebo *Do složky protokolů aplikace* (otevřete ji tamtéž položkou **Otevřít složku protokolů**).
 
+**Po uložení pracujete dál s originálem.** Uložený soubor je samostatná nová kopie; v aplikaci zůstává otevřený původní projekt, takže můžete zkusit jiné rozložení a uložit další variantu (`_002`, …). Titulek okna i sekce Projekt ukazují *naposledy uloženo jako …*. Chcete-li místo toho pokračovat s uloženým souborem (jako „Uložit jako“), zaškrtněte v hlášení o uložení **Pokračovat v aplikaci s uloženým souborem** — otevře se místo originálu, kopie a natočení v něm už jsou napevno a krok zpět začíná znovu. Další uložení pak pokračuje v číselné řadě originálu (`_002`, ne `__grid_001__grid_001`).
+
 Existující soubory ani originál se nikdy nepřepisují — pokud zvolený soubor (nebo jeho protokol vedle něj) už existuje, aplikace požádá o jiný název. Při jakékoli chybě nevznikne žádný výstup.
 
 **Potom v LightBurnu:**

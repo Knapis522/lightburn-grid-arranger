@@ -21,6 +21,7 @@ jako to dělá LightBurn sám u opakovaných tvarů (ověřeno v KAL-02, Convert
 from __future__ import annotations
 
 import os
+import re
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -206,9 +207,12 @@ def apply_with_copies(project: LoadedProject, ops: list[PatchOp], copies: list[t
 
 
 def next_output_path(source: Path, out_dir: Path | None = None) -> Path:
-    """``puvodni__grid_001.lbrn2``, ``…_002``, … — první neexistující (spec. kap. 9.4)."""
+    """``puvodni__grid_001.lbrn2``, ``…_002``, … — první neexistující (spec. kap. 9.4).
+
+    Je‑li zdrojem už uložený výstup (``puvodni__grid_001``), číslo se nepřidává podruhé, ale
+    pokračuje se v řadě originálu (``puvodni__grid_002``)."""
     folder = out_dir or source.parent
-    stem = source.stem
+    stem = re.sub(r"__grid_\d{3}$", "", source.stem) or source.stem
     for i in range(1, MAX_OUTPUT_INDEX + 1):
         cand = folder / f"{stem}__grid_{i:03d}.lbrn2"
         if not cand.exists() and not cand.with_suffix(".json").exists():

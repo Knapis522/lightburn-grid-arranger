@@ -355,3 +355,10 @@ def test_protocol_none_ignores_existing_json(tmp_path):
     src.write_bytes(b"x")
     (tmp_path / "d.json").write_text("{}")
     assert check_output_path(tmp_path / "d.lbrn2", src, "none") == tmp_path / "d.lbrn2"
+
+
+def test_next_output_path_continues_series_of_saved_output(tmp_path):
+    # z uloženého výstupu (pokračování v uloženém souboru) se číslo nepřidává podruhé
+    (tmp_path / "x__grid_001.lbrn2").write_bytes(b"data")
+    assert wr.next_output_path(tmp_path / "x__grid_001.lbrn2").name == "x__grid_002.lbrn2"
+    assert wr.next_output_path(tmp_path / "__grid_001.lbrn2").name == "__grid_001__grid_001.lbrn2"

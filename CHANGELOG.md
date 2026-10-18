@@ -9,6 +9,7 @@ Formát podle [Keep a Changelog](https://keepachangelog.com/), verze podle SemVe
 ### Přidáno
 - **Krok zpět / krok vpřed** (Ctrl+Z / Ctrl+Y, ikony na liště, menu Úpravy) pro rozložení: pořadí a výběr výrobků, kopie, ruční natočení, mřížka, umístění a deska (až 200 kroků, v rámci otevřeného projektu).
 - **Uspořádání nástrojové lišty tažením:** ikonu (i oddělovač) chytnout, podržet a přetáhnout; pořadí se pamatuje, pravým tlačítkem na liště *Obnovit výchozí uspořádání lišty*.
+- **Po uložení je jasné, s čím pracujete:** titulek okna a sekce Projekt ukazují „naposledy uloženo jako …“ (dál se upravuje originál a každé uložení vytvoří další variantu). V hlášení o uložení volba **Pokračovat v aplikaci s uloženým souborem** otevře uložený soubor místo originálu (jako „Uložit jako“); další uložení z něj pokračuje v řadě originálu (`_002`, ne `__grid_001__grid_001`).
 - **Otevřít v LightBurnu:** v hlášení o uložení tlačítko, ikona na nástrojové liště a Soubor → Otevřít uložený projekt v LightBurnu (Ctrl+L). Uložený projekt se otevře programem přiřazeným k `.lbrn2`, stejně jako dvojklikem v Průzkumníku: běžící LightBurn ho otevře místo aktuálního projektu a na neuložené změny se zeptá sám (ověřeno vlastníkem). Bez párování a bez REST API LightBurnu.
 
 ### Opraveno

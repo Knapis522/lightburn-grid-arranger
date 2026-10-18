@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import replace
+from html import escape
 from pathlib import Path
 
 from PySide6 import __version__ as pyside_version
@@ -614,7 +615,16 @@ class MainWindow(QMainWindow):
         title = f"{self.app_title()} {display_version()}"
         if self.project is not None:
             title += f" - {self.project.info.path.name}"
+            saved = self._saved_elsewhere()
+            if saved is not None:  # uloženo do nového souboru, ale dál se pracuje s otevřeným projektem
+                title += " " + self.tr("(last saved as {name})").format(name=saved.name)
         self.setWindowTitle(title)
+
+    def _saved_elsewhere(self) -> Path | None:
+        """Naposledy uložený soubor, pokud to není právě otevřený projekt."""
+        if self.project is None or self.last_saved is None or self.last_saved == self.project.info.path:
+            return None
+        return self.last_saved
 
     def _refresh_icons(self) -> None:
         color = QApplication.palette().color(QPalette.ColorRole.WindowText).name()
@@ -628,7 +638,12 @@ class MainWindow(QMainWindow):
             self.lbl_device.setText("")
             return
         i = self.project.info
-        self.lbl_file.setText(f"<b>{i.path.name}</b>")
+        text = f"<b>{escape(i.path.name)}</b>"
+        saved = self._saved_elsewhere()
+        if saved is not None:
+            text += "<br>" + self.tr("Last saved as <b>{name}</b>. You keep arranging the project opened above; "
+                                     "the next save creates another file.").format(name=escape(saved.name))
+        self.lbl_file.setText(text)
         self.lbl_device.setText(
             self.tr("Saved for laser: {device}, origin {origin} (LightBurn {version}).").format(
                 device=i.device_name or "?", origin=self._origin_text(), version=i.app_version)
@@ -650,6 +665,8 @@ class MainWindow(QMainWindow):
             self._error(message(e.code, **e.params))
             return False
         self.project = project
+        self.last_saved = None
+        self.act_open_in_lb.setEnabled(False)
         self.renderer = ProjectRenderer(project)
         self._geometry = ItemGeometry(project)
         self.manual_angles = {}
@@ -1210,19 +1227,40 @@ class MainWindow(QMainWindow):
             text += "\n\n" + self.tr("Protocol:\n{proto}").format(proto=res.protocol)
         self.last_saved = res.output
         self.act_open_in_lb.setEnabled(True)
+        self._update_project_labels()
         text += "\n\n" + self.tr("Open it in LightBurn (button below, or File → Open — not Import) and check the layers, "
                                    "Preview and the position on the machine before cutting.")
-        if self._ask_open_in_lightburn(text):
+        text += "\n\n" + self.tr("The original project stays open here. To continue arranging the saved file "
+                                   "instead, tick the option below.")
+        open_lb, switch = self._ask_after_save(text)
+        if open_lb:
             self.open_in_lightburn(res.output)
+        if switch:
+            self.continue_with_saved(res.output)
         return res.output
 
-    def _ask_open_in_lightburn(self, text: str) -> bool:
+    def _ask_after_save(self, text: str) -> tuple[bool, bool]:
+        """Hlášení o uložení: (otevřít v LightBurnu, pokračovat v aplikaci s uloženým souborem)."""
         box = QMessageBox(QMessageBox.Icon.Information, self.app_title(), text, parent=self)
         open_btn = box.addButton(self.tr("Open in LightBurn"), QMessageBox.ButtonRole.AcceptRole)
         box.addButton(QMessageBox.StandardButton.Close)
         box.setDefaultButton(open_btn)
+        chk = QCheckBox(self.tr("Continue working on the saved file here (instead of the original)"))
+        box.setCheckBox(chk)
         box.exec()
-        return box.clickedButton() is open_btn
+        return box.clickedButton() is open_btn, chk.isChecked()
+
+    def continue_with_saved(self, path: Path | None = None) -> bool:
+        """Otevře uložený výstup místo originálu — jako „Uložit jako“: další úpravy vycházejí z něj
+        (kopie a natočení jsou v něm už napevno). Originál zůstává beze změny."""
+        path = Path(path or self.last_saved or "")
+        if not self.open_project(path):
+            return False
+        self.last_saved = path  # Otevřít v LightBurnu (Ctrl+L) dál otevře tento soubor
+        self.act_open_in_lb.setEnabled(True)
+        self.statusBar().showMessage(self.tr("Now working on the saved file {name}. The original is unchanged.")
+                                     .format(name=path.name), 8000)
+        return True
 
     def open_in_lightburn(self, path: Path | None = None) -> bool:
         """Otevře uložený projekt programem přiřazeným k .lbrn2 (LightBurn) — jako dvojklik v Průzkumníku.
