@@ -27,3 +27,13 @@ Podle spec. kap. 30.3, 31.3 a brány REL-01 (kap. 33.1). Popisy na GitHubu (comm
 - [ ] Release notes uvádějí kompatibilitu, známá omezení a nutnost kontroly v LightBurnu.
 - [ ] Žádný zákaznický `.lbrn2`, token ani heslo v commitu ani v ZIPu.
 - [ ] Před označením stabilní verze navíc: test na Windows bez Pythonu (GH-05) a MVP-ACCEPT.
+
+## PUB-00 — zveřejnění repozitáře s předběžnými verzemi (jednorázově, spec. v1.17 kap. 33.2)
+
+- [x] Audit celé historie (`git log --all --name-only`): žádné `.lbrn2`, zákaznická data, tokeny, firemní dokumenty, cizí grafika — 2026-10-18.
+- [x] `LICENSE` (MIT), `THIRD_PARTY_NOTICES.md`, `LICENSE.txt` v sestavení.
+- [x] Anglický `README.md` (stav alpha, instalace, omezení, kontrola v LightBurnu, neoficiální nástroj), `SECURITY.md`.
+- [ ] Commit a push; github.com → repozitář → **Settings → General → Danger Zone → Change visibility → Make public**.
+- [ ] **Settings → Code security → Private vulnerability reporting → Enable** (odkaz v `SECURITY.md`).
+- [ ] Volitelně: **Settings (profil) → Emails → Keep my email addresses private** pro další commity.
+- [ ] V aplikaci **Zkontrolovat aktualizace** — místo „vydání nejsou veřejná“ ohlásí aktuální verzi (T-UPD-07 částečně); zapsat do `TEST_PLAN.md`.

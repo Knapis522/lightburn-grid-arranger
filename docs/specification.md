@@ -1,6 +1,6 @@
 # Grid Arranger for LightBurn — technická specifikace
 
-**Verze dokumentu:** 1.16 (kopie výrobků V11-02 předsunuty; viz kap. 22.2 a 28)  
+**Verze dokumentu:** 1.17 (zveřejnění repozitáře s předběžnými verzemi — brána PUB-00; viz kap. 33.2 a 28)  
 **Datum:** 17. 10. 2026  
 **Název produktu:** Grid Arranger for LightBurn; spustitelný soubor `GridArranger.exe`; Python balíček `grid_arranger`; repozitář `lightburn-grid-arranger`. Neoficiální nástroj, nikoli produkt LightBurn Software.  
 **Stav:** Interní pracovní podklad; nikoli hotový nebo otestovaný plugin  
@@ -1052,6 +1052,7 @@ Toto jsou **ověřovací úkoly**, nikoli potvrzené technické možnosti souča
 
 ## 28. Záznam změn specifikace
 
+- **v1.17 (18. 10. 2026):** Rozhodnutí vlastníka: repozitář lze zveřejnit už s předběžnými verzemi, aby fungovaly nabízené aktualizace — nová brána PUB-00 (audit historie, MIT `LICENSE`, `THIRD_PARTY_NOTICES.md`, anglický `README`, `SECURITY.md`, vydání jako Pre-release); PUB-01 platí dál pro první veřejnou stabilní verzi 1.0.0 (kap. 29.1, 33.2, 33.3, 35).
 - **v1.16 (17. 10. 2026):** Na přání vlastníka předsunuty kopie výrobků (V11-02, kap. 22.2): Ctrl+C / Ctrl+V, Vytvořit kopie… (počet), Odebrat kopie; zápis kopií jako nových skupin se sdílenou geometrií přes `VertID`/`PrimID`, nezávislá kontrola kopií; brána KAL-03.
 - **v1.15 (17. 10. 2026):** Na přání vlastníka ruční natočení vybraných výrobků (úhel, ±90°, Automaticky) a výběr výrobku kliknutím v náhledu (kap. 7.6) — např. aby všechny klíčenky měly očko stejně. Rozměr výrobku podle skutečných extrémů Bézierových křivek (kap. 5 bod 2; dříve obal řídicích bodů).
 - **v1.14 (17. 10. 2026):** Nativní tvary LightBurnu `Ellipse`, `Rect`, `Polygon` jako obrys i obsah výrobku, včetně vnořených skupin (klíčenky); ověřeno na vzorcích C pro oba lasery, náš přesun je shodný s přesunem v LightBurnu. Brána KAL-02 (mnohoúhelníky N = 3–8, zaoblené rohy, natočená elipsa) splněna — výpočet shodný s LightBurnem na 0,0000 mm. Příznak hladkého uzlu `S` ve `VertList` (kap. 5 body 8–9). Natočení: varianta „nenatáčet nic“ jako výchozí srovnání, čtvercové výrobky bez otočení o 90°, zaokrouhlení na hezký úhel (kap. 7.6).
@@ -1076,7 +1077,7 @@ Toto jsou **ověřovací úkoly**, nikoli potvrzené technické možnosti souča
 
 - GitHub slouží jako **repozitář zdrojového kódu**, historie změn a technické dokumentace. Od v1.11 slouží GitHub Releases zároveň jako zdroj nabízených aktualizací (kap. 32); nic se neinstaluje bez souhlasu uživatele.
 - Repoziář se zakládá jako **Private** a zůstává neveřejný během vývoje i interních testů. Žádné veřejné sliby, vývojové termíny či žádost o začlenění do LightBurnu nejsou podmínkou vydání.
-- Veřejný přístup (**Public**) smí vlastník zapnout pouze explicitním rozhodnutím po úspěchu publikační brány PUB-01 (kap. 33). Zveřejnění historie a artefaktů je třeba předem prověřit.
+- Veřejný přístup (**Public**) smí vlastník zapnout pouze explicitním rozhodnutím po úspěchu brány **PUB-00** (veřejný repozitář s předběžnými verzemi, kap. 33.2; rozhodnutí vlastníka 18. 10. 2026); první veřejná stabilní verze 1.0.0 navíc vyžaduje PUB-01. Zveřejnění historie a artefaktů je třeba předem prověřit.
 - GitHub účet a historie projektu jsou vlastnictvím autora. Vydání nové verze se provádí **vědomým potvrzením** po testování, ne automaticky po každém uložení kódu.
 - Pro správu Gitu použít primárně **GitHub Desktop**, aby běžná práce nevyžadovala terminál. Pokročilé funkce, které Desktop neumí, lze provést na webu GitHubu či připravenou automatizací.
 
@@ -1232,7 +1233,7 @@ Bezpečnost: výstup vždy ověřit v LightBurnu před výrobou
 
 - **Nastavení → Aktualizace:** „Automaticky kontrolovat aktualizace“ (výchozí zapnuto) a „Nabízet i předběžné verze“ (výchozí zapnuto, pokud je běžící verze předběžná). **Nápověda → Zkontrolovat aktualizace…** kdykoli ručně.
 - Automatická kontrola proběhne na pozadí po spuštění, nejvýš jednou za ~20 hodin; chyby sítě/API zaznamená bez rušení uživatele. Ruční kontrola chybu srozumitelně oznámí (offline, GitHub nedostupný, omezení počtu dotazů, žádná veřejná vydání).
-- Zdroj: oficiální GitHub API `GET /repos/Knapis522/lightburn-grid-arranger/releases`, anonymně (bez tokenu v aplikaci). Funguje až po zveřejnění repozitáře (PUB-01); do té doby ruční kontrola oznámí, že vydání nejsou veřejná. Koncepty (draft) se ignorují; předběžné verze jen při zapnutém kanálu.
+- Zdroj: oficiální GitHub API `GET /repos/Knapis522/lightburn-grid-arranger/releases`, anonymně (bez tokenu v aplikaci). Funguje až po zveřejnění repozitáře (PUB-00); do té doby ruční kontrola oznámí, že vydání nejsou veřejná. Koncepty (draft) se ignorují; předběžné verze jen při zapnutém kanálu.
 - Porovnání podle Semantic Versioning 2.0 včetně předběžných verzí (`-alpha.N` < `-beta.N` < `-rc.N` < vydání).
 - **Vždy se nabízí nejnovější vydání**; každý instalátor obsahuje celou aplikaci, mezilehlé verze se neinstalují. Dialog ukáže přehled změn všech vydání novějších než nainstalovaná verze a volby **Stáhnout a nainstalovat** / **Připomenout později** / **Přeskočit tuto verzi**. Přeskočená verze se při automatické kontrole znovu nenabízí, novější ano; ruční kontrola ukáže i přeskočenou.
 - Odesílaná data: jen běžný HTTPS dotaz s hlavičkou `User-Agent: GridArranger/<verze>`; žádné údaje o projektech, souborech ani uživateli.
@@ -1274,7 +1275,20 @@ Bezpečnost: výstup vždy ověřit v LightBurnu před výrobou
 - Kontrolní součet SHA-256 staženého artefaktu byl porovnán s vypočteným po sestavení.
 - Je připravena srozumitelná upozornění na známá omezení a na potřebu kontroly v LightBurnu před řezáním.
 
-### 33.2 PUB-01 — jednorázová brána před přepnutím repozitáře na Public
+### 33.2 PUB-00 — veřejný repozitář s předběžnými verzemi (v1.17, rozhodnutí vlastníka 18. 10. 2026)
+
+Důvod: nabízené aktualizace (kap. 32) fungují jen z veřejných GitHub Releases; aplikace nesmí obsahovat token. Repozitář lze proto zveřejnit už ve fázi interních předběžných verzí (alpha/beta), pokud jsou splněny body:
+
+1. Autor výslovně schválí zveřejnění.
+2. **Audit celé Git historie** (bod 2 PUB-01) — žádné zákaznické projekty, osobní údaje, tokeny, interní firemní dokumenty ani cizí grafika.
+3. `LICENSE` vlastního kódu (MIT), `THIRD_PARTY_NOTICES.md` a licence přibalená k sestavení.
+4. Anglický `README`: účel, stav **alpha**, instalace, podporované projekty, omezení, nutnost kontroly v LightBurnu, neoficiálnost a ochranná známka.
+5. `SECURITY.md`: co aplikace dělá na počítači a v síti, jak hlásit problémy.
+6. Vydání zůstávají **Pre-release**; release notes uvádějí omezení.
+
+Brána PUB-00 **nenahrazuje** PUB-01: první veřejná stabilní verze 1.0.0 musí splnit PUB-01 celou (MVP-ACCEPT, `L10N-PUBLIC-01` pro osm jazyků, úplná dokumentace a nezávisle otestovaná instalace).
+
+### 33.3 PUB-01 — brána před první veřejnou stabilní verzí 1.0.0
 
 1. Autor schválí, že chce projekt veřejně zveřejnit; neveřejný vývoj není selhání.
 2. **Audit celé Git historie**, nejen aktuálních souborů: žádné zákaznické projekty, osobní údaje, tokeny, interní firemní dokumenty, problematické grafické podklady či neautorizované binární součásti.
@@ -1315,7 +1329,8 @@ Bezpečnost: výstup vždy ověřit v LightBurnu před výrobou
 - **Po prvním funkčním algoritmu:** pravidelné commity, jednotkové testy, `CHANGELOG.md`, samostatný soubor s číslem verze aplikace.
 - **Po úspěchu KAL-00 a před MVP:** zahrnout `MVP-07` (základ i18n), Qt katalogy a testy T-I18N; GitHub Actions pro automatické testy; volitelně jednoduché pracovní větve; lokální balení Windows ZIP a samostatné testování.
 - **Před soukromým kandidátem na vydání:** reprodukovatelný build, kontrolní součet, draft interního GitHub Release, `COMPATIBILITY.md` a protokol o ručním testování v LightBurnu.
-- **Před veřejným vydáním:** PUB-01 + `L10N-PUBLIC-01` pro všech osm jazyků (včetně italštiny), licence a třetí strany, bezpečnostní a historický audit, návod a release notes; poté teprve přepnout viditelnost.
+- **Před zveřejněním repozitáře s předběžnými verzemi:** PUB-00 (kap. 33.2).
+- **Před veřejným stabilním vydáním 1.0.0:** PUB-01 + `L10N-PUBLIC-01` pro všech osm jazyků (včetně italštiny), licence a třetí strany, bezpečnostní a historický audit, návod a release notes; poté teprve přepnout viditelnost.
 - **Od v1.11 (interně, funkční po zveřejnění vydání):** automatická i ruční kontrola aktualizací, instalace jen po souhlasu uživatele a ověření SHA-256 (kap. 32); tichá automatická instalace se neplánuje.
 
 ### Referenční zdroje pro GitHub proces

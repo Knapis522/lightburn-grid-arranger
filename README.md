@@ -1,49 +1,78 @@
-# Grid Arranger for LightBurn (pracovní název)
+# Grid Arranger for LightBurn
 
-Offline desktopová aplikace pro Windows, která **přesune již existující, navzájem odlišné skupiny** v projektu LightBurn `.lbrn2` do přesné mřížky s nastavitelnými mezerami — bez kopírování a bez změny obsahu skupin. Výsledkem je vždy **nový soubor**; originál se nikdy nepřepisuje.
+Windows desktop application that arranges the items (groups) of a **LightBurn `.lbrn2` project** into an exact grid with the gaps you choose — and saves the result as a **new project**. The original file is never changed.
 
-> **Stav projektu:** ve vývoji, nepoužitelné pro výrobu. Hotové a automaticky otestované je výpočetní jádro (mřížka, pořadí, kontrola kolizí) a čtení/zápis `.lbrn2` s nezávislou kontrolou výstupu a okno aplikace v češtině a angličtině s nápovědou F1 (instalátor `GridArranger-Setup-….exe` a záložní ZIP se sestavují skriptem `tools\build_exe.bat`, viz `docs/DEVELOPMENT.md`; vydání na GitHub Releases, aplikace umí nabídnout aktualizaci; ověření na počítači bez Pythonu zatím čeká). Aktuální ověřený stav je v [docs/STATUS.md](docs/STATUS.md).
+> **Status: early pre-release (alpha).** Tested with LightBurn 2.2.00 on two lasers. Always check the output in LightBurn before cutting (see *Safety* below).
+>
+> **Unofficial tool.** Grid Arranger is not a product of LightBurn Software and is not supported by them. The `.lbrn2` format is not a public, stable interface; only the versions listed in [docs/FORMAT_COMPATIBILITY.md](docs/FORMAT_COMPATIBILITY.md) are supported.
 
-> **Neoficiální nástroj.** Není produktem společnosti LightBurn Software a není jí podporován. Formát `.lbrn2` není veřejné stabilní rozhraní; podpora platí jen pro výslovně otestované verze (viz `docs/FORMAT_COMPATIBILITY.md`, vznikne v etapě KAL-00).
+*Česky:* aplikace pro Windows, která rozmístí výrobky (skupiny) z projektu LightBurn `.lbrn2` do přesné mřížky s nastavitelnými mezerami a uloží nový projekt; originál se nikdy nemění. Aplikace i vestavěná příručka (F1) jsou v češtině a angličtině; vývojová dokumentace v `docs/` je česky.
 
-## Plánovaný rozsah první verze (MVP)
+## Features
 
-- Načtení jednoho projektu `.lbrn2` (jiné formáty včetně `.lbrn` nejsou podporovány).
-- Seznam nalezených nejvyšších skupin, ruční výběr a ruční pořadí (Nahoru/Dolů).
-- Mřížka: počet sloupců, mezera X/Y v mm, počátek.
-- Kontrola materiálu, okrajů a kolizí (i s objekty, které se nepřesouvají).
-- Bezpečné uložení nového projektu `puvodni__grid_001.lbrn2` s validací a protokolem.
-- Grafické rozhraní PySide6, čeština a angličtina, offline nápověda (F1).
+- Open a `.lbrn2` project; every top-level group with a closed cut outline is an item (cards, key rings, signs…). Outlines can be curves or shapes drawn in LightBurn (circle, ellipse, rectangle incl. rounded corners, polygon), also in nested groups.
+- Choose the items and their order (list, or drag & drop in the preview).
+- Grid: number of columns, gap X/Y, fill order from the laser origin; board size, margins, placement at the origin corner, centred or at a manual position.
+- **Rotation to save material:** automatic (any angle or 90° steps), manual angle per item, or none.
+- **Copies** to fill the board (Ctrl+C / Ctrl+V or *Create copies…*).
+- Collision and board checks, including objects that are not moved.
+- Safe saving: a new file only, independent verification of the output before it is written, optional save protocol.
+- Millimetres or inches, light/dark appearance, Czech and English, offline user guide (F1), optional update check.
 
-Úplné požadavky: [docs/specification.md](docs/specification.md).
+## What it does not do
 
-## Co nástroj nedělá
+It does not edit the project open in LightBurn, does not control the laser, does not generate machine code and does not read `.lbrn`, SVG, DXF or PDF. It is a grid arranger, not a free-form nesting tool.
 
-- Neupravuje otevřený projekt v LightBurnu a nepřebírá jeho výběr.
-- Neovládá laser, negeneruje strojové soubory.
-- Nepracuje s `.lbrn`, SVG, DXF ani PDF.
+## Install
 
-## Bezpečnost použití
+1. Download `GridArranger-Setup-v…-win-x64.exe` from [Releases](https://github.com/Knapis522/lightburn-grid-arranger/releases) (Windows 10/11 x64; no Python, no administrator rights needed). A portable ZIP is available as well.
+2. Optional: compare the file with `SHA256SUMS.txt` (PowerShell: `Get-FileHash <file>`).
+3. The installer is not digitally signed yet; Windows SmartScreen may show a warning (*More info → Run anyway*).
 
-Výstup vždy otevři v LightBurnu přes **File → Open** (ne Import), zkontroluj vrstvy, **Preview** a polohu na stroji. Kontrola v aplikaci nenahrazuje kontrolu obsluhy stroje.
+Newer versions are offered by the application itself (*Settings → Updates*); nothing is installed without your confirmation.
 
-## Dokumentace
+## Supported projects
 
-| Soubor | Obsah |
+- LightBurn 2.2.x projects saved as `.lbrn2`.
+- Lasers with the origin at the **top left or top right**.
+- Projects with several pages, unknown object types (e.g. bitmaps inside items) or unverified constructions are refused or the affected items are blocked — the application never guesses.
+
+## Safety
+
+Always open the output in LightBurn with **File → Open** (not Import) and check the layers, the position on the machine and the **Preview** before cutting. The checks in the application do not replace the operator's check.
+
+## Privacy
+
+The application works offline. The only network request is the optional update check against the public GitHub API — no project data are sent. See [SECURITY.md](SECURITY.md).
+
+## Building from source
+
+Python 3.12+ on Windows: see [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md) (Czech). In short:
+
+```
+python -m venv .venv
+.venv\Scripts\activate
+pip install -e .[dev,build]
+python -m pytest
+python -m grid_arranger.gui          # run the application
+tools\build_exe.bat                  # installer + ZIP in dist\v<version>\
+```
+
+## Documentation
+
+| File | Content |
 |---|---|
-| [docs/specification.md](docs/specification.md) | Závazná technická specifikace |
-| [docs/STATUS.md](docs/STATUS.md) | Aktuální stav, další krok — **číst jako první při navázání práce** |
-| [docs/ROADMAP.md](docs/ROADMAP.md) | Etapy, závislosti a brány |
-| [docs/TEST_PLAN.md](docs/TEST_PLAN.md) | Testovací plán a evidence výsledků |
-| [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) | Moduly, souřadné systémy, kódy chyb |
-| [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md) | Vývojové prostředí, testy a sestavení `GridArranger.exe` |
-| [docs/FORMAT_COMPATIBILITY.md](docs/FORMAT_COMPATIBILITY.md) | Ověřené verze LightBurnu a zjištění o formátu |
-| [docs/TRANSLATING.md](docs/TRANSLATING.md) | Překlady a terminologie |
-| [docs/RELEASE_CHECKLIST.md](docs/RELEASE_CHECKLIST.md) | Postup vydání na GitHub |
-| [docs/releases/](docs/releases/) | Popisy jednotlivých vydání (anglicky) |
-| [CHANGELOG.md](CHANGELOG.md) | Přehled změn |
-| [docs/DECISIONS/](docs/DECISIONS/) | Záznamy technických rozhodnutí (ADR) |
+| [CHANGELOG.md](CHANGELOG.md) | Changes per version (Czech); release notes in English in [docs/releases/](docs/releases/) |
+| [docs/FORMAT_COMPATIBILITY.md](docs/FORMAT_COMPATIBILITY.md) | Verified LightBurn versions and findings about the format |
+| [docs/specification.md](docs/specification.md) | Technical specification (Czech) |
+| [docs/STATUS.md](docs/STATUS.md), [docs/ROADMAP.md](docs/ROADMAP.md) | Current state and plan |
+| [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md), [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md) | Code structure, development and build |
+| [docs/TRANSLATING.md](docs/TRANSLATING.md) | Translations |
 
-## Testovací data
+Customer projects are never stored in this repository; tests use synthetic projects only.
 
-Reálné projekty `.lbrn2` **nepatří do tohoto repozitáře**. Ukládají se do sousední složky mimo Git (`..\lightburn-grid-arranger-data\`). V repozitáři smějí být jen uměle vytvořené vzorky v `tests/fixtures/synthetic/`.
+## Licence
+
+Source code: [MIT License](LICENSE). Bundled third-party components (Qt/PySide6 under LGPL-3.0, Python, …): [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
+
+"LightBurn" is a trademark of LightBurn Software, LLC, used here only to describe compatibility.

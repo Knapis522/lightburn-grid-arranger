@@ -2,8 +2,8 @@ Grid Arranger for LightBurn {version} — third-party components
 =============================================================
 
 This build bundles the following third-party software in the _internal folder.
-Grid Arranger itself is an internal pre-release; its own licence has not been decided yet.
-(A complete licence review is required before any public release — spec. chapter 33, PUB-01.)
+Grid Arranger's own source code is licensed under the MIT License (LICENSE.txt in this folder,
+https://github.com/Knapis522/lightburn-grid-arranger).
 
 Python {python}
   Python Software Foundation License Version 2 — https://docs.python.org/3/license.html

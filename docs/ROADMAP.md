@@ -29,11 +29,12 @@ V11-ACCEPT → V20-ACCEPT → FUT-01 (jen při veřejném API)
 | REL-ALPHA1 | Interní Pre-release `v0.1.0-alpha.1` (soukromý repozitář) | GUI-00, sestavení EXE | **Zveřejněno** 2026-10-16 (tag na `64a5d00`, Pre-release) | `docs/releases/v0.1.0-alpha.1.md`, `docs/RELEASE_CHECKLIST.md` |
 | UPD-00 | Instalátor + nabízené aktualizace (spec. v1.11 kap. 32) | REL-ALPHA1 | **Vydáno** v `v0.1.0-alpha.2` 2026-10-17 (instalátor ověřen vlastníkem); aktualizace z aplikace funkční po PUB-01 | `updates.py`, `gui/updates_ui.py`, `packaging/GridArranger.iss`, ADR-0004 |
 | REL-ALPHA3 | Interní Pre-release `v0.1.0-alpha.3` | ROT-00, SHAPES-00, COPY-00 | **Zveřejněno** 2026-10-17 (tag na `a804585`, Pre-release) | `docs/releases/v0.1.0-alpha.3.md` |
+| PUB-00 | Veřejný repozitář s předběžnými verzemi (spec. v1.17 kap. 33.2) | REL-ALPHA3 | **Připraveno** 2026-10-18 (audit, licence, README, SECURITY); čeká přepnutí viditelnosti vlastníkem | `LICENSE`, `README.md`, `SECURITY.md`, `THIRD_PARTY_NOTICES.md` |
 | ROT-00 | Natočení pro úsporu materiálu (spec. v1.13) | ADAPT-00 | **Implementováno, KAL-01 ověřeno vlastníkem** 2026-10-17; vydáno v `v0.1.0-alpha.3` | `core/rotation.py`, ADR-0005, `FORMAT_COMPATIBILITY.md` |
 | SHAPES-00 | Kruh / elipsa / obdélník / mnohoúhelník nakreslené přímo v LightBurnu (spec. v1.14) | testovací soubory C | **Hotovo, ověřeno vlastníkem** 2026-10-17: `Ellipse`, `Rect` (i zaoblený), `Polygon` (libovolné N), vnořené skupiny (klíčenky); přesun shodný s LightBurnem; výstupy otevřeny v LightBurnu; KAL-02 splněno; vydáno v `v0.1.0-alpha.3` | `adapters/lightburn/shapes.py`, `tools/kal02/`, `FORMAT_COMPATIBILITY.md` (vzorky C) |
 | COPY-00 | Kopie výrobků pro vyplnění desky (V11-02 předsunuto, spec. v1.16) | ADAPT-00 | **Hotovo, KAL-03 ověřeno vlastníkem** 2026-10-17; vydáno v `v0.1.0-alpha.3` | `write.py` (`copy_block`), `safety/verify.py`, `tests/integration/test_copies.py` |
 | MVP-ACCEPT | Ověření MVP-01..08, test v LightBurnu | výše | Nezahájeno | — |
-| PUBLIC-01 | Veřejné v1.0.0 | MVP-ACCEPT + REL-01, PUB-01, L10N-PUBLIC-01, DOC-REL-01 | Neschváleno | — |
+| PUBLIC-01 | Veřejné stabilní v1.0.0 | MVP-ACCEPT + REL-01, PUB-01, L10N-PUBLIC-01, DOC-REL-01 | Neschváleno | — |
 | V11-ACCEPT | Profily, množství, automatické sloupce | MVP-ACCEPT | Plánováno | — |
 | V20-ACCEPT | Více desek, více projektů | V11-ACCEPT | Plánováno | — |
 | FUT-01 | Přímá integrace s LightBurnem | veřejné API | Pouze výhled | — |

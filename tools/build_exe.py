@@ -248,6 +248,7 @@ def main() -> int:
     notices = (ROOT / "packaging" / "THIRD_PARTY_NOTICES.txt").read_text(encoding="utf-8")
     (APP_DIR / "THIRD_PARTY_NOTICES.txt").write_text(
         notices.format(version=ver, python=report["python"], qt=report["qt"], pyside=report["pyside6"]), encoding=enc)
+    (APP_DIR / "LICENSE.txt").write_text((ROOT / "LICENSE").read_text(encoding="utf-8"), encoding=enc)
 
     step("5/6 ZIP")
     z = make_zip(ver)
