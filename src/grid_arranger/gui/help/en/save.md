@@ -13,7 +13,7 @@ Neither existing files nor the original are ever overwritten — if the chosen f
 
 **Then in LightBurn:**
 
-1. Open the output via **File → Open** (not Import — Import does not load the project settings).
+1. Open the output: in the save message with **Open in LightBurn** (or the toolbar icon, **File → Open saved project in LightBurn**, Ctrl+L). The application opens the file like a double-click in Explorer: a running LightBurn replaces its open project — if it has unsaved changes, LightBurn asks to save them; otherwise LightBurn starts. To open it manually use **File → Open** (not Import — Import does not load the project settings).
 2. Check layers, power and speed.
 3. Run **Preview** and inspect the paths.
 4. Check the position on the machine (**Frame**). Only then cut, under supervision.

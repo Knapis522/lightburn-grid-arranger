@@ -71,6 +71,9 @@ class MainWindow(QMainWindow):
         self.copies: dict[str, str] = {}
         """Kopie výrobků ``{id kopie: zdroj}`` v pořadí vytvoření (spec. v1.16)."""
         self._clipboard: list[str] = []
+        self.last_saved: Path | None = None
+        """Naposledy uložený projekt (pro Otevřít v LightBurnu)."""
+        self._open_file = lambda path: QDesktopServices.openUrl(QUrl.fromLocalFile(str(path)))
         """Ruční natočení výrobků (°, po směru hodin); 0 = nenatáčet."""
         self.updates = UpdateController(self, settings)
         self._build_ui()
@@ -142,6 +145,11 @@ class MainWindow(QMainWindow):
         self.unit_actions[self.settings.units()].setChecked(True)
         self.act_check_updates = QAction(self)
         self.act_check_updates.triggered.connect(lambda: self.updates.check(manual=True))
+        # Otevřít uložený projekt v LightBurnu (program přiřazený k .lbrn2 = jako dvojklik v Průzkumníku)
+        self.act_open_in_lb = QAction(self)
+        self.act_open_in_lb.setShortcut(QKeySequence("Ctrl+L"))
+        self.act_open_in_lb.setEnabled(False)
+        self.act_open_in_lb.triggered.connect(lambda: self.open_in_lightburn())
         # Úpravy: kopie výrobků (Ctrl+C / Ctrl+V, Vytvořit kopie… Ctrl+D jako v LightBurnu), Esc = zrušit výběr
         self.act_copy = QAction(self)
         self.act_copy.setShortcut(QKeySequence(QKeySequence.StandardKey.Copy))
@@ -160,7 +168,7 @@ class MainWindow(QMainWindow):
 
         mb = self.menuBar()
         self.menu_file = mb.addMenu("")
-        self.menu_file.addActions([self.act_open, self.act_save])
+        self.menu_file.addActions([self.act_open, self.act_save, self.act_open_in_lb])
         self.menu_file.addSeparator()
         self.menu_file.addAction(self.act_quit)
         self.menu_edit = mb.addMenu("")
@@ -192,7 +200,7 @@ class MainWindow(QMainWindow):
         self.toolbar.setToolButtonStyle(Qt.ToolButtonStyle.ToolButtonIconOnly)
         self.act_fit = QAction(self)
         self.act_fit.setShortcut(QKeySequence("Ctrl+0"))
-        self.toolbar.addActions([self.act_open, self.act_save])
+        self.toolbar.addActions([self.act_open, self.act_save, self.act_open_in_lb])
         self.toolbar.addSeparator()
         self.toolbar.addAction(self.act_fit)
         self.toolbar.addAction(self.act_duplicate)
@@ -200,7 +208,7 @@ class MainWindow(QMainWindow):
         self.toolbar.addAction(self.act_help)
         self.addToolBar(Qt.ToolBarArea.TopToolBarArea, self.toolbar)
         self._toolbar_icons = {self.act_open: "open", self.act_save: "save_new", self.act_fit: "fit", self.act_help: "help",
-                               self.act_duplicate: "copies"}
+                               self.act_duplicate: "copies", self.act_open_in_lb: "send"}
         # Esc = zrušit výběr výrobků (v seznamu i v náhledu)
         self.act_clear_selection = QAction(self)
         self.act_clear_selection.setShortcut(QKeySequence(Qt.Key.Key_Escape))
@@ -405,6 +413,7 @@ class MainWindow(QMainWindow):
         self.act_open.setText(self.tr("&Open project…"))
         self.act_save.setText(self.tr("&Save as new project…"))
         self.act_quit.setText(self.tr("&Quit"))
+        self.act_open_in_lb.setText(self.tr("Open saved project in &LightBurn"))
         self.menu_settings.setTitle(self.tr("&Settings"))
         self.menu_lang.setTitle(self.tr("&Language"))
         self.lang_actions["auto"].setText(self.tr("Automatic (system)"))
@@ -1092,9 +1101,36 @@ class MainWindow(QMainWindow):
         text = self.tr("Saved:\n{out}").format(out=res.output)
         if res.protocol is not None:
             text += "\n\n" + self.tr("Protocol:\n{proto}").format(proto=res.protocol)
-        self._info(text + "\n\n" + self.tr("Open the file in LightBurn via File → Open and check the layers, "
-                                           "Preview and the position on the machine before cutting."))
+        self.last_saved = res.output
+        self.act_open_in_lb.setEnabled(True)
+        text += "\n\n" + self.tr("Open it in LightBurn (button below, or File → Open — not Import) and check the layers, "
+                                   "Preview and the position on the machine before cutting.")
+        if self._ask_open_in_lightburn(text):
+            self.open_in_lightburn(res.output)
         return res.output
+
+    def _ask_open_in_lightburn(self, text: str) -> bool:
+        box = QMessageBox(QMessageBox.Icon.Information, self.app_title(), text, parent=self)
+        open_btn = box.addButton(self.tr("Open in LightBurn"), QMessageBox.ButtonRole.AcceptRole)
+        box.addButton(QMessageBox.StandardButton.Close)
+        box.setDefaultButton(open_btn)
+        box.exec()
+        return box.clickedButton() is open_btn
+
+    def open_in_lightburn(self, path: Path | None = None) -> bool:
+        """Otevře uložený projekt programem přiřazeným k .lbrn2 (LightBurn) — jako dvojklik v Průzkumníku.
+        Běžící LightBurn nahradí otevřený projekt; na neuložené změny se zeptá sám."""
+        path = Path(path or self.last_saved or "")
+        if not path.is_file():
+            self._error(self.tr("The saved project was not found:\n{path}").format(path=path))
+            return False
+        if not self._open_file(path):
+            self._error(self.tr("The project could not be opened. Check that .lbrn2 files are associated with "
+                                "LightBurn (right-click a .lbrn2 file → Open with → LightBurn, \"Always\").\n\n{path}")
+                        .format(path=path))
+            return False
+        self.statusBar().showMessage(self.tr("Opening in LightBurn: {name}").format(name=path.name), 5000)
+        return True
 
     # ====================================================================== protokol
     @staticmethod

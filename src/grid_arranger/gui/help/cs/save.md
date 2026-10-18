@@ -13,7 +13,7 @@ Existující soubory ani originál se nikdy nepřepisují — pokud zvolený sou
 
 **Potom v LightBurnu:**
 
-1. Otevřete výstup přes **File → Open** (ne Import — Import nenačte nastavení projektu).
+1. Otevřete výstup: v hlášení o uložení tlačítkem **Otevřít v LightBurnu** (nebo ikonou na nástrojové liště, **Soubor → Otevřít uložený projekt v LightBurnu**, Ctrl+L). Aplikace soubor otevře stejně jako dvojklik v Průzkumníku: běžící LightBurn nahradí otevřený projekt — má-li neuložené změny, sám se zeptá na uložení; jinak se LightBurn spustí. Ručně otevírejte přes **File → Open** (ne Import — Import nenačte nastavení projektu).
 2. Zkontrolujte vrstvy, výkony a rychlosti.
 3. Spusťte **Preview** a prohlédněte dráhy.
 4. Ověřte polohu na stroji (**Frame**). Teprve potom řežte, pod dohledem.

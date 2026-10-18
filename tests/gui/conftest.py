@@ -65,6 +65,10 @@ def make_window(qapp, qm_dir, settings):
             return w._save_answers.pop(0) if w._save_answers else proposal
 
         w._ask_save_path = _ask_save_path
+        w._open_in_lb_answer = False  # tlačítko „Otevřít v LightBurnu“ v hlášení o uložení
+        w._ask_open_in_lightburn = lambda text: (w._dialogs.append(("info", text)), w._open_in_lb_answer)[1]
+        w._opened = []  # soubory „otevřené“ přiřazeným programem (LightBurn)
+        w._open_file = lambda path: (w._opened.append(path), True)[1]
         windows.append((w, lm))
         return w
 

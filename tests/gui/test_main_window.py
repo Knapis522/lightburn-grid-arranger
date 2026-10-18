@@ -299,7 +299,7 @@ def test_title_shows_project_like_lightburn(make_window, tmp_path):
 def test_toolbar_open_save_help_with_icons(make_window, tmp_path):
     w = make_window("en")
     acts = [a for a in w.toolbar.actions() if not a.isSeparator()]
-    assert acts == [w.act_open, w.act_save, w.act_fit, w.act_duplicate, w.act_help]
+    assert acts == [w.act_open, w.act_save, w.act_open_in_lb, w.act_fit, w.act_duplicate, w.act_help]
     assert w.act_fit.toolTip() == "Fit view (Ctrl+0)"
     assert all(not a.icon().isNull() for a in acts)
     assert w.act_open.toolTip() == "Open project (Ctrl+O)"
@@ -673,3 +673,24 @@ def test_window_size_maximized_state_and_splitter_are_remembered(make_window, se
     w3 = make_window("en")
     w3.restore_window_state()
     assert w3.windowState() & Qt.WindowState.WindowMaximized
+
+
+def test_open_saved_project_in_lightburn(make_window, tmp_path):
+    w = make_window("en")
+    w.open_project(write(tmp_path, project([card(0, 0), card(200, 0)])))
+    assert not w.act_open_in_lb.isEnabled()
+    out = tmp_path / "a.lbrn2"
+    w._save_answers = [out]
+    w.save_new_project()
+    assert w._opened == [] and w.act_open_in_lb.isEnabled()  # v hlášení zvoleno Zavřít
+    w.act_open_in_lb.trigger()
+    assert w._opened == [out]
+    out2 = tmp_path / "b.lbrn2"
+    w._save_answers = [out2]
+    w._open_in_lb_answer = True  # v hlášení zvoleno Otevřít v LightBurnu
+    w.save_new_project()
+    assert w._opened[-1] == out2 and w.last_saved == out2
+    w._open_file = lambda path: False  # .lbrn2 bez přiřazeného programu
+    assert not w.open_in_lightburn() and w._dialogs[-1][0] == "error"
+    out2.unlink()
+    assert not w.open_in_lightburn() and "not found" in w._dialogs[-1][1]

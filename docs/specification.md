@@ -1,6 +1,6 @@
 # Grid Arranger for LightBurn — technická specifikace
 
-**Verze dokumentu:** 1.17 (zveřejnění repozitáře s předběžnými verzemi — brána PUB-00; viz kap. 33.2 a 28)  
+**Verze dokumentu:** 1.18 (Otevřít v LightBurnu přes přiřazení souborů; viz kap. 9.5 a 28)  
 **Datum:** 17. 10. 2026  
 **Název produktu:** Grid Arranger for LightBurn; spustitelný soubor `GridArranger.exe`; Python balíček `grid_arranger`; repozitář `lightburn-grid-arranger`. Neoficiální nástroj, nikoli produkt LightBurn Software.  
 **Stav:** Interní pracovní podklad; nikoli hotový nebo otestovaný plugin  
@@ -301,6 +301,8 @@ První laboratorní provedení může použít XML knihovnu pro parsování a se
 ### 9.5 Proč nepoužít prostý export/import SVG
 
 SVG by bylo snadné na přesun grafiky, ale při převodu by mohlo dojít ke ztrátě nastavení řezacích vrstev, částí textové editovatelnosti a dalších interních informací. LightBurn sám uvádí, že **Import `.lbrn2` načítá jen grafiku, zatímco Open načítá také projektová nastavení**. Proto validovat výsledek pomocí **Open**, nikoli pouhého Import. Odeslání výsledného projektu přes veřejné API `POST /api/file/open` je pozdější *volitelná* integrace vyžadující zvláštní potvrzení uživatele; nahrazuje otevřený projekt, tudíž se nemá spouštět automaticky.
+
+**Otevřít v LightBurnu (v1.18, přání vlastníka):** po uložení tlačítko v hlášení, ikona a Soubor → Otevřít uložený projekt v LightBurnu (Ctrl+L) otevřou **uložený výstup** programem přiřazeným k `.lbrn2` (jako dvojklik v Průzkumníku) — bez párování a bez REST API. Ověřeno vlastníkem: běžící LightBurn otevře soubor místo aktuálního projektu (File → Open) a na neuložené změny se zeptá sám; do nového okna to nejde (ani REST API takovou funkci nemá). Spouští se jen kliknutím uživatele, nikdy automaticky; úlohu na laser nikdy neodesílá. REST API (párování, kontrola `modified` předem) zůstává možným rozšířením.
 
 ## 10. Koncept interního datového modelu
 
@@ -1052,6 +1054,7 @@ Toto jsou **ověřovací úkoly**, nikoli potvrzené technické možnosti souča
 
 ## 28. Záznam změn specifikace
 
+- **v1.18 (18. 10. 2026):** Na přání vlastníka *Otevřít v LightBurnu* — uložený výstup se otevře programem přiřazeným k `.lbrn2`; LightBurn nahradí otevřený projekt a sám upozorní na neuložené změny (kap. 9.5). Okno aplikace si pamatuje velikost a maximalizaci.
 - **v1.17 (18. 10. 2026):** Rozhodnutí vlastníka: repozitář lze zveřejnit už s předběžnými verzemi, aby fungovaly nabízené aktualizace — nová brána PUB-00 (audit historie, MIT `LICENSE`, `THIRD_PARTY_NOTICES.md`, anglický `README`, `SECURITY.md`, vydání jako Pre-release); PUB-01 platí dál pro první veřejnou stabilní verzi 1.0.0 (kap. 29.1, 33.2, 33.3, 35).
 - **v1.16 (17. 10. 2026):** Na přání vlastníka předsunuty kopie výrobků (V11-02, kap. 22.2): Ctrl+C / Ctrl+V, Vytvořit kopie… (počet), Odebrat kopie; zápis kopií jako nových skupin se sdílenou geometrií přes `VertID`/`PrimID`, nezávislá kontrola kopií; brána KAL-03.
 - **v1.15 (17. 10. 2026):** Na přání vlastníka ruční natočení vybraných výrobků (úhel, ±90°, Automaticky) a výběr výrobku kliknutím v náhledu (kap. 7.6) — např. aby všechny klíčenky měly očko stejně. Rozměr výrobku podle skutečných extrémů Bézierových křivek (kap. 5 bod 2; dříve obal řídicích bodů).
