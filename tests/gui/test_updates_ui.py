@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-from datetime import datetime, timedelta, timezone
 
 import pytest
 
@@ -128,16 +127,14 @@ def test_download_failure_reports_and_does_not_launch(ctl_factory):
     assert "integrity check" in w._dialogs[-1][1]
 
 
-def test_auto_check_respects_setting_and_interval(ctl_factory):
+def test_auto_check_runs_on_every_start_when_enabled(ctl_factory):
     calls = []
     w, c, log = ctl_factory(lambda: calls.append(1) or [])
     w.settings.set_update_auto(False)
     assert not c.maybe_auto_check()
     w.settings.set_update_auto(True)
     assert c.maybe_auto_check() and calls == [1]
-    assert not c.maybe_auto_check()  # právě zkontrolováno
-    w.settings.set_last_update_check((datetime.now(timezone.utc) - timedelta(days=2)).isoformat())
-    assert c.maybe_auto_check() and calls == [1, 1]
+    assert c.maybe_auto_check() and calls == [1, 1]  # i hned při dalším spuštění (žádný denní interval)
 
 
 def test_update_settings_defaults_and_menu(make_window):

@@ -34,7 +34,7 @@
 | Nativní tvary (automatické) | spec. v1.14 kap. 5 body 8–9 | 5 | automatický | prochází | `tests/unit/test_shapes.py`, `tests/integration/test_native_shapes.py`, `tests/integration/test_real_projects.py` (vzorky C, s `GRID_ARRANGER_REAL_DATA`) |
 | Nativní tvary v LightBurnu | vzorky C (výstupy), KAL-02 | 5 | ruční | ruční – ověřeno | `docs/FORMAT_COMPATIBILITY.md` (vzorky C, KAL-02) |
 | Aktualizace (automatické) | T-UPD-01 – 06, 08 | 32.4 | automatický | prochází | `tests/unit/test_updates.py`, `tests/gui/test_updates_ui.py` |
-| Aktualizace a instalátor (ruční) | T-UPD-07, instalace / odinstalace | 32.4 | ruční (Windows, po zveřejnění) | nezahájeno | — |
+| Aktualizace a instalátor (ruční) | T-UPD-07, instalace / odinstalace | 32.4 | ruční (Windows, po zveřejnění) | ruční – ověřeno | alpha.3 → alpha.4 z aplikace (2026-10-18) |
 | GitHub / distribuce | GH-05 EXE na PC bez Pythonu | 34 | ruční | ruční – ověřeno | protokol níže (2026-10-17) |
 | GitHub / distribuce | GH-03, GH-04, GH-08 – GH-16 | 34 | ruční | nezahájeno | — |
 | Verze 1.1 | T-11-01 – T-11-20 | 26.2 | — | plánováno | — |
@@ -68,6 +68,8 @@
 | 2026-10-17 | Vzorky C (automaticky) | 2.2.00-RC-7 | Test_tvary_A, Test_tvary_L_A, Test_tvary_A_posun, Test_klicenky, Kalibrace_A_rot30 | prochází | Všechny výrobky podporované (Ellipse, Rect, Polygon N=6, vnořené skupiny, příznak `S`); náš posun K1 = přesun v LightBurnu (tytéž 2 řádky, rozdíl jen v posledním řádu); klíčenky s natočením −18,5 % plochy mřížky; 411 testů + 6 na reálných datech |
 | 2026-10-17 | Vzorky C (výstupy v LightBurnu) | 2.2.00-RC-7 | `C_vystupy\` (Test_tvary_A 4 sl. bez natočení, 2 sl. libovolný úhel; Test_tvary_L_A; Test_klicenky libovolný úhel a po 90°) | ruční – ověřeno | Vlastník: v pořádku |
 | 2026-10-17 | KAL-02 | 2.2.00-RC-7 | Test_tvary_A__kal02_tvary, …_prevedeno (Convert to Path) | prochází | 12/12 tvarů odchylka 0,0000 mm po opravě vzorce mnohoúhelníku; zaoblené rohy a všechna N povolena |
+| 2026-10-18 | T-UPD-07 (aktualizace z aplikace) | — | — | ruční – ověřeno | PC u laseru: alpha.3 nabídla alpha.4, stažení, ověření součtu, instalace a nové spuštění v pořádku (vlastník). Připomínka: kontrolovat při každém spuštění → spec. v1.21 |
+| 2026-10-18 | GH-06 / GH-07 | — | — | prochází | Tag `v0.1.0-alpha.4`, Pre-release s instalátorem, ZIPem a `SHA256SUMS.txt`; sestavení po opravě testu velikosti okna (nezávislý na velikosti obrazovky) |
 | 2026-10-18 | GUI ruční (Windows), alpha.4 | 2.2.00-RC-7 | reálné projekty | ruční – ověřeno | Vlastník: Otevřít v LightBurnu (nahradí projekt, upozorní na neuložené změny), okno si pamatuje velikost a maximalizaci, krok zpět/vpřed, přeuspořádání lišty, titulek „naposledy uloženo jako“ a pokračování s uloženým souborem, okno Nastavení, panel vpravo, výška seznamu hlášení — v pořádku |
 | 2026-10-18 | PUB-00, kontrola aktualizací | — | — | ruční – ověřeno | Repozitář veřejný; aplikace alpha.3 na PC u laseru: Zkontrolovat aktualizace → aktuální verze (dříve „vydání nejsou veřejná“). Instalace aktualizace ze starší verze (T-UPD-07) až s příštím vydáním |
 | 2026-10-17 | GH-06 / GH-07 (interní) | — | — | prochází | Tag `v0.1.0-alpha.3` (commit `a804585`), Pre-release s instalátorem (21,7 MB), ZIPem a `SHA256SUMS.txt` |

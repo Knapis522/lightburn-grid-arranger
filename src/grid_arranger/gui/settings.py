@@ -113,7 +113,7 @@ class UserSettings:
 
     # --- aktualizace (spec. v1.11 kap. 32) ---------------------------------------------------
     def update_auto(self) -> bool:
-        """Automaticky kontrolovat při spuštění (nejvýš jednou denně). Výchozí: ano."""
+        """Automaticky kontrolovat při každém spuštění. Výchozí: ano."""
         return _bool(self._s.value("updates/auto", True), True)
 
     def set_update_auto(self, value: bool) -> None:

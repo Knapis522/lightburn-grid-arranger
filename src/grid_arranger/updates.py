@@ -22,7 +22,6 @@ import re
 import urllib.error
 import urllib.request
 from dataclasses import dataclass, field
-from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Callable
 
@@ -33,7 +32,6 @@ API_URL = f"https://api.github.com/repos/{REPOSITORY}/releases?per_page=30"
 RELEASES_PAGE = f"https://github.com/{REPOSITORY}/releases"
 SUMS_NAME = "SHA256SUMS.txt"
 SETUP_RE = re.compile(r"^GridArranger-Setup-v(?P<version>[0-9A-Za-z.\-]+)-win-x64\.exe$")
-AUTO_CHECK_INTERVAL = timedelta(hours=20)  # nejvýš jednou denně
 TIMEOUT_S = 15
 _SEMVER_RE = re.compile(r"^v?(\d+)\.(\d+)\.(\d+)(?:-([0-9A-Za-z.\-]+))?$")
 
@@ -167,17 +165,6 @@ def find_update(releases: list[Release], current: SemVer, include_prerelease: bo
 def should_offer_automatically(info: UpdateInfo | None, skipped: str) -> bool:
     """Automatická kontrola nenabízí verzi, kterou uživatel přeskočil; novější ano."""
     return info is not None and info.latest.tag != skipped
-
-
-def auto_check_due(last_check: str, now: datetime | None = None) -> bool:
-    now = now or datetime.now(timezone.utc)
-    try:
-        last = datetime.fromisoformat(last_check)
-    except (TypeError, ValueError):
-        return True
-    if last.tzinfo is None:
-        last = last.replace(tzinfo=timezone.utc)
-    return not (timedelta(0) <= now - last < AUTO_CHECK_INTERVAL)
 
 
 # --- síť ------------------------------------------------------------------------------------

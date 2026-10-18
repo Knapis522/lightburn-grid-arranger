@@ -1,6 +1,6 @@
 # Grid Arranger for LightBurn — technická specifikace
 
-**Verze dokumentu:** 1.20 (okno Nastavení, panel rozložení vlevo/vpravo; viz kap. 36.3)  
+**Verze dokumentu:** 1.21 (kontrola aktualizací při každém spuštění; viz kap. 32)  
 **Datum:** 17. 10. 2026  
 **Název produktu:** Grid Arranger for LightBurn; spustitelný soubor `GridArranger.exe`; Python balíček `grid_arranger`; repozitář `lightburn-grid-arranger`. Neoficiální nástroj, nikoli produkt LightBurn Software.  
 **Stav:** Interní pracovní podklad; nikoli hotový nebo otestovaný plugin  
@@ -1058,6 +1058,7 @@ Toto jsou **ověřovací úkoly**, nikoli potvrzené technické možnosti souča
 
 ## 28. Záznam změn specifikace
 
+- **v1.21 (18. 10. 2026):** Automatická kontrola aktualizací při každém spuštění aplikace, ne jen jednou denně (kap. 32).
 - **v1.20 (18. 10. 2026):** Na přání vlastníka je Nastavení modální okno se stránkami (Obecné, Uložení, Aktualizace; OK / Zrušit / Použít) místo rozbalovacího menu; nová volba *Panel rozložení* vlevo / vpravo od náhledu (`ui/panel_side`) (kap. 36.3).
 - **v1.19 (18. 10. 2026):** Po uložení titulek a sekce Projekt ukazují naposledy uložený soubor; volba pokračovat s uloženým souborem místo originálu; návrh názvu ze `__grid_NNN` pokračuje v řadě originálu (kap. 9.4).
 - **v1.18 (18. 10. 2026):** Na přání vlastníka *Otevřít v LightBurnu* — uložený výstup se otevře programem přiřazeným k `.lbrn2`; LightBurn nahradí otevřený projekt a sám upozorní na neuložené změny (kap. 9.5). Okno aplikace si pamatuje velikost a maximalizaci.
@@ -1241,7 +1242,7 @@ Bezpečnost: výstup vždy ověřit v LightBurnu před výrobou
 ### 32.2 Kontrola aktualizací
 
 - **Nastavení → Aktualizace:** „Automaticky kontrolovat aktualizace“ (výchozí zapnuto) a „Nabízet i předběžné verze“ (výchozí zapnuto, pokud je běžící verze předběžná). **Nápověda → Zkontrolovat aktualizace…** kdykoli ručně.
-- Automatická kontrola proběhne na pozadí po spuštění, nejvýš jednou za ~20 hodin; chyby sítě/API zaznamená bez rušení uživatele. Ruční kontrola chybu srozumitelně oznámí (offline, GitHub nedostupný, omezení počtu dotazů, žádná veřejná vydání).
+- Automatická kontrola proběhne na pozadí **při každém spuštění** (v1.21, přání vlastníka; dříve nejvýš jednou za ~20 hodin — jeden anonymní dotaz na GitHub API, limit 60 dotazů za hodinu na IP adresu nevadí); chyby sítě/API zaznamená bez rušení uživatele. Ruční kontrola chybu srozumitelně oznámí (offline, GitHub nedostupný, omezení počtu dotazů, žádná veřejná vydání).
 - Zdroj: oficiální GitHub API `GET /repos/Knapis522/lightburn-grid-arranger/releases`, anonymně (bez tokenu v aplikaci). Funguje až po zveřejnění repozitáře (PUB-00); do té doby ruční kontrola oznámí, že vydání nejsou veřejná. Koncepty (draft) se ignorují; předběžné verze jen při zapnutém kanálu.
 - Porovnání podle Semantic Versioning 2.0 včetně předběžných verzí (`-alpha.N` < `-beta.N` < `-rc.N` < vydání).
 - **Vždy se nabízí nejnovější vydání**; každý instalátor obsahuje celou aplikaci, mezilehlé verze se neinstalují. Dialog ukáže přehled změn všech vydání novějších než nainstalovaná verze a volby **Stáhnout a nainstalovat** / **Připomenout později** / **Přeskočit tuto verzi**. Přeskočená verze se při automatické kontrole znovu nenabízí, novější ano; ruční kontrola ukáže i přeskočenou.

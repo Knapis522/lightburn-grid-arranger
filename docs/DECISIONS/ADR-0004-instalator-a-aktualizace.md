@@ -10,7 +10,7 @@ Vlastník chce místo ZIPu instalační balíček a v nastavení volbu automatic
 ## Rozhodnutí
 
 1. **Instalátor Inno Setup 6.3+** (`packaging/GridArranger.iss`) nad složkou z PyInstalleru: per-user bez práv správce (`%LOCALAPPDATA%\Programs\Grid Arranger`), stálé `AppId`, nabídka Start, volitelně ikona na ploše, odinstalace; před instalací smaže `_internal` předchozí verze. ZIP zůstává jako záloha. Jednosouborové EXE ne (rozbalování při každém startu, plané poplachy antiviru).
-2. **Kontrola aktualizací** (`grid_arranger/updates.py`, GUI `gui/updates_ui.py`) přes anonymní GitHub REST API `/releases`; SemVer 2.0 včetně předběžných verzí; vždy nejnovější vydání; přeskočení verze; automatická kontrola nejvýš ~1× denně na pozadí, chyby jen do logu.
+2. **Kontrola aktualizací** (`grid_arranger/updates.py`, GUI `gui/updates_ui.py`) přes anonymní GitHub REST API `/releases`; SemVer 2.0 včetně předběžných verzí; vždy nejnovější vydání; přeskočení verze; automatická kontrola na pozadí při každém spuštění (od spec. v1.21 na přání vlastníka, dříve nejvýš ~1× denně), chyby jen do logu.
 3. **Instalace jen po souhlasu**: stažení do nové dočasné složky, ověření proti `SHA256SUMS.txt` z téhož vydání, pak ukončení aplikace a spuštění instalátoru `/SILENT`; instalátor aplikaci znovu spustí (`[Run] … Check: WizardSilent`). Kopie ze ZIPu jen otevře stránku ke stažení.
 4. Síť přes `urllib` (standardní knihovna, certifikáty Windows), ne QtNetwork — knihovna Qt6Network se do balíčku nepřibaluje (ADR-0003).
 

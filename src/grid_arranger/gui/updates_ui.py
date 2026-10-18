@@ -23,7 +23,7 @@ from PySide6.QtWidgets import (
 
 from ..updates import (
     RELEASES_PAGE, Release, UpdateError, UpdateInfo, current_version, download_installer, fetch_releases, find_update,
-    installer_command, is_installed_copy, should_offer_automatically, auto_check_due,
+    installer_command, is_installed_copy, should_offer_automatically,
 )
 
 
@@ -119,8 +119,8 @@ class UpdateController(QObject):
 
     # --- kontrola -------------------------------------------------------------------------------
     def maybe_auto_check(self) -> bool:
-        """Automatická kontrola při spuštění (je-li zapnutá a neproběhla v posledních ~20 h)."""
-        if self.settings.update_auto() and auto_check_due(self.settings.last_update_check()):
+        """Automatická kontrola při každém spuštění (je-li zapnutá; přání vlastníka, spec. v1.21)."""
+        if self.settings.update_auto():
             self.check(manual=False)
             return True
         return False

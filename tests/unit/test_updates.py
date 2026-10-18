@@ -6,12 +6,11 @@ import hashlib
 import io
 import json
 import urllib.error
-from datetime import datetime, timedelta, timezone
 
 import pytest
 
 from grid_arranger.updates import (
-    SemVer, UpdateError, auto_check_due, download_installer, fetch_releases, find_update, installer_command,
+    SemVer, UpdateError, download_installer, fetch_releases, find_update, installer_command,
     is_installed_copy, parse_releases, parse_sha256sums, should_offer_automatically,
 )
 
@@ -92,15 +91,6 @@ def test_skipped_version_not_offered_but_newer_is():
     assert not should_offer_automatically(info, skipped="v0.2.0")
     assert should_offer_automatically(info, skipped="v0.1.5")
     assert not should_offer_automatically(None, skipped="")
-
-
-def test_auto_check_at_most_once_per_day():
-    now = datetime(2026, 10, 17, 9, 0, tzinfo=timezone.utc)
-    assert auto_check_due("", now)
-    assert auto_check_due("garbage", now)
-    assert not auto_check_due((now - timedelta(hours=2)).isoformat(), now)
-    assert auto_check_due((now - timedelta(hours=25)).isoformat(), now)
-    assert auto_check_due((now + timedelta(days=3)).isoformat(), now)  # posunuté hodiny → zkontrolovat
 
 
 class FakeResp(io.BytesIO):

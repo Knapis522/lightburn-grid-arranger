@@ -4,6 +4,11 @@ Formát podle [Keep a Changelog](https://keepachangelog.com/), verze podle SemVe
 
 ## [Unreleased]
 
+## [0.1.0-alpha.5] — nevydáno
+
+### Změněno
+- Automatická kontrola aktualizací proběhne **při každém spuštění** aplikace (dříve nejvýš jednou za ~20 hodin), takže nová verze se nabídne hned při dalším spuštění. Vypnout ji lze v Nastavení → Aktualizace.
+
 ## [0.1.0-alpha.4] — 2026-10-18
 
 Interní předběžné vydání (GitHub Pre-release). Release notes: `docs/releases/v0.1.0-alpha.4.md`. První vydání, které lze nainstalovat jako aktualizaci přímo z aplikace (T-UPD-07).
