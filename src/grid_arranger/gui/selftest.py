@@ -55,25 +55,28 @@ _PROJECT = "\r\n".join([
 
 def _check_help() -> str:
     from .help import HELP_DIR, TOPICS
+    from .i18n import SUPPORTED
 
-    missing = [f"{lang}/{t}.md" for lang in ("cs", "en") for t in TOPICS if not (HELP_DIR / lang / f"{t}.md").is_file()]
+    missing = [f"{lang}/{t}.md" for lang in SUPPORTED for t in TOPICS if not (HELP_DIR / lang / f"{t}.md").is_file()]
     if missing:
         raise AssertionError("missing help topics: " + ", ".join(missing))
-    return f"{2 * len(TOPICS)} topics in {HELP_DIR}"
+    return f"{len(SUPPORTED) * len(TOPICS)} topics in {HELP_DIR}"
 
 
 def _check_translations(app) -> str:
-    from .i18n import LocaleManager
+    from .i18n import SUPPORTED, LocaleManager
 
     lm = LocaleManager(app)
     try:
-        if lm.apply("cs") != "cs" or lm.missing_catalog:
-            raise AssertionError("gridarranger_cs.qm not loaded")
-        if QCoreApplication.translate("MainWindow", "&File") == "&File":
-            raise AssertionError("Czech catalog loaded but strings are not translated")
-        if not lm.qt_catalog_loaded:
-            raise AssertionError("qtbase_cs.qm (Qt dialog buttons) not found")
-        return "cs + qtbase_cs loaded"
+        langs = [lg for lg in SUPPORTED if lg != "en"]
+        for lang in langs:
+            if lm.apply(lang) != lang or lm.missing_catalog:
+                raise AssertionError(f"gridarranger_{lang}.qm not loaded")
+            if all(QCoreApplication.translate("MainWindow", t) == t for t in ("&File", "&Edit", "&Help")):
+                raise AssertionError(f"{lang} catalog loaded but strings are not translated")
+            if not lm.qt_catalog_loaded:
+                raise AssertionError(f"qtbase_{lang}.qm (Qt dialog buttons) not found")
+        return f"{'/'.join(langs)} + qtbase loaded"
     finally:
         lm.apply("en")
 

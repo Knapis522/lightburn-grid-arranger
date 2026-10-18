@@ -464,6 +464,7 @@ def _protocol(plan: Plan, output: Path, out_bytes: bytes, problems: list[str]) -
             "rotation_mode": _rotation_mode(plan),
             "grid_corner_at_origin_lightburn_xy": plan.origin_corner_lightburn,
         },
+        "pieces_per_item": _pieces(plan),
         "grid": {"columns": plan.layout.columns, "columns_auto": plan.columns_auto, "rows": plan.layout.rows,
                  "width_mm": plan.layout.grid_bounds.width, "height_mm": plan.layout.grid_bounds.height},
         "placements": [
@@ -557,6 +558,15 @@ def execute(plan: Plan, out_dir: Path | None = None, output: Path | None = None,
     if hashlib.sha256(src_path.read_bytes()).hexdigest() != project.info.sha256:
         raise GridError("source_changed", "Původní soubor se během zápisu změnil.")
     return JobResult(plan, target, proto_path, problems)
+
+
+def _pieces(plan: Plan) -> dict[str, int]:
+    """Počet rozmístěných kusů každého zdrojového výrobku (originál + kopie; V11-02)."""
+    out: dict[str, int] = {}
+    for pl in plan.layout.placements:
+        src = plan.copies.get(pl.item_id, pl.item_id)
+        out[src] = out.get(src, 0) + 1
+    return out
 
 
 def _target_header(plan: Plan) -> dict[str, str]:

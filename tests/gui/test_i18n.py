@@ -19,8 +19,10 @@ ROOT = Path(__file__).resolve().parents[2]
 
 @pytest.mark.parametrize(
     "langs, expected",
-    [(["cs-CZ"], "cs"), (["cs"], "cs"), (["en-US"], "en"), (["en-GB"], "en"), (["fr-FR"], "en"),
-     (["de-AT", "cs-CZ"], "cs"), ([], "en"), (["sk_SK", "en"], "en")],
+    [(["cs-CZ"], "cs"), (["cs"], "cs"), (["en-US"], "en"), (["en-GB"], "en"), (["fr-FR"], "fr"),
+     (["de-AT", "cs-CZ"], "de"), ([], "en"), (["sk_SK", "en"], "sk"), (["pt-BR", "cs-CZ"], "cs"), (["ja-JP"], "en"),
+     # T-I18N-18: regionální varianty → základní jazyk
+     (["pl-PL"], "pl"), (["fr-CA"], "fr"), (["es-MX"], "es"), (["it-IT"], "it")],
 )
 def test_t_i18n01_02_auto_language(langs, expected):
     assert detect_system_language(langs) == expected
@@ -69,7 +71,7 @@ def test_t_i18n09_switch_language_keeps_state(make_window, tmp_path):
 def test_t_i18n10_identical_output_in_both_languages(make_window, tmp_path):
     outs = []
     data = project([card(0, 0), card(200, 0, text="Žluťoučký kůň"), card(400, 0)])  # stejný vstup pro oba jazyky
-    for lang in ("cs", "en"):
+    for lang in ("cs", "en", "de", "sk", "pl", "fr", "es", "it"):  # T-I18N-20: stejný výstup v osmi jazycích
         d = tmp_path / lang
         d.mkdir()
         p = d / "k.lbrn2"
@@ -78,7 +80,7 @@ def test_t_i18n10_identical_output_in_both_languages(make_window, tmp_path):
         w.open_project(p)
         w.spin_gap_x.setValue(2.5)
         outs.append(w.save_new_project(confirm=False).read_bytes())
-    assert outs[0] == outs[1]
+    assert all(o == outs[0] for o in outs)
 
 
 def test_t_i18n11_unicode_item_label_untouched(make_window, tmp_path):
@@ -114,9 +116,41 @@ def test_english_plurals_need_en_catalog(qapp, qm_dir, n, text):
     assert QCoreApplication.translate("MainWindow", "Selected %n item(s)", "", n) == text
 
 
-def test_t_i18n14_15_catalogs_complete_and_placeholders_match():
-    assert check_catalog(ROOT / "translations" / "gridarranger_cs.ts", require_complete=True) == []
+@pytest.mark.parametrize("lang", ["cs", "de", "sk", "pl", "fr", "es", "it"])
+def test_t_i18n14_15_catalogs_complete_and_placeholders_match(lang):
+    assert check_catalog(ROOT / "translations" / f"gridarranger_{lang}.ts", require_complete=True) == []
+
+
+def test_english_catalog_placeholders():
     assert check_catalog(ROOT / "translations" / "gridarranger_en.ts", require_complete=False) == []
+
+
+@pytest.mark.parametrize("lang, word", [("de", "&Datei"), ("sk", "&Súbor"), ("pl", "&Plik"), ("fr", "&Fichier"),
+                                        ("es", "&Archivo"), ("it", "&File")])
+def test_t_i18n17_all_languages_load_offline(qapp, qm_dir, lang, word):
+    lm = LocaleManager(qapp, qm_dir)
+    try:
+        assert lm.apply(lang) == lang and not lm.missing_catalog
+        assert QCoreApplication.translate("MainWindow", "&File") == word
+        assert QCoreApplication.translate("SettingsDialog", "Settings") != "Settings" or lang == "en"
+        assert lm.qlocale().decimalPoint() == ","  # všech šest jazyků píše desetinnou čárku
+    finally:
+        lm.apply("en")
+
+
+@pytest.mark.parametrize("lang, n, text", [("pl", 1, "Zaznaczono 1 element"), ("pl", 3, "Zaznaczono 3 elementy"),
+                                           ("pl", 5, "Zaznaczono 5 elementów"), ("pl", 22, "Zaznaczono 22 elementy"),
+                                           ("sk", 1, "Vybraný 1 výrobok"), ("sk", 4, "Vybrané 4 výrobky"),
+                                           ("sk", 7, "Vybraných 7 výrobkov"), ("de", 1, "1 Objekt ausgewählt"),
+                                           ("de", 2, "2 Objekte ausgewählt"), ("fr", 0, "0 élément sélectionné"),
+                                           ("fr", 2, "2 éléments sélectionnés")])
+def test_plurals_in_new_languages(qapp, qm_dir, lang, n, text):
+    lm = LocaleManager(qapp, qm_dir)
+    lm.apply(lang)
+    try:
+        assert QCoreApplication.translate("MainWindow", "Selected %n item(s)", "", n) == text
+    finally:
+        lm.apply("en")
 
 
 def test_catalog_check_detects_missing_and_bad_placeholder(tmp_path):

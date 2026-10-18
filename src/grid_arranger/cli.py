@@ -36,6 +36,31 @@ def _copies(specs: list[str]) -> dict[str, str]:
     return out
 
 
+def _quantities(specs: list[str]) -> dict[str, int]:
+    out: dict[str, int] = {}
+    for spec in specs:
+        iid, sep, n = spec.partition("=")
+        if not sep or not iid.strip() or not n.strip().isdigit():
+            raise SystemExit(f"--quantity: expected ID=N, got {spec!r}")
+        out[iid.strip()] = int(n)
+    return out
+
+
+def _apply_quantities(order: tuple[str, ...], copies: dict[str, str], qty: dict[str, int]) -> tuple[str, ...]:
+    """Počet kusů: N−1 kopií hned za výrobkem (``G5+1``…), 0 = výrobek vynechat."""
+    out: list[str] = []
+    for iid in order:
+        n = qty.get(iid, 1)
+        if n == 0:
+            continue
+        out.append(iid)
+        for k in range(1, n):
+            cid = f"{iid}+q{k}"
+            copies[cid] = iid
+            out.append(cid)
+    return tuple(out)
+
+
 def _angles(specs: list[str]) -> dict[str, float]:
     out: dict[str, float] = {}
     for spec in specs:
@@ -97,6 +122,10 @@ def _cmd_arrange(a: argparse.Namespace) -> int:
     if copies:  # kopie za ostatní výrobky
         base = order if order is not None else tuple(it.id for it in project.items if it.supported)
         order = base + tuple(c for c in copies if c not in base)
+    qty = _quantities(a.quantity)
+    if qty:  # počet kusů: kopie hned za výrobkem
+        base = order if order is not None else tuple(it.id for it in project.items if it.supported)
+        order = _apply_quantities(base, copies, qty)
     params = ArrangeParams(
         columns=a.columns,
         gap_x=a.gap_x if a.gap_x is not None else a.gap,
@@ -160,6 +189,8 @@ def main(argv: list[str] | None = None) -> int:
     pa.add_argument("--rotate", choices=ROTATION_MODES, default="none",
                     help="rotate items to save material: none (default), 90 (in 90° steps), any (smallest bounding box)")
     pa.add_argument("--no-rotate", help="comma-separated item ids that must never be rotated")
+    pa.add_argument("--quantity", action="append", default=[], metavar="ID=N",
+                    help="number of pieces of an item: N-1 copies right after it, 0 = leave the item out (e.g. G2=5); repeatable")
     pa.add_argument("--copies", action="append", default=[], metavar="ID=N",
                     help="add N copies of an item, placed after the other items (e.g. G5=4); repeatable")
     pa.add_argument("--angle", action="append", default=[], metavar="ID=DEG",

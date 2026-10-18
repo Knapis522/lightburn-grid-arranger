@@ -7,9 +7,10 @@ import re
 import pytest
 
 from grid_arranger.gui.help import HELP_DIR, TOPICS, HelpWindow, topic_path
+from grid_arranger.gui.i18n import SUPPORTED
 
 
-@pytest.mark.parametrize("lang", ["cs", "en"])
+@pytest.mark.parametrize("lang", SUPPORTED)
 def test_all_topics_exist_and_links_resolve(lang):
     for t in TOPICS:
         p = HELP_DIR / lang / f"{t}.md"
@@ -22,8 +23,21 @@ def test_all_topics_exist_and_links_resolve(lang):
             assert (HELP_DIR / lang / link).exists(), f"{lang}/{t}.md → {link}"
 
 
-def test_same_topics_in_both_languages():
-    assert sorted(p.name for p in (HELP_DIR / "cs").glob("*.md")) == sorted(p.name for p in (HELP_DIR / "en").glob("*.md"))
+def test_same_topics_in_all_languages():
+    en = sorted(p.name for p in (HELP_DIR / "en").glob("*.md"))
+    for lang in SUPPORTED:
+        assert sorted(p.name for p in (HELP_DIR / lang).glob("*.md")) == en, lang
+
+
+@pytest.mark.parametrize("lang", [lg for lg in SUPPORTED if lg not in ("cs", "en")])
+def test_public01_help_translated_and_marked(lang):
+    """PUBLIC-01: přeložená příručka není kopie angličtiny a nese poznámku o strojovém překladu."""
+    for t in TOPICS:
+        own = (HELP_DIR / lang / f"{t}.md").read_text(encoding="utf-8")
+        en = (HELP_DIR / "en" / f"{t}.md").read_text(encoding="utf-8")
+        assert own != en, f"{lang}/{t}.md"
+    about = (HELP_DIR / lang / "about.md").read_text(encoding="utf-8")
+    assert "> " in about.split("[←")[0].rstrip().splitlines()[-1]
 
 
 def test_t_help09_unknown_topic_falls_back_to_index(qapp):
@@ -47,7 +61,7 @@ def test_t_help03_search_filters_topics(qapp):
     h = HelpWindow("cs")
     h.search.setText("Frame")
     names = [h.toc.item(i).data(256) for i in range(h.toc.count())]
-    assert names == ["save", "troubleshooting"]
+    assert names == ["save"]
     h.search.setText("")
     assert h.toc.count() == len(TOPICS)
 

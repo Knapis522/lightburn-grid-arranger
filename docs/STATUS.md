@@ -1,8 +1,8 @@
 # Stav projektu
 
-**Aktualizováno:** 2026-10-17
-**Verze specifikace:** 1.18 (`docs/specification.md`)
-**Verze aplikace:** `0.1.0-alpha.3` — zveřejněno 2026-10-17 jako GitHub Pre-release (tag `v0.1.0-alpha.3`, commit `a804585`; instalátor, ZIP, SHA256SUMS). Předchozí: `v0.1.0-alpha.2` (2026-10-17, `d8c0cc9`), `v0.1.0-alpha.1` (2026-10-16, `64a5d00`).
+**Aktualizováno:** 2026-10-18
+**Verze specifikace:** 1.26 (`docs/specification.md`)
+**Verze aplikace:** rozpracovaná `0.1.0-alpha.6` (nevydaná). Poslední vydaná: `v0.1.0-alpha.5` (2026-10-18, GitHub Pre-release); předchozí `v0.1.0-alpha.4` (2026-10-18), `v0.1.0-alpha.3` (2026-10-17, `a804585`), `v0.1.0-alpha.2` (2026-10-17, `d8c0cc9`), `v0.1.0-alpha.1` (2026-10-16, `64a5d00`).
 
 > Tento soubor je hlavní předávací dokument. Při navázání práce: přečíst tento soubor → `ROADMAP.md` → relevantní kapitolu specifikace. Nepředpokládat, že funkce funguje jen proto, že existuje kód.
 
@@ -73,3 +73,5 @@
 - 2026-10-18 — spec. v1.24: **automatický počet sloupců** podle šířky desky, **Vyplnit desku kopiemi**, **profily rozložení**. 498 testů. Dál: sestavení a ruční testy (KAL-04, KAL-05, nové funkce), pak alpha.5.
 - 2026-10-18 — **ruční testy alpha.5:** 40/43 OK; **KAL-04 a KAL-05 ověřeny** (upozornění na neověřený počátek dole odstraněno); opraveny B4 (po Použít je Zrušit → Zavřít) a H7 (náhled při odmítnutém převodu, zalomení hlášení). Zbývá sestavení a vydání alpha.5.
 - 2026-10-18 — **alpha.5 vydána** (Pre-release): automatické sloupce, vyplnění desky, profily, katalog laserů a převod na jiný laser, počátek dole, kontrola aktualizací při každém spuštění. Vývoj pokračuje jako `0.1.0-alpha.6`. Dál: ostrý provoz (MVP-ACCEPT).
+- 2026-10-18 — `0.1.0-alpha.6` (spec. v1.25): **počet kusů výrobků** (V11-02) — tím jsou funkce verze 1.1 implementované. 500 testů. Dál: V20-01 (rozdělení zakázky na více desek).
+- 2026-10-18 — spec. v1.26 (přání vlastníka, PUBLIC-01 / L10N-PUBLIC-01): **další jazyky** — rozhraní a příručka v němčině, slovenštině, polštině, francouzštině, španělštině a italštině (vedle cs/en), volba v Nastavení → Obecné → Jazyk; detekce jazyka Windows pro všech osm jazyků; samokontrola sestavení ověřuje příručku ve všech jazycích. Překlady jsou **strojové (AI) a čekají na revizi rodilými mluvčími** — do té doby nesplňují L10N-PUBLIC-01. Dál: ruční test počtu kusů, snímky dlouhých textů na Windows (T-I18N-21), MVP-ACCEPT.

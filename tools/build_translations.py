@@ -19,7 +19,7 @@ ROOT = Path(__file__).resolve().parents[1]
 TS_DIR = ROOT / "translations"
 QM_DIR = ROOT / "src" / "grid_arranger" / "gui" / "translations"
 SOURCES = sorted((ROOT / "src" / "grid_arranger" / "gui").glob("*.py"))
-REQUIRED_COMPLETE = ("cs",)  # interní MVP; veřejné v1.0.0 přidá de, sk, pl, fr, es, it
+REQUIRED_COMPLETE = ("cs", "de", "sk", "pl", "fr", "es", "it")  # všech osm jazyků (en = zdroj)
 
 sys.path.insert(0, str(ROOT / "src"))
 from grid_arranger.gui.catalog_check import check_catalog  # noqa: E402

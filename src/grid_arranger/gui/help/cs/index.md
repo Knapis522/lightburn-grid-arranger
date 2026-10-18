@@ -1,6 +1,6 @@
 # Úvod
 
-**Grid Arranger for LightBurn** přesune již existující, navzájem odlišné skupiny (výrobky) z projektu LightBurnu `.lbrn2` do přesné mřížky a uloží **nový** projekt. Nic nekopíruje a obsah skupin nemění — mění se jen jejich poloha. Originál se nikdy nepřepisuje.
+**Grid Arranger for LightBurn** přesune již existující, navzájem odlišné skupiny (výrobky) z projektu LightBurnu `.lbrn2` do přesné mřížky a uloží **nový** projekt. Obsah skupin nemění — mění se jen jejich poloha (a natočení, pokud ho chcete); kopie přidá jen na vaše přání. Originál se nikdy nepřepisuje.
 
 > Neoficiální nástroj, není produktem LightBurn Software. Výsledek vždy zkontrolujte v LightBurnu přes **File → Open** a **Preview** dříve, než budete řezat.
 

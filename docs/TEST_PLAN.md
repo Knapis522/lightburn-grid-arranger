@@ -19,7 +19,7 @@
 | Lokalizace (interní, automatické) | T-I18N-01 – 04, 07 – 15 | 36.6 | automatický | prochází | `tests/gui/test_i18n.py` |
 | Lokalizace (interní, ruční) | T-I18N-05, 06, 16 | 36.6 | ruční / EXE | nezahájeno | — |
 | GUI | MVP-02 … 06 ovládání | 21, 12 | automatický (offscreen) | prochází | `tests/gui/test_main_window.py` |
-| Lokalizace (veřejná) | T-I18N-17 – T-I18N-22 | 36.6 | ruční | nezahájeno | — |
+| Lokalizace (veřejná) | T-I18N-17 – T-I18N-22 | 36.6 | automatický (17, 18, 19 strojová část, 20) + ruční (19 jazyková revize, 21 na Windows, 22) | automatické prochází; jazyková revize šesti jazyků čeká | `tests/gui/test_i18n.py`, `tests/gui/test_help.py`, samokontrola sestavení (příručka ve všech jazycích) |
 | Nápověda (automatické) | T-HELP-01 – 04, 09 | 38.5 | automatický | prochází | `tests/gui/test_help.py` |
 | Nápověda (ruční / EXE) | T-HELP-05 – 08, 10 | 38.5 | ruční | nezahájeno | — |
 | Sestavení: samokontrola balíčku | GH-05 (část), HELP-01 (přibalení), T-I18N-16 (katalogy) | 34, 38, 36.6 | automatický při `tools/build_exe.py` + pytest | prochází (Windows 11 + Linux) | `tests/gui/test_packaging.py`, `dist/selftest-report.json` |

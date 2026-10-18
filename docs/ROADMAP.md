@@ -39,7 +39,8 @@ V11-ACCEPT → V20-ACCEPT → FUT-01 (jen při veřejném API)
 | SHAPES-00 | Kruh / elipsa / obdélník / mnohoúhelník nakreslené přímo v LightBurnu (spec. v1.14) | testovací soubory C | **Hotovo, ověřeno vlastníkem** 2026-10-17: `Ellipse`, `Rect` (i zaoblený), `Polygon` (libovolné N), vnořené skupiny (klíčenky); přesun shodný s LightBurnem; výstupy otevřeny v LightBurnu; KAL-02 splněno; vydáno v `v0.1.0-alpha.3` | `adapters/lightburn/shapes.py`, `tools/kal02/`, `FORMAT_COMPATIBILITY.md` (vzorky C) |
 | COPY-00 | Kopie výrobků pro vyplnění desky (V11-02 předsunuto, spec. v1.16) | ADAPT-00 | **Hotovo, KAL-03 ověřeno vlastníkem** 2026-10-17; vydáno v `v0.1.0-alpha.3` | `write.py` (`copy_block`), `safety/verify.py`, `tests/integration/test_copies.py` |
 | MVP-ACCEPT | Ověření MVP-01..08, test v LightBurnu | výše | Nezahájeno | — |
+| L10N-PUBLIC-01 | Osm jazyků rozhraní a příručky (spec. kap. 36, v1.26) | MVP-07 | **Rozpracováno** 2026-10-18: katalogy a příručka `de/sk/pl/fr/es/it` hotové jako strojový návrh (AI), automatické testy T-I18N-17…20 prochází (542 testů); **čeká jazyková revize rodilými mluvčími** a ruční T-I18N-21 na Windows | `translations/`, `gui/help/<jazyk>/`, `docs/TRANSLATING.md`, `tests/gui/test_i18n.py`, `test_help.py` |
 | PUBLIC-01 | Veřejné stabilní v1.0.0 | MVP-ACCEPT + REL-01, PUB-01, L10N-PUBLIC-01, DOC-REL-01 | Neschváleno | — |
-| V11-ACCEPT | Profily, množství, automatické sloupce | MVP-ACCEPT | Plánováno | — |
+| V11-ACCEPT | Profily, množství, automatické sloupce | MVP-ACCEPT | **Implementováno** 2026-10-18: profily (V11-01), počet kusů (V11-02, v1.25), automatické sloupce (V11-03); čeká ruční ověření počtu kusů a MVP-ACCEPT | `tests/integration/test_quantities.py`, `test_auto_columns.py` |
 | V20-ACCEPT | Více desek, více projektů | V11-ACCEPT | Plánováno | — |
 | FUT-01 | Přímá integrace s LightBurnem | veřejné API | Pouze výhled | — |

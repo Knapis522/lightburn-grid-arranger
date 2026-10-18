@@ -64,7 +64,7 @@ winget install JRSoftware.InnoSetup
 2. sestaví překlady `.qm`,
 3. spustí všechny testy (selhání sestavení zastaví),
 4. zabalí aplikaci podle `packaging\GridArranger.spec` (PyInstaller, složka, bez konzole),
-5. spustí **samokontrolu** zabalené aplikace `GridArranger.exe --self-test` (příručka F1 cs/en, překlady včetně tlačítek Qt, ikona, okno, načtení → rozložení → zápis → kontrola na syntetickém projektu, HTTPS pro aktualizace),
+5. spustí **samokontrolu** zabalené aplikace `GridArranger.exe --self-test` (příručka F1 ve všech osmi jazycích, překlady včetně tlačítek Qt, ikona, okno, načtení → rozložení → zápis → kontrola na syntetickém projektu, HTTPS pro aktualizace),
 6. vytvoří ZIP, **instalátor** (`packaging\GridArranger.iss`, Inno Setup) a `SHA256SUMS.txt`, otevře složku `dist`.
 
 Výsledek — vše pro jednu verzi pohromadě ve složce s číslem verze:
@@ -96,7 +96,7 @@ dist\v0.1.0-alpha.2\
 
 Vydání na GitHub (tag, Release, kontrolní součty): `docs/RELEASE_CHECKLIST.md`.
 
-**Ruční test GH-05 / T-I18N-16 / HELP-01 / T-UPD-07** na počítači bez Pythonu: nainstalovat instalátorem → spustit → přepnout jazyk cs/en → F1 → otevřít reálný projekt → uložit `__grid_NNN` → otevřít v LightBurnu (File → Open). Výsledek zapsat do `docs/TEST_PLAN.md`.
+**Ruční test GH-05 / T-I18N-16 / HELP-01 / T-UPD-07** na počítači bez Pythonu: nainstalovat instalátorem → spustit → přepnout jazyk (cs/en, namátkou další) → F1 → otevřít reálný projekt → uložit `__grid_NNN` → otevřít v LightBurnu (File → Open). Výsledek zapsat do `docs/TEST_PLAN.md`.
 
 ## Vývojářská příkazová řádka
 

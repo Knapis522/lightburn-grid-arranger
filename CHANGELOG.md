@@ -6,6 +6,14 @@ Formát podle [Keep a Changelog](https://keepachangelog.com/), verze podle SemVe
 
 ## [0.1.0-alpha.6] — nevydáno
 
+### Přidáno
+- **Počet kusů výrobků** (V11-02, spec. v1.25): pole *Počet kusů* u vybraných výrobků — originál + kopie hned za ním (pořadí po variantách), snížení odebere nejnovější kopie, 0 = nerozmisťovat; v seznamu „×N“. CLI `--quantity ID=N`. Protokol uvádí počet kusů každého výrobku.
+- **Další jazyky** (PUBLIC-01 / L10N-PUBLIC-01, spec. v1.26): rozhraní i offline příručka v **němčině, slovenštině, polštině, francouzštině, španělštině a italštině** (vedle češtiny a angličtiny); volba v Nastavení → Obecné → Jazyk, automatická detekce podle Windows pro všech osm jazyků (včetně regionálních variant, např. `de-AT`, `es-MX`). Překlady jsou **strojové (AI) a čekají na revizi rodilými mluvčími** — příručka na to upozorňuje; opravy vítány (`docs/TRANSLATING.md`).
+
+### Změněno
+- Příručka (cs/en): stránka *Verze* uvádí volbu jazyka, tlačítko *Zavřít* po *Použít*, katalog laserů a profily v uložených nastaveních; kontrola aktualizací při každém spuštění. Řešení potíží: instalátor z vydání projektu na GitHubu.
+- Samokontrola sestavení ověřuje příručku ve všech osmi jazycích.
+
 ## [0.1.0-alpha.5] — 2026-10-18
 
 Předběžné vydání (GitHub Pre-release). Release notes: `docs/releases/v0.1.0-alpha.5.md`.

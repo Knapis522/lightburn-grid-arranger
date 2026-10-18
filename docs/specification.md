@@ -1,6 +1,6 @@
 # Grid Arranger for LightBurn — technická specifikace
 
-**Verze dokumentu:** 1.24 (automatický počet sloupců, vyplnění desky, profily rozložení; viz kap. 22.1, 22.3)  
+**Verze dokumentu:** 1.26 (osm jazyků rozhraní a příručky — strojový návrh; viz kap. 36.5)  
 **Datum:** 17. 10. 2026  
 **Název produktu:** Grid Arranger for LightBurn; spustitelný soubor `GridArranger.exe`; Python balíček `grid_arranger`; repozitář `lightburn-grid-arranger`. Neoficiální nástroj, nikoli produkt LightBurn Software.  
 **Stav:** Interní pracovní podklad; nikoli hotový nebo otestovaný plugin  
@@ -763,6 +763,8 @@ MVP je **splněné až po současném úspěchu** testů MVP-01 až MVP-07 (vče
 - *Kontrola:* nezávislý ověřovač: počet nových nejvyšších tvarů = počet kopií; každá kopie bajtově shodná se zdrojem mimo `XForm` a vynechanou sdílenou geometrii, odkazovaná ID existují, `XForm` = `T ∘ původní`; po odebrání kopií musí výstup splnit všechny dosavadní kontroly přesunu; po znovunačtení leží obrysy kopií v cílových obdélnících.
 - *Brána KAL-03:* výstupy s kopiemi (klíčenky, nativní tvary, natočené kopie, oba lasery) otevřít v LightBurnu — kopie celé, editovatelné, správné vrstvy, Preview; do splnění neoznačovat za výrobně ověřené.
 
+**Počet kusů (v1.25, 18. 10. 2026):** pole *Počet kusů* v sekci Výrobky nastaví `quantity` vybraných výrobků (vybraná kopie = její originál): `quantity − 1` kopií se vloží **hned za poslední kus** daného výrobku (výchozí pořadí „varianty v uživatelském pořadí, jejich kopie za sebou“), snížení odebere nejnovější kopie, `0` výrobek nerozmístí (zdrojová skupina v projektu zůstává). Seznam ukazuje „×N“. CLI `--quantity ID=N` (kopie `ID+q1…`). Protokol: `pieces_per_item`. Zápis a kontrola kopií beze změny (v1.16, KAL-03).
+
 **Testy T-11-06 až 13:** např. A=4, B=2, C=0 → 6 výrobních instancí; přesná multiplicita, správné zachování textu každé varianty, žádné neplánované kopie, determinismus, maximální limit, bezpečné odmítnutí nepodporovaných interních odkazů, validace vrstev po uložení.
 
 ### 22.3 V11-03 — automatický výběr počtu řad a sloupců
@@ -1063,6 +1065,8 @@ Toto jsou **ověřovací úkoly**, nikoli potvrzené technické možnosti souča
 
 ## 28. Záznam změn specifikace
 
+- **v1.26 (18. 10. 2026):** Na přání vlastníka zahájeno PUBLIC-01 / L10N-PUBLIC-01: katalogy rozhraní a offline příručka v `de/sk/pl/fr/es/it` (vedle `cs/en`), volba jazyka nabízí všech osm jazyků. Překlady jsou **strojový návrh** — stav viz kap. 36.5 (*Stav k v1.26*); jazyk se nesmí prohlásit za ověřený bez lidské revize.
+- **v1.25 (18. 10. 2026):** Počet kusů výrobků (V11-02 dokončeno): pole Počet kusů, kopie hned za originálem, 0 = vynechat; CLI `--quantity` (kap. 22.2).
 - **v1.24 (18. 10. 2026):** Na přání vlastníka automatický počet sloupců podle šířky desky (V11-03, zjednodušené kritérium), *Vyplnit desku kopiemi* a profily rozložení (V11-01, bez desky) (kap. 22.1, 22.3).
 - **v1.23 (18. 10. 2026):** Na přání vlastníka **příprava projektu pro jiný laser** a **katalog laserů** (kap. 9.1 bod 4b). Výstup pro cílový laser: hlavička `DeviceName`, `MirrorX`, `MirrorY` cílového laseru; transformace výrobků `S_cíl ∘ T ∘ S_zdroj` (zrcadlení, výrobek na cílovém laseru vypadá stejně); deska a roh plnění podle cílového laseru; při jiném počátku jen celý projekt (všechny výrobky vybrané, žádné jiné objekty); nastavení vrstev se nepřevádí. Nezávislá kontrola dovoluje v hlavičce změnu jen těchto tří atributů. Katalog v Nastavení → Lasery (`LaserProfile`: název = `DeviceName`, roh počátku, deska s okraji); lasery z otevřených projektů se přidávají automaticky. Ověřeno v LightBurnu (KAL-05, 2026-10-18).
 - **v1.22 (18. 10. 2026):** Na přání vlastníka (diodové lasery) podporovány počátky **vlevo dole a vpravo dole**: roh plnění u počátku (`Corner.BOTTOM_LEFT/BOTTOM_RIGHT` — první řádek dole, další výš, zarovnání v buňce k počátku), umístění do rohu desky u počátku a ruční roh mřížky u počátku i pro spodní rohy; převod souřadnic beze změny. KAL-04 ověřeno vlastníkem 2026-10-18 (testovací zařízení v LightBurnu), upozornění odstraněno (kap. 9.1 bod 4a, `FORMAT_COMPATIBILITY.md`).
@@ -1420,6 +1424,8 @@ Brána PUB-00 **nenahrazuje** PUB-01: první veřejná stabilní verze 1.0.0 mus
 - Při každé změně UI před veřejným releasem aktualizovat `.ts`, překontrolovat úplnost a placeholdery, sestavit `.qm` a otestovat skutečný Windows ZIP. Překlad přidaného kritického hlášení je povinný ve všech osmi jazycích. Neúplný překlad blokuje release, i pokud samotné výpočetní testy prošly.
 - Před označením konkrétního katalogu za hotový provést **jazykovou revizi člověkem se znalostí daného jazyka a laserové terminologie**, případně odpovídající odbornou kontrolu; při nedostatku revize nevydávat „plně podporovaný“ jazyk. V takovém případě veřejné vydání **odložit nebo výslovně změnit plán a specifikaci**, nikoliv bez upozornění zveřejnit neověřený překlad.
 - Pro dobrovolnické překladatele používat GitHub Pull Requests. Nepřebírat překlady automaticky, ověřit právní oprávnění přispěvatele a licenční podmínky příspěvku.
+
+**Stav k v1.26 (18. 10. 2026):** Katalogy `gridarranger_{de,sk,pl,fr,es,it}.ts` jsou úplné (všechny řetězce, placeholdery a tvary množného čísla — `sk`/`pl` tři tvary, ostatní dva), `.qm` se sestavují a balí; offline příručka (8 témat) existuje ve všech osmi jazycích a na stránce *Verze* nese poznámku o strojovém překladu. Překlad vytvořila AI podle anglického zdroje a terminologie z `docs/TRANSLATING.md`; **jazyková revize člověkem chybí**, takže tyto jazyky jsou v předběžných verzích (`alpha`) k dispozici jako náhled a nejsou „plně podporované“. Do revize všech šesti jazyků nelze splnit `L10N-PUBLIC-01`. Automaticky ověřeno: T-I18N-17 (načtení offline), T-I18N-18 (detekce), T-I18N-19 (úplnost a placeholdery strojově; jazyková část čeká), T-I18N-20 (stejný výstup v osmi jazycích); T-I18N-21 snímky obrazovky offscreen (de/pl/fr/es/it, okno 1024 × 700) bez useknutých textů — na Windows ověřit ručně.
 
 ### 36.6 Akceptační testy lokalizace
 

@@ -19,7 +19,7 @@ Windows desktop application that arranges the items (groups) of a **LightBurn `.
 - **Prepare a project for another laser** from a laser catalogue (e.g. origin top right → top left): the items are mirrored so that they look the same on the target laser (new in v0.1.0-alpha.5).
 - Collision and board checks, including objects that are not moved.
 - Safe saving: a new file only, independent verification of the output before it is written, optional save protocol.
-- Millimetres or inches, light/dark appearance, Czech and English, offline user guide (F1), optional update check.
+- Millimetres or inches, light/dark appearance, eight languages (Czech, English, German, Slovak, Polish, French, Spanish, Italian — the last six machine-translated, awaiting native review), offline user guide (F1), optional update check.
 
 ## What it does not do
 

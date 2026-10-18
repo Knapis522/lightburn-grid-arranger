@@ -16,8 +16,19 @@ from pathlib import Path
 
 from PySide6.QtCore import QCoreApplication, QLibraryInfo, QLocale, QTranslator
 
-SUPPORTED = ("cs", "en")  # interní MVP; veřejné v1.0.0: cs/en/de/sk/pl/fr/es/it
-NATIVE_NAMES = {"cs": "Čeština", "en": "English"}
+SUPPORTED = ("cs", "en", "de", "sk", "pl", "fr", "es", "it")  # osm jazyků veřejné v1.0.0 (spec. kap. 36)
+NATIVE_NAMES = {"cs": "Čeština", "en": "English", "de": "Deutsch", "sk": "Slovenčina", "pl": "Polski",
+                "fr": "Français", "es": "Español", "it": "Italiano"}
+_LOCALES = {
+    "cs": (QLocale.Language.Czech, QLocale.Country.CzechRepublic),
+    "en": (QLocale.Language.English, QLocale.Country.UnitedStates),
+    "de": (QLocale.Language.German, QLocale.Country.Germany),
+    "sk": (QLocale.Language.Slovak, QLocale.Country.Slovakia),
+    "pl": (QLocale.Language.Polish, QLocale.Country.Poland),
+    "fr": (QLocale.Language.French, QLocale.Country.France),
+    "es": (QLocale.Language.Spanish, QLocale.Country.Spain),
+    "it": (QLocale.Language.Italian, QLocale.Country.Italy),
+}
 QM_DIR = Path(__file__).with_name("translations")
 
 
@@ -45,7 +56,7 @@ class LocaleManager:
         return detect_system_language() if setting == "auto" else (setting if setting in SUPPORTED else "en")
 
     def apply(self, setting: str) -> str:
-        """Nastaví jazyk podle volby ``auto|cs|en``; vrátí skutečně použitý jazyk."""
+        """Nastaví jazyk podle volby ``auto`` nebo kódu z ``SUPPORTED``; vrátí skutečně použitý jazyk."""
         lang = self.resolve(setting)
         for t in (self._translator, self._qt_translator):
             if t is not None:
@@ -72,4 +83,4 @@ class LocaleManager:
         return lang
 
     def qlocale(self) -> QLocale:
-        return QLocale(QLocale.Language.Czech, QLocale.Country.CzechRepublic) if self.current == "cs" else QLocale(QLocale.Language.English, QLocale.Country.UnitedStates)
+        return QLocale(*_LOCALES.get(self.current, _LOCALES["en"]))

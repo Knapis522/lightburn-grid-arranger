@@ -1,6 +1,6 @@
 # Introduction
 
-**Grid Arranger for LightBurn** moves existing, mutually different groups (items) of a LightBurn `.lbrn2` project into an exact grid and saves a **new** project. Nothing is copied and the contents of the groups are not changed — only their position. The original file is never overwritten.
+**Grid Arranger for LightBurn** moves existing, mutually different groups (items) of a LightBurn `.lbrn2` project into an exact grid and saves a **new** project. The contents of the groups are not changed — only their position (and rotation, if you want it); copies are added only when you ask for them. The original file is never overwritten.
 
 > Unofficial tool, not a product of LightBurn Software. Always check the result in LightBurn via **File → Open** and **Preview** before cutting.
 

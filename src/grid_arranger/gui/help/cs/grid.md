@@ -4,7 +4,7 @@
 
 **Počet sloupců** — kolik výrobků bude v jednom řádku. Počet řádků se dopočítá. Se zaškrtnutým **Automaticky** použije aplikace tolik sloupců, kolik se vejde na šířku desky (využitelnou plochu po odečtení okrajů); pole pak ukazuje vypočtený počet. Hodí se s kopiemi a s *Vyplnit desku kopiemi*.
 
-**Mezera X / Y** — vzdálenost mezi řeznými obrysy sousedních výrobků (vodorovně / svisle) ve zvolených jednotkách. Mezera 0 je dovolená, ale aplikace upozorní na riziko při řezání. Desetinná čísla zadávejte s čárkou (česky) nebo tečkou (anglicky) podle jazyka aplikace.
+**Mezera X / Y** — vzdálenost mezi řeznými obrysy sousedních výrobků (vodorovně / svisle) ve zvolených jednotkách. Mezera 0 je dovolená, ale aplikace upozorní na riziko při řezání. Desetinná čísla zadávejte, jak je zvykem v jazyce aplikace (česky s čárkou, anglicky s tečkou).
 
 Mají-li výrobky **různé rozměry**, šířka sloupce je podle nejširšího výrobku ve sloupci a výška řádku podle nejvyššího v řádku. Zadaná mezera je pak **minimální** — mezi menšími výrobky bude větší.
 

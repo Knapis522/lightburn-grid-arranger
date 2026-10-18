@@ -25,7 +25,7 @@ from PySide6.QtCore import QByteArray, QSettings
 
 ORGANIZATION = "GridArranger"
 APPLICATION = "GridArranger"
-LANGUAGES = ("auto", "cs", "en")
+LANGUAGES = ("auto", "cs", "en", "de", "sk", "pl", "fr", "es", "it")
 THEMES = ("auto", "light", "dark")
 PROTOCOL_MODES = ("none", "beside", "appdata")
 UNIT_KEYS = ("mm", "in")

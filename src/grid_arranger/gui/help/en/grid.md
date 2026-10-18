@@ -4,7 +4,7 @@
 
 **Columns** — how many items are in one row. The number of rows is calculated. With **Automatic** ticked the application uses as many columns as fit on the board width (the usable area inside the margins); the field then shows the calculated number. Useful together with copies and *Fill the board with copies*.
 
-**Gap X / Y** — distance between the cut outlines of neighbouring items in the selected units (horizontal / vertical). A gap of 0 is allowed, but the application warns about the risk when cutting. Enter decimals with a dot (English) or a comma (Czech) depending on the application language.
+**Gap X / Y** — distance between the cut outlines of neighbouring items in the selected units (horizontal / vertical). A gap of 0 is allowed, but the application warns about the risk when cutting. Enter decimals as usual in the application language (a dot in English, a comma e.g. in Czech or German).
 
 If items have **different sizes**, a column is as wide as its widest item and a row as tall as its tallest item. The gap is then a **minimum** — it is larger between smaller items.
 

@@ -991,3 +991,27 @@ def test_layout_profiles_save_apply_delete(make_window, tmp_path, settings):
     settings._s.setValue("profiles/x/name", "x")
     settings._s.setValue("profiles/x/data", "{broken")
     assert settings.profiles() == [] and settings.profile("x") is None
+
+
+def test_pieces_per_item_keeps_copies_next_to_original(make_window, tmp_path):
+    w = make_window("en")
+    w.open_project(write(tmp_path, project([card(0, 0, text="A"), card(200, 0, text="B"), card(400, 0, text="C")])))
+    assert not w.spin_qty.isEnabled()
+    w._select_ids({"G1"})
+    assert w.spin_qty.isEnabled() and w.spin_qty.value() == 1
+    w.spin_qty.setValue(3)
+    assert w.order == ("G1", "G1+1", "G1+2", "G2", "G3")  # kopie hned za originálem
+    assert "×3" in w.list_items.item(0).text()
+    w._select_ids({"G2"})
+    w.set_quantity(["G2"], 2)
+    assert w.order == ("G1", "G1+1", "G1+2", "G2", "G2+1", "G3")
+    w._select_ids({"G1+1"})  # vybraná kopie mění počet kusů svého originálu
+    assert w.spin_qty.value() == 3
+    w.spin_qty.setValue(1)
+    assert w.order == ("G1", "G2", "G2+1", "G3") and "G1+1" not in w.copies
+    w.set_quantity(["G3"], 0)
+    assert "G3" not in w.order and w.quantity("G3") == 0
+    w.set_quantity(["G3"], 2)  # z nuly zpět: vybere se i s kopií
+    assert w.order[-2:] == ("G3", "G3+1")
+    w.undo()
+    assert "G3" not in w.order

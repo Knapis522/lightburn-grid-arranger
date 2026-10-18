@@ -298,6 +298,17 @@ class MainWindow(QMainWindow):
         rot = QHBoxLayout()
         rot.addWidget(self.lbl_angle)
         rot.addWidget(self.spin_angle)
+        rot.addSpacing(12)
+        # počet kusů vybraných výrobků (V11-02): originál + kopie hned za ním; 0 = nerozmisťovat
+        self.lbl_qty = QLabel()
+        self.spin_qty = QSpinBox()
+        self.spin_qty.setRange(0, 999)
+        self.spin_qty.setKeyboardTracking(False)
+        self.spin_qty.setAlignment(Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter)
+        self.spin_qty.valueChanged.connect(lambda n: self.set_quantity(self._quantity_targets(), n))
+        self.lbl_qty.setBuddy(self.spin_qty)
+        rot.addWidget(self.lbl_qty)
+        rot.addWidget(self.spin_qty)
         rot.addStretch(1)
         iv.addLayout(rot)
         self.lbl_count = QLabel()
@@ -496,6 +507,9 @@ class MainWindow(QMainWindow):
         self.btn_norotate.setText(self.tr("No rotation"))
         self.btn_norotate.setToolTip(self.tr("The selected items will never be rotated."))
         self.lbl_angle.setText(self.tr("Angle of selected:"))
+        self.lbl_qty.setText(self.tr("Pieces:"))
+        self.spin_qty.setToolTip(self.tr("Number of pieces of the selected items (original + copies right after it). "
+                                         "0 = do not place."))
         self.spin_angle.setToolTip(self.tr(
             "Rotation of the selected items in degrees (positive = clockwise). Select items in the list or by clicking "
             "them in the preview (Ctrl+click adds more). A manual angle is kept as entered."))
@@ -823,6 +837,8 @@ class MainWindow(QMainWindow):
                                                     unit=self.unit.suffix)
             label = f"{it.label}  " + self.tr("(copy of {src})").format(src=self.copies[it.id]) if it.id in self.copies else it.label
             text = f"{num}{it.id}  {label}  —  {size}"
+            if it.id not in self.copies and self.quantity(it.id) > 1:
+                text += f"  ×{self.quantity(it.id)}"
             angle = self.plan.rotations.get(it.id) if self.plan is not None else None
             manual = it.id in self.manual_angles
             if manual and not self.manual_angles[it.id]:
@@ -1027,6 +1043,64 @@ class MainWindow(QMainWindow):
         if n:
             self.add_copies(ids, n)
 
+    # --- počet kusů (V11-02) -----------------------------------------------------------------------
+    def quantity(self, src: str) -> int:
+        """Kolik kusů výrobku se rozmisťuje (originál + jeho kopie v pořadí)."""
+        return (1 if src in self.order else 0) + sum(1 for c in self.order if self.copies.get(c) == src)
+
+    def _quantity_targets(self) -> list[str]:
+        """Zdrojové výrobky vybraných řádků (kopie → jejich originál), jen přesunutelné."""
+        if self.project is None:
+            return []
+        out = []
+        for iid in self.selected_ids():
+            src = self.copies.get(iid, iid)
+            if src not in out and src in {it.id for it in self.project.items if it.supported}:
+                out.append(src)
+        return out
+
+    def set_quantity(self, ids: list[str], n: int) -> None:
+        """Nastaví počet kusů: chybějící kopie se vloží hned za poslední kus výrobku, přebytečné
+        (nejnovější) se odeberou; 0 = výrobek se nerozmisťuje."""
+        if self.project is None or not ids or n < 0:
+            return
+        order = list(self.order)
+        for src in ids:
+            mine = [c for c in order if self.copies.get(c) == src]
+            if n == 0:
+                for c in mine:
+                    self.copies.pop(c, None)
+                    self.manual_angles.pop(c, None)
+                order = [i for i in order if i != src and i not in mine]
+                continue
+            if src not in order:
+                order.append(src)
+            want = n - 1
+            for c in mine[want:]:  # přebytek: od konce
+                order.remove(c)
+                self.copies.pop(c, None)
+                self.manual_angles.pop(c, None)
+            missing = want - min(len(mine), want)
+            if missing:
+                last = max(order.index(i) for i in [src, *mine[:want]])
+                new = []
+                for _ in range(missing):
+                    if len(self.copies) >= self.MAX_COPIES:
+                        break
+                    cid = self._new_copy_id(src)
+                    self.copies[cid] = src
+                    if src in self.manual_angles:
+                        self.manual_angles[cid] = self.manual_angles[src]
+                    new.append(cid)
+                order[last + 1:last + 1] = new
+        if tuple(order) == self.order:
+            return
+        self.order = tuple(order)
+        self._clipboard = [i for i in self._clipboard if i in self.order or i in {it.id for it in self.project.items}]
+        self._rebuild_item_list()
+        self._select_ids(set(ids))
+        self.recompute()
+
     def _cyclic_copies(self, ids: list[str], k: int) -> list[tuple[str, str]]:
         """``k`` nových kopií vybraných výrobků střídavě (A, B, A, B…): [(id kopie, zdroj)]."""
         taken = set(self.copies)
@@ -1144,6 +1218,11 @@ class MainWindow(QMainWindow):
         self.spin_angle.blockSignals(True)
         self.spin_angle.setValue(self._effective_angle(ids[0]) if ok else 0.0)
         self.spin_angle.blockSignals(False)
+        srcs = self._quantity_targets()
+        self.spin_qty.blockSignals(True)
+        self.spin_qty.setEnabled(bool(srcs))
+        self.spin_qty.setValue(self.quantity(srcs[0]) if srcs else 0)
+        self.spin_qty.blockSignals(False)
 
     def _set_manual(self, angles: dict[str, float]) -> None:
         for iid, a in angles.items():

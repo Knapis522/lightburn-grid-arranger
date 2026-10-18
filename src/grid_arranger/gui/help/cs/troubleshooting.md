@@ -4,7 +4,6 @@
 
 **„Nepodporovaná verze LightBurnu“** — projekt uložil LightBurn, se kterým aplikace zatím nebyla ověřena. Výstup by nemusel být bezpečný, proto je odmítnut.
 
-**„Počátek laseru … zatím nebyl ověřen v LightBurnu“** — u laserů s počátkem dole (vlevo nebo vpravo) aplikace funguje, ale tato kombinace ještě neprošla kalibrací v LightBurnu. Uložení není blokováno; výstup v LightBurnu pečlivě zkontrolujte (poloha, **Frame**, Preview).
 
 **Výrobek „nelze přesunout“** — najeďte na něj myší. Nejčastěji: skupina nemá uzavřený řezný obrys, něco z ní vyčnívá ven z obrysu, je zamčená, nebo obsahuje typ objektu, který aplikace zatím neumí bezpečně přesunout (např. bitmapu).
 
@@ -14,7 +13,7 @@
 
 **„Původní soubor se změnil“** — projekt byl mezitím znovu uložen. Otevřete ho v aplikaci znovu.
 
-**Windows hlásí „Systém Windows ochránil váš počítač“** — aplikace zatím není digitálně podepsaná. Pokud ZIP pochází od správce aplikace, klikněte na **Další informace → Přesto spustit**. Antivirus nevypínejte.
+**Windows hlásí „Systém Windows ochránil váš počítač“** — aplikace zatím není digitálně podepsaná. Pokud instalátor pochází z vydání tohoto projektu na GitHubu, klikněte na **Další informace → Přesto spustit**. Antivirus nevypínejte.
 
 **Aplikace se nespustí nebo hlásí chybějící soubor** — nejspíš chybí složka `_internal` vedle `GridArranger.exe` (např. byl zkopírován jen samotný EXE). Rozbalte ZIP znovu celý. Kontrolu instalace provede příkaz `GridArranger.exe --self-test report.json` v příkazovém řádku; výsledek je v `report.json`.
 

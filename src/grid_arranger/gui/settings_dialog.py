@@ -179,7 +179,8 @@ class SettingsDialog(QDialog):
         for lbl, t in zip(self.lbls_general, (self.tr("Language:"), self.tr("Appearance:"), self.tr("Units:"),
                                               self.tr("Layout panel:"))):
             lbl.setText(t)
-        self._texts(self.combo_lang, [self.tr("Automatic (system)"), NATIVE_NAMES["cs"], NATIVE_NAMES["en"]])
+        # jazyky vlastním názvem, aby se uživatel z omylem zvoleného jazyka snadno vrátil (kap. 36.2)
+        self._texts(self.combo_lang, [self.tr("Automatic (system)")] + [NATIVE_NAMES[k] for k in LANGUAGES[1:]])
         self._texts(self.combo_theme, [self.tr("Automatic (system)"), self.tr("Light"), self.tr("Dark")])
         self._texts(self.combo_units, [self.tr("Millimetres (mm)"), self.tr("Inches (in)")])
         self._texts(self.combo_panel, [self.tr("Left of the preview"), self.tr("Right of the preview")])
