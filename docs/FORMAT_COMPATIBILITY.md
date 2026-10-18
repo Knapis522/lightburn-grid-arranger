@@ -187,3 +187,16 @@ Výstup pro cílový laser mění v hlavičce jen `DeviceName`, `MirrorX`, `Mirr
 - [ ] na laser s počátkem dole (testovací zařízení) — netestováno samostatně; vzorce shodné, automatické testy všech 16 kombinací
 
 Výsledek: texty a motivy nejsou zrcadlově, mřížka v rohu u počátku (X 5 / Y 5), Preview v pořádku, i s natočeným výrobkem a kopiemi.
+
+## KAL-07 — vynechané objekty a přesun sdílené geometrie (spec. v1.27, ověřeno vlastníkem 2026-10-18)
+
+Vynechaný nejvyšší tvar se z výstupu odebere celý (celé řádky). Sdílené seznamy `VertList`+`VertID` / `PrimList`+`PrimID` definuje LightBurn jen u prvního výskytu; ostatní tvary na ně odkazují. Definuje-li seznam vynechaný tvar, přesune se bajtově shodná definice do prvního ponechaného tvaru, který na ID odkazuje (hned za jeho `XForm`) — ve všech testovacích projektech vlastníka nastává (např. `test program`: 737 odkazů bez vlastního seznamu). `CutSetting` beze změny.
+
+Kalibrační výstupy (`lightburn-grid-arranger-data\kal07\`, vždy s přesunutou definicí):
+
+- [x] `test_program__kal07_bez_G3.lbrn2` (jen vynechání)
+- [x] `test_program__kal07_bez_G3_mrizka.lbrn2` (vynechání + mřížka, natočení, kopie)
+- [x] `Test_klicenky__kal07_bez_G1.lbrn2`
+- [x] `Test_tvary_A__kal02_tvary_prevedeno__kal07_bez_S5.lbrn2`, `…_bez_S6.lbrn2` (volné tvary po Convert to Path)
+
+Výsledek: vynechávání funguje (vlastník, 2026-10-18).
