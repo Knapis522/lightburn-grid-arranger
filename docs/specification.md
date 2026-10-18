@@ -692,7 +692,7 @@ Tato kapitola je **normativní**: při konfliktu s obecným popisem starších e
 - *Kontrola:* nezávislý ověřovač: chybí právě vynechané nejvyšší tvary, ostatní v původním pořadí; navíc jen přesunuté definice sdílené geometrie (bajtově shodné, v prvním ponechaném odkazujícím tvaru); po jejich odebrání musí výstup proti originálu bez vynechaných tvarů projít všemi dosavadními kontrolami (přesuny, kopie, hlavička cílového laseru). Znovu načtený výstup: počet tvarů a polohy ponechaných výrobků (přečíslované id).
 - *Převod na laser s jiným počátkem:* podmínka „celý projekt“ se týká jen objektů ponechaných ve výstupu.
 - *Protokol:* `omitted` (id, popisek). Hlášení o uložení uvádí počet vynechaných objektů. CLI: `--omit G4,S7`, `--unselected keep|omit` (výchozí `keep`).
-- *Brána KAL-07:* výstupy s vynechanými objekty a přesunutou sdílenou geometrií z reálných testovacích projektů otevřít v LightBurnu — tvary celé, správné vrstvy, Preview; do splnění neoznačovat za ověřené. **Splněno 2026-10-18** (vlastník).
+- *Brána KAL-07:* výstupy s vynechanými objekty a přesunutou sdílenou geometrií z reálných testovacích projektů otevřít v LightBurnu — tvary celé, správné vrstvy, Preview; do splnění neoznačovat za ověřené.
 
 ### 21.3 MVP-03 — ruční pořadí výrobků
 
