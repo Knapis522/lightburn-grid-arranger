@@ -739,9 +739,15 @@ def test_window_size_maximized_state_and_splitter_are_remembered(make_window, se
     w.close()
     geometry = settings.window_geometry()
     assert geometry and settings.window_splitter()
+    assert geometry == bytes(w.saveGeometry())
     w2 = make_window("en")
+    restored = []  # Qt velikost přizpůsobí obrazovce a nejmenší šířce okna (liší se podle systému a písma),
+    real_restore = w2.restoreGeometry  # proto se ověřuje, že se obnoví právě uložený stav
+    w2.restoreGeometry = lambda g: restored.append(bytes(g)) or real_restore(g)
     w2.restore_window_state()
-    assert (w2.width(), w2.height()) == (w.width(), w.height())
+    assert restored == [geometry]
+    if w.width() <= w2.screen().availableGeometry().width():
+        assert (w2.width(), w2.height()) == (w.width(), w.height())
     w2.show()
     w2.showMaximized()
     w2.close()
