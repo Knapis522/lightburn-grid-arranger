@@ -16,6 +16,10 @@ Kontrola **nepoužívá plán přepisů** — oba soubory znovu rozparsuje a por
 5. Cílový laser (v1.23): v hlavičce ``<LightBurnProject>`` smí být změněny jen atributy
    ``DeviceName``, ``MirrorX``, ``MirrorY`` přesně na očekávané hodnoty; ostatní atributy i jejich
    pořadí zůstávají. Po vrácení původní hlavičky musí výstup splnit body 1–4.
+6. Vynechané objekty (v1.27): ve výstupu chybí právě vynechané nejvyšší tvary, ostatní jsou v původním
+   pořadí. Navíc smí být jen definice sdílené geometrie (``VertList`` / ``PrimList``) přesunuté z
+   vynechaného tvaru — bajtově shodné, v **prvním** ponechaném tvaru, který na dané ID odkazuje a sám
+   ho nedefinuje. Po jejich odebrání musí výstup proti originálu bez vynechaných tvarů splnit body 1–5.
 """
 
 from __future__ import annotations
@@ -212,8 +216,80 @@ def _check_header(source: bytes, output: bytes, header: dict[str, str]) -> tuple
     return problems, output[:r_out.start] + src_tag + output[r_out.content_start:]
 
 
+_LISTS = (("VertList", "VertID"), ("PrimList", "PrimID"))
+
+
+def _cut(data: bytes, spans: list[tuple[int, int]]) -> bytes:
+    out, last = bytearray(), 0
+    for a, b in sorted(spans):
+        out += data[last:a]
+        last = b
+    out += data[last:]
+    return bytes(out)
+
+
+def _strip_omitted(source: bytes, output: bytes, omitted: set[int]) -> tuple[list[str], bytes, bytes, set[tuple[str, str]], dict[int, int]]:
+    """Ověří vynechání a vrátí (problémy, originál bez vynechaných, výstup bez přesunutých definic,
+    přesunutá ID, mapování pořadí originál → pořadí bez vynechaných)."""
+    r_src, r_out = parse(source), parse(output)
+    src_tops = r_src.findall("Shape")
+    if any(i < 1 or i > len(src_tops) for i in omitted):
+        return ["omitted_unknown"], source, output, set(), {}
+    kept = [i for i in range(1, len(src_tops) + 1) if i not in omitted]
+    renumber = {i: k for k, i in enumerate(kept, start=1)}
+    defs: dict[tuple[str, str], bytes] = {}
+    for i in sorted(omitted):
+        for n in src_tops[i - 1].iter():
+            if n.tag == "Shape":
+                for tag, attr in _LISTS:
+                    c = n.find(tag)
+                    if attr in n.attrs and c is not None:
+                        defs.setdefault((tag, n.attrs[attr]), source[c.start:_element_span(source, c)[1]].rstrip())
+    source2 = _cut(source, [_element_span(source, src_tops[i - 1]) for i in omitted])
+    r_src2 = parse(source2)
+    tops2, out_tops = r_src2.findall("Shape"), r_out.findall("Shape")
+    if len(out_tops) < len(tops2):
+        return ["omit_count_mismatch"], source2, output, set(), renumber
+    problems: list[str] = []
+    cut: list[tuple[int, int]] = []
+    relocated: set[tuple[str, str]] = set()
+    seen: set[tuple[str, str]] = set()
+    for k, (ts, to) in enumerate(zip(tops2, out_tops[:len(tops2)]), start=1):
+        ss = [n for n in ts.iter() if n.tag == "Shape"]
+        so = [n for n in to.iter() if n.tag == "Shape"]
+        if len(ss) != len(so):
+            problems.append(f"structure_changed: shape #{k}")
+            continue
+        for a, b in zip(ss, so):
+            for tag, attr in _LISTS:
+                sc, oc = a.find(tag), b.find(tag)
+                key = (tag, a.attrs.get(attr, ""))
+                if sc is not None:
+                    seen.add(key)
+                    if oc is None:
+                        problems.append(f"geometry_list_removed: shape #{k}")
+                    continue
+                first_ref = attr in a.attrs and key in defs and key not in seen
+                if attr in a.attrs:
+                    seen.add(key)
+                if oc is None:
+                    if first_ref:
+                        problems.append(f"geometry_definition_missing: shape #{k} {tag} {key[1]}")
+                    continue
+                if not first_ref or attr not in b.attrs or b.attrs.get(attr) != key[1]:
+                    problems.append(f"unexpected_geometry_list: shape #{k}")
+                    continue
+                span = _element_span(output, oc)
+                if output[oc.start:span[1]].rstrip() != defs[key]:
+                    problems.append(f"relocated_geometry_differs: shape #{k}")
+                relocated.add(key)
+                cut.append(span)
+    return problems, source2, _cut(output, cut), relocated, renumber
+
+
 def verify_output(source: bytes, output: bytes, moves_file: dict[int, tuple[float, ...]],
-                  copies: list[tuple[int, tuple[float, ...]]] = (), header: dict[str, str] | None = None) -> list[str]:
+                  copies: list[tuple[int, tuple[float, ...]]] = (), header: dict[str, str] | None = None,
+                  omitted: set[int] | frozenset[int] = frozenset()) -> list[str]:
     """Vrátí seznam nalezených problémů (prázdný = v pořádku).
 
     ``moves_file`` mapuje pořadí nejvyšší skupiny (1-based) na posun ``(dx, dy)`` nebo afinní
@@ -229,12 +305,26 @@ def verify_output(source: bytes, output: bytes, moves_file: dict[int, tuple[floa
         found, output = _check_header(source, output, header)
         problems += found
         r_out = parse(output)
+    relocated: set[tuple[str, str]] = set()
+    if omitted:
+        try:
+            found, source, output, relocated, renumber = _strip_omitted(source, output, set(omitted))
+            r_src, r_out = parse(source), parse(output)
+        except (GridError, ValueError) as e:
+            return problems + [f"omit_unreadable: {e}"]
+        problems += found
+        if any(i in omitted for i in moves_file) or any(i in omitted for i, _ in copies):
+            problems.append("omitted_item_moved_or_copied")
+        moves_file = {renumber[i]: m for i, m in moves_file.items() if i in renumber}
+        copies = [(renumber[i], t) for i, t in copies if i in renumber]
     if copies:
         src_tops, out_tops = r_src.findall("Shape"), r_out.findall("Shape")
         if len(out_tops) != len(src_tops) + len(copies):
             return ["copy_count_mismatch"]
-        defined = ({n.attrs["VertID"] for n in r_src.iter() if n.tag == "Shape" and "VertID" in n.attrs and n.find("VertList") is not None},
-                   {n.attrs["PrimID"] for n in r_src.iter() if n.tag == "Shape" and "PrimID" in n.attrs and n.find("PrimList") is not None})
+        defined = ({n.attrs["VertID"] for n in r_src.iter() if n.tag == "Shape" and "VertID" in n.attrs and n.find("VertList") is not None}
+                   | {i for t, i in relocated if t == "VertList"},
+                   {n.attrs["PrimID"] for n in r_src.iter() if n.tag == "Shape" and "PrimID" in n.attrs and n.find("PrimList") is not None}
+                   | {i for t, i in relocated if t == "PrimList"})
         extra = out_tops[len(src_tops):]
         try:
             for k, ((src_idx, t), cp) in enumerate(zip(copies, extra), start=1):

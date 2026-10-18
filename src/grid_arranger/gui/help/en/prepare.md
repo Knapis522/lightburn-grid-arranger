@@ -12,7 +12,7 @@ Supported: LightBurn 2.2, `.lbrn2` projects, lasers with the origin in any corne
 A project saved for one laser can be prepared for another one, e.g. from a laser with the origin at the top right for a laser with the origin at the top left — without switching the device and flipping the design in LightBurn. In the **Project** section choose **Prepare for:** a laser from the catalogue. The application offers its board, fills the grid from its origin, and the saved file (`…__Laser_name__grid_001.lbrn2`) is ready for it: the file names the target laser and the items are mirrored so that they look the same on it (texts readable).
 
 - Laser catalogue: **Settings → Lasers** (or *Manage lasers…* in the list). Lasers from opened projects are added automatically; add others (e.g. a diode laser) manually — **the name must match the device in LightBurn**; choose the origin corner and the board.
-- With a different origin, **all items** must be selected and the project must not contain other objects (they would stay mirrored on the other laser).
+- With a different origin, **all items** must be selected and the project must not contain other objects (they would stay mirrored on the other laser). This only concerns objects kept in the output — unchecked and left-out objects are not in the output (the default), so they do not stand in the way.
 - **Layer settings (power, speed) are not converted** — they stay as in the original project. Open the output in LightBurn with the target laser and check the layers.
 
 [← Introduction](index.md) · [Next: items →](items.md)

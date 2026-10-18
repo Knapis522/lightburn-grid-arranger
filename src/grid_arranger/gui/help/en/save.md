@@ -2,7 +2,7 @@
 
 The **Save as new project** icon on the toolbar (or **File → Save as new project**, Ctrl+S) is enabled only when the layout passed the check. A save dialog opens with the proposed name `original__grid_001.lbrn2` (then `_002`, …) in the original's folder — **you can change the folder and the name**. After you confirm, the application:
 
-1. prepares a new file in which only the positions of the selected groups (and their texts) change,
+1. prepares a new file in which only the positions of the selected groups (and their texts) change, left-out objects are removed,
 2. independently verifies that nothing else changed (layers, power, texts, other objects),
 3. verifies that the original has not changed since it was opened,
 4. saves a **new** file under the chosen name.

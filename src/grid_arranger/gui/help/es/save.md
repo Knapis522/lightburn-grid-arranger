@@ -2,7 +2,7 @@
 
 El icono **Guardar como proyecto nuevo** de la barra de herramientas (o **Archivo → Guardar como proyecto nuevo**, Ctrl+S) solo está activo cuando la distribución ha superado la comprobación. Se abre un cuadro de guardado con el nombre propuesto `original__grid_001.lbrn2` (luego `_002`, …) en la carpeta del original — **puede cambiar la carpeta y el nombre**. Tras confirmar, la aplicación:
 
-1. prepara un archivo nuevo en el que solo cambian las posiciones de los grupos seleccionados (y de sus textos),
+1. prepara un archivo nuevo en el que solo cambian las posiciones de los grupos seleccionados (y de sus textos), se quitan los objetos excluidos,
 2. comprueba de forma independiente que no ha cambiado nada más (capas, potencia, textos, otros objetos),
 3. comprueba que el original no ha cambiado desde que se abrió,
 4. guarda un archivo **nuevo** con el nombre elegido.

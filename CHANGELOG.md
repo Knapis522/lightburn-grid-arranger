@@ -9,8 +9,11 @@ Formát podle [Keep a Changelog](https://keepachangelog.com/), verze podle SemVe
 ### Přidáno
 - **Počet kusů výrobků** (V11-02, spec. v1.25): pole *Počet kusů* u vybraných výrobků — originál + kopie hned za ním (pořadí po variantách), snížení odebere nejnovější kopie, 0 = nerozmisťovat; v seznamu „×N“. CLI `--quantity ID=N`. Protokol uvádí počet kusů každého výrobku.
 - **Další jazyky** (PUBLIC-01 / L10N-PUBLIC-01, spec. v1.26): rozhraní i offline příručka v **němčině, slovenštině, polštině, francouzštině, španělštině a italštině** (vedle češtiny a angličtiny); volba v Nastavení → Obecné → Jazyk, automatická detekce podle Windows pro všech osm jazyků (včetně regionálních variant, např. `de-AT`, `es-MX`). Překlady jsou **strojové (AI) a čekají na revizi rodilými mluvčími** — příručka na to upozorňuje; opravy vítány (`docs/TRANSLATING.md`).
+- **Vynechání objektů z výstupu** (spec. v1.27): nezaškrtnuté objekty se ve výchozím stavu do uloženého projektu nezapíší a mřížka s nimi nepočítá (dosavadní chování „ponechat na místě a vyhnout se“ v Nastavení → Uložení → Nezaškrtnuté objekty). **Delete** (Úpravy → Vynechat z výstupu, pravé tlačítko v seznamu) vynechá vybrané objekty, i šedé skupiny; v seznamu jsou přeškrtnuté a **Úpravy → Obnovit vynechané objekty** je vrátí. Sdílená geometrie z vynechaného tvaru se přesune do prvního ponechaného tvaru; nezávislá kontrola ověřuje, že chybí jen vynechané objekty. Převod na laser s jiným počátkem tak funguje i pro část projektu. Protokol uvádí vynechané objekty, CLI `--omit`, `--unselected`.
 
 ### Změněno
+- **Nezaškrtnuté objekty se ve výchozím stavu vynechávají** (dříve zůstávaly na místě jako překážky). Původní chování: Nastavení → Uložení → Ponechat na místě.
+- Delete na vybraném výrobku ho nově vynechá z výstupu (dříve jen odebíral kopie).
 - Příručka (cs/en): stránka *Verze* uvádí volbu jazyka, tlačítko *Zavřít* po *Použít*, katalog laserů a profily v uložených nastaveních; kontrola aktualizací při každém spuštění. Řešení potíží: instalátor z vydání projektu na GitHubu.
 - Samokontrola sestavení ověřuje příručku ve všech osmi jazycích.
 

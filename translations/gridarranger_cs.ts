@@ -29,62 +29,62 @@ Při hlášení problému prosím pošlete podrobnosti níže.</translation>
 <context>
     <name>LaserDialog</name>
     <message>
-        <location filename="../src/grid_arranger/gui/settings_dialog.py" line="338"/>
+        <location filename="../src/grid_arranger/gui/settings_dialog.py" line="361"/>
         <source>Name in LightBurn:</source>
         <translation>Název v LightBurnu:</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/settings_dialog.py" line="338"/>
+        <location filename="../src/grid_arranger/gui/settings_dialog.py" line="361"/>
         <source>Laser origin:</source>
         <translation>Počátek laseru:</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/settings_dialog.py" line="338"/>
+        <location filename="../src/grid_arranger/gui/settings_dialog.py" line="361"/>
         <source>Board width:</source>
         <translation>Šířka desky:</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/settings_dialog.py" line="338"/>
+        <location filename="../src/grid_arranger/gui/settings_dialog.py" line="361"/>
         <source>Board height:</source>
         <translation>Výška desky:</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/settings_dialog.py" line="339"/>
+        <location filename="../src/grid_arranger/gui/settings_dialog.py" line="362"/>
         <source>Margin left:</source>
         <translation>Okraj vlevo:</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/settings_dialog.py" line="339"/>
+        <location filename="../src/grid_arranger/gui/settings_dialog.py" line="362"/>
         <source>Margin right:</source>
         <translation>Okraj vpravo:</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/settings_dialog.py" line="339"/>
+        <location filename="../src/grid_arranger/gui/settings_dialog.py" line="362"/>
         <source>Margin top:</source>
         <translation>Okraj nahoře:</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/settings_dialog.py" line="339"/>
+        <location filename="../src/grid_arranger/gui/settings_dialog.py" line="362"/>
         <source>Margin bottom:</source>
         <translation>Okraj dole:</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/settings_dialog.py" line="350"/>
+        <location filename="../src/grid_arranger/gui/settings_dialog.py" line="373"/>
         <source>Edit laser</source>
         <translation>Upravit laser</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/settings_dialog.py" line="350"/>
+        <location filename="../src/grid_arranger/gui/settings_dialog.py" line="373"/>
         <source>Add laser</source>
         <translation>Přidat laser</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/settings_dialog.py" line="358"/>
+        <location filename="../src/grid_arranger/gui/settings_dialog.py" line="381"/>
         <source>Enter the laser name as shown in LightBurn.</source>
         <translation>Zadejte název laseru tak, jak ho zobrazuje LightBurn.</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/settings_dialog.py" line="360"/>
+        <location filename="../src/grid_arranger/gui/settings_dialog.py" line="383"/>
         <source>A laser with this name is already in the catalogue.</source>
         <translation>Laser s tímto názvem už v katalogu je.</translation>
     </message>
@@ -92,486 +92,500 @@ Při hlášení problému prosím pošlete podrobnosti níže.</translation>
 <context>
     <name>MainWindow</name>
     <message>
-        <location filename="../src/grid_arranger/gui/main_window.py" line="636"/>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="646"/>
         <source>Grid Arranger for LightBurn</source>
         <translation>Grid Arranger for LightBurn</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/main_window.py" line="453"/>
-        <location filename="../src/grid_arranger/gui/selftest.py" line="72"/>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="462"/>
         <source>&amp;File</source>
         <translation>&amp;Soubor</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/main_window.py" line="454"/>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="463"/>
         <source>&amp;Open project…</source>
         <translation>&amp;Otevřít projekt…</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/main_window.py" line="455"/>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="464"/>
         <source>&amp;Save as new project…</source>
         <translation>&amp;Uložit jako nový projekt…</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/main_window.py" line="456"/>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="465"/>
         <source>&amp;Quit</source>
         <translation>&amp;Konec</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/main_window.py" line="457"/>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="466"/>
         <source>Open saved project in &amp;LightBurn</source>
         <translation>Otevřít uložený projekt v &amp;LightBurnu</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/main_window.py" line="458"/>
-        <location filename="../src/grid_arranger/gui/main_window.py" line="459"/>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="467"/>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="468"/>
         <source>&amp;Settings</source>
         <translation>&amp;Nastavení</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/main_window.py" line="460"/>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="469"/>
         <source>&amp;Help</source>
         <translation>&amp;Nápověda</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/main_window.py" line="461"/>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="470"/>
         <source>User &amp;guide</source>
         <translation>Uživatelská &amp;příručka</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/main_window.py" line="462"/>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="471"/>
         <source>Check for &amp;updates…</source>
         <translation>Zkontrolovat &amp;aktualizace…</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/main_window.py" line="463"/>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="472"/>
         <source>&amp;About</source>
         <translation>&amp;O aplikaci</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/main_window.py" line="465"/>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="474"/>
         <source>&amp;Edit</source>
         <translation>Úp&amp;ravy</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/main_window.py" line="466"/>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="475"/>
         <source>&amp;Undo</source>
         <translation>Krok z&amp;pět</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/main_window.py" line="467"/>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="476"/>
         <source>&amp;Redo</source>
         <translation>Krok vpř&amp;ed</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/main_window.py" line="468"/>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="477"/>
         <source>&amp;Copy items</source>
         <translation>&amp;Kopírovat výrobky</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/main_window.py" line="469"/>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="478"/>
         <source>&amp;Paste copies</source>
         <translation>&amp;Vložit kopie</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/main_window.py" line="470"/>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="479"/>
         <source>Create &amp;copies…</source>
         <translation>Vy&amp;tvořit kopie…</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/main_window.py" line="471"/>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="480"/>
         <source>&amp;Fill the board with copies</source>
         <translation>&amp;Vyplnit desku kopiemi</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/main_window.py" line="472"/>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="481"/>
         <source>Automatic</source>
         <translation>Automaticky</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/main_window.py" line="473"/>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="482"/>
         <source>As many columns as fit on the board width</source>
         <translation>Tolik sloupců, kolik se vejde na šířku desky</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/main_window.py" line="474"/>
-        <source>&amp;Remove copies</source>
-        <translation>&amp;Odebrat kopie</translation>
-    </message>
-    <message>
-        <location filename="../src/grid_arranger/gui/main_window.py" line="475"/>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="485"/>
         <source>Clear &amp;selection</source>
         <translation>&amp;Zrušit výběr</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/main_window.py" line="476"/>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="486"/>
         <source>Toolbar</source>
         <translation>Nástrojová lišta</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/main_window.py" line="480"/>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="490"/>
         <source>Drag to rearrange the toolbar</source>
         <translation>Tažením ikony změníte uspořádání lišty</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/main_window.py" line="482"/>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="492"/>
         <source>Project</source>
         <translation>Projekt</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/main_window.py" line="483"/>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="493"/>
         <source>Prepare for:</source>
         <translation>Připravit pro:</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/main_window.py" line="484"/>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="494"/>
         <source>Items (groups)</source>
         <translation>Výrobky (skupiny)</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/main_window.py" line="485"/>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="495"/>
         <source>Up</source>
         <translation>Nahoru</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/main_window.py" line="486"/>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="496"/>
         <source>Down</source>
         <translation>Dolů</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/main_window.py" line="487"/>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="497"/>
         <source>Default order</source>
         <translation>Výchozí pořadí</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/main_window.py" line="488"/>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="498"/>
         <source>Select all</source>
         <translation>Vybrat vše</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/main_window.py" line="489"/>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="499"/>
         <source>Select none</source>
         <translation>Zrušit výběr</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/main_window.py" line="491"/>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="501"/>
         <source>Layout profile</source>
         <translation>Profil rozložení</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/main_window.py" line="492"/>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="502"/>
         <source>Save…</source>
         <translation>Uložit…</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/main_window.py" line="493"/>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="503"/>
         <source>Save the grid, gaps, fill order, rotation and placement as a named profile</source>
         <translation>Uložit mřížku, mezery, pořadí plnění, natočení a umístění jako pojmenovaný profil</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/main_window.py" line="494"/>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="504"/>
         <source>Delete</source>
         <translation>Smazat</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/main_window.py" line="496"/>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="506"/>
         <source>Grid</source>
         <translation>Mřížka</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/main_window.py" line="497"/>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="507"/>
         <source>Columns:</source>
         <translation>Počet sloupců:</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/main_window.py" line="497"/>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="507"/>
         <source>Gap X:</source>
         <translation>Mezera X:</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/main_window.py" line="497"/>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="507"/>
         <source>Fill order:</source>
         <translation>Pořadí plnění:</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/main_window.py" line="497"/>
-        <location filename="../src/grid_arranger/gui/main_window.py" line="523"/>
-        <location filename="../src/grid_arranger/gui/main_window.py" line="537"/>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="507"/>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="533"/>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="547"/>
         <source>Y:</source>
         <translation>Y:</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/main_window.py" line="497"/>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="507"/>
         <source>Rotation:</source>
         <translation>Natočení:</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/main_window.py" line="503"/>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="513"/>
         <source>Do not rotate</source>
         <translation>Nenatáčet</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/main_window.py" line="503"/>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="513"/>
         <source>In 90° steps</source>
         <translation>Po 90°</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/main_window.py" line="503"/>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="513"/>
         <source>Any angle (smallest area)</source>
         <translation>Libovolný úhel (nejmenší plocha)</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/main_window.py" line="505"/>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="515"/>
         <source>Rotate items to save material: each item is turned so that the rectangle around it is as small as possible, and the orientation giving the smallest grid is chosen. Exceptions: select an item and click “No rotation”.</source>
         <translation>Natočení výrobků kvůli úspoře materiálu: každý výrobek se natočí tak, aby obdélník kolem něj byl co nejmenší, a zvolí se orientace, která dá nejmenší mřížku. Výjimky: vyberte výrobek a klikněte na „Nenatáčet“.</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/main_window.py" line="507"/>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="517"/>
         <source>No rotation</source>
         <translation>Nenatáčet</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/main_window.py" line="509"/>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="519"/>
         <source>Angle of selected:</source>
         <translation>Úhel vybraných:</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/main_window.py" line="510"/>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="520"/>
         <source>Pieces:</source>
         <translation>Počet kusů:</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/main_window.py" line="511"/>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="521"/>
         <source>Number of pieces of the selected items (original + copies right after it). 0 = do not place.</source>
         <translation>Počet kusů vybraných výrobků (originál + kopie hned za ním). 0 = nerozmisťovat.</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/main_window.py" line="520"/>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="530"/>
         <source>From the laser origin</source>
         <translation>Od počátku laseru</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/main_window.py" line="520"/>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="530"/>
         <source>Reading order (from top left)</source>
         <translation>Čtení (zleva nahoře)</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/main_window.py" line="522"/>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="532"/>
         <source>Placement</source>
         <translation>Umístění</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/main_window.py" line="523"/>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="533"/>
         <source>Place grid:</source>
         <translation>Umístit mřížku:</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/main_window.py" line="523"/>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="533"/>
         <source>Corner X:</source>
         <translation>Roh X:</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/main_window.py" line="527"/>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="537"/>
         <source>In the board corner at the laser origin</source>
         <translation>Do rohu desky u počátku laseru</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/main_window.py" line="528"/>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="538"/>
         <source>In the centre of the board</source>
         <translation>Na střed desky</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/main_window.py" line="529"/>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="539"/>
         <source>Manually (LightBurn coordinates)</source>
         <translation>Ručně (souřadnice LightBurnu)</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/main_window.py" line="530"/>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="540"/>
         <source>At the original position of the items</source>
         <translation>Podle původní polohy výrobků</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/main_window.py" line="532"/>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="542"/>
         <source>Position of the grid corner nearest to the laser origin, in LightBurn X/Y coordinates.</source>
         <translation>Poloha rohu mřížky nejblíže počátku laseru v souřadnicích X/Y LightBurnu.</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/main_window.py" line="536"/>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="546"/>
         <source>Board</source>
         <translation>Deska</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/main_window.py" line="537"/>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="547"/>
         <source>Width:</source>
         <translation>Šířka:</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/main_window.py" line="537"/>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="547"/>
         <source>Height:</source>
         <translation>Výška:</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/main_window.py" line="537"/>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="547"/>
         <source>Board corner X:</source>
         <translation>Roh desky X:</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/main_window.py" line="538"/>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="548"/>
         <source>Margin left:</source>
         <translation>Okraj vlevo:</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/main_window.py" line="538"/>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="548"/>
         <source>Margin top:</source>
         <translation>Okraj nahoře:</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/main_window.py" line="541"/>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="551"/>
         <source>Save as default for this laser</source>
         <translation>Uložit jako výchozí pro tento laser</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/main_window.py" line="464"/>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="473"/>
         <source>Fit view</source>
         <translation>Přizpůsobit</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/main_window.py" line="508"/>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="484"/>
+        <source>Res&amp;tore left-out objects</source>
+        <translation>&amp;Obnovit vynechané objekty</translation>
+    </message>
+    <message>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="518"/>
         <source>The selected items will never be rotated.</source>
         <translation>Vybrané výrobky se nikdy nenatočí.</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/main_window.py" line="514"/>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="524"/>
         <source>Rotation of the selected items in degrees (positive = clockwise). Select items in the list or by clicking them in the preview (Ctrl+click adds more). A manual angle is kept as entered.</source>
         <translation>Natočení vybraných výrobků ve stupních (kladné = po směru hodinových ručiček). Výrobky vyberte v seznamu nebo kliknutím v náhledu (Ctrl+klik přidá další). Ručně zadaný úhel aplikace nemění.</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/main_window.py" line="516"/>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="526"/>
         <source>Rotate the selected items 90° anticlockwise</source>
         <translation>Otočit vybrané výrobky o 90° proti směru hodinových ručiček</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/main_window.py" line="517"/>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="527"/>
         <source>Rotate the selected items 90° clockwise</source>
         <translation>Otočit vybrané výrobky o 90° po směru hodinových ručiček</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/main_window.py" line="518"/>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="528"/>
         <source>Auto</source>
         <translation>Automaticky</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/main_window.py" line="519"/>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="529"/>
         <source>Remove the manual angle: the selected items are rotated automatically again</source>
         <translation>Zrušit ruční úhel: vybrané výrobky se znovu natočí automaticky</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/main_window.py" line="542"/>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="552"/>
         <source>Show artwork</source>
         <translation>Zobrazit motivy</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/main_window.py" line="629"/>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="639"/>
         <source>top right</source>
         <translation>vpravo nahoře</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/main_window.py" line="630"/>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="640"/>
         <source>top left</source>
         <translation>vlevo nahoře</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/main_window.py" line="631"/>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="641"/>
         <source>bottom left</source>
         <translation>vlevo dole</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/main_window.py" line="632"/>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="642"/>
         <source>bottom right</source>
         <translation>vpravo dole</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/main_window.py" line="645"/>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="655"/>
         <source>(last saved as {name})</source>
         <translation>(naposledy uloženo jako {name})</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/main_window.py" line="663"/>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="673"/>
         <source>No project open. Save the project in LightBurn first, then open the saved .lbrn2 file.</source>
         <translation>Žádný projekt není otevřený. Nejdřív projekt uložte v LightBurnu a potom otevřete uložený soubor .lbrn2.</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/main_window.py" line="670"/>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="680"/>
         <source>Last saved as &lt;b&gt;{name}&lt;/b&gt;. You keep arranging the project opened above; the next save creates another file.</source>
         <translation>Naposledy uloženo jako &lt;b&gt;{name}&lt;/b&gt;. Dál upravujete projekt otevřený výše; další uložení vytvoří další soubor.</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/main_window.py" line="674"/>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="684"/>
         <source>Saved for laser: {device}, origin {origin} (LightBurn {version}).</source>
         <translation>Projekt uložen pro laser: {device}, počátek {origin} (LightBurn {version}).</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/main_window.py" line="677"/>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="687"/>
         <source>After switching the laser in LightBurn, save the project again and reopen it here.</source>
         <translation>Po přepnutí laseru v LightBurnu projekt znovu uložte a otevřete ho zde znovu.</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/main_window.py" line="684"/>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="694"/>
         <source>Open LightBurn project</source>
         <translation>Otevřít projekt LightBurnu</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/main_window.py" line="685"/>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="695"/>
         <source>LightBurn project (*.lbrn2);;All files (*)</source>
         <translation>Projekt LightBurnu (*.lbrn2);;Všechny soubory (*)</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/main_window.py" line="728"/>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="739"/>
         <source>Board saved as default for {device}.</source>
         <translation>Deska uložena jako výchozí pro {device}.</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/main_window.py" line="743"/>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="754"/>
         <source>As in the project ({device})</source>
         <translation>Podle projektu ({device})</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/main_window.py" line="749"/>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="760"/>
         <source>Manage lasers…</source>
         <translation>Spravovat lasery…</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/main_window.py" line="754"/>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="765"/>
         <source>Prepare the output for another laser from the catalogue. Items are mirrored so that they look the same on a laser with a different origin.</source>
         <translation>Připraví výstup pro jiný laser z katalogu. Výrobky se zrcadlově převrátí tak, aby na laseru s jiným počátkem vypadaly stejně.</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/main_window.py" line="838"/>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="873"/>
         <source>(copy of {src})</source>
         <translation>(kopie {src})</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/main_window.py" line="845"/>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="880"/>
         <source>(no rotation)</source>
         <translation>(nenatáčet)</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/main_window.py" line="850"/>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="885"/>
         <source>(manual)</source>
         <translation>(ručně)</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/main_window.py" line="852"/>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="887"/>
         <source>cannot be moved</source>
         <translation>nelze přesunout</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/main_window.py" line="813"/>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="828"/>
         <source>Outline layer: {layer}</source>
         <translation>Vrstva obrysu: {layer}</translation>
     </message>
+    <message>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="483"/>
+        <source>&amp;Leave out of the output</source>
+        <translation>&amp;Vynechat z výstupu</translation>
+    </message>
+    <message>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="821"/>
+        <source>Not in the output (Settings → Saving).</source>
+        <translation>Nebude ve výstupu (Nastavení → Uložení).</translation>
+    </message>
+    <message>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="854"/>
+        <source>Left out of the output. Restore it with Edit → Restore left-out objects.</source>
+        <translation>Vynecháno z výstupu. Vrátíte ho v Úpravy → Obnovit vynechané objekty.</translation>
+    </message>
     <message numerus="yes">
-        <location filename="../src/grid_arranger/gui/main_window.py" line="826"/>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="861"/>
         <source>Selected %n item(s)</source>
         <translation>
             <numerusform>Vybrán %n výrobek</numerusform>
@@ -580,17 +594,27 @@ Při hlášení problému prosím pošlete podrobnosti níže.</translation>
         </translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/main_window.py" line="826"/>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="861"/>
         <source>supported: {s}, total: {t}</source>
         <translation>podporováno: {s}, celkem: {t}</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/main_window.py" line="969"/>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="896"/>
+        <source>left out</source>
+        <translation>vynecháno</translation>
+    </message>
+    <message>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="898"/>
+        <source>loose object ({kind})</source>
+        <translation>volný objekt ({kind})</translation>
+    </message>
+    <message>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="1015"/>
         <source>Restore default toolbar layout</source>
         <translation>Obnovit výchozí uspořádání lišty</translation>
     </message>
     <message numerus="yes">
-        <location filename="../src/grid_arranger/gui/main_window.py" line="1008"/>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="1054"/>
         <source>Added %n copies.</source>
         <translation>
             <numerusform>Přidána %n kopie.</numerusform>
@@ -599,7 +623,7 @@ Při hlášení problému prosím pošlete podrobnosti níže.</translation>
         </translation>
     </message>
     <message numerus="yes">
-        <location filename="../src/grid_arranger/gui/main_window.py" line="1030"/>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="1076"/>
         <source>Copied %n item(s). Paste with Ctrl+V.</source>
         <translation>
             <numerusform>Zkopírován %n výrobek. Vložte ho Ctrl+V.</numerusform>
@@ -608,17 +632,17 @@ Při hlášení problému prosím pošlete podrobnosti níže.</translation>
         </translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/main_window.py" line="1039"/>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="1085"/>
         <source>First select the items to copy — in the list or by clicking them in the preview.</source>
         <translation>Nejdřív vyberte výrobky, které chcete zkopírovat — v seznamu nebo kliknutím v náhledu.</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/main_window.py" line="1041"/>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="1087"/>
         <source>Create copies</source>
         <translation>Vytvořit kopie</translation>
     </message>
     <message numerus="yes">
-        <location filename="../src/grid_arranger/gui/main_window.py" line="1042"/>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="1088"/>
         <source>Number of copies of each selected item (%n selected):</source>
         <translation>
             <numerusform>Počet kopií vybraného výrobku (vybrán %n):</numerusform>
@@ -627,22 +651,22 @@ Při hlášení problému prosím pošlete podrobnosti níže.</translation>
         </translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/main_window.py" line="1135"/>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="1181"/>
         <source>First select the item(s) to fill the board with — in the list or by clicking them in the preview.</source>
         <translation>Nejdřív vyberte výrobek (nebo více výrobků), kterým se má deska vyplnit — v seznamu nebo kliknutím v náhledu.</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/main_window.py" line="1138"/>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="1184"/>
         <source>The current layout does not fit on the board; fix it first (see the messages below the preview).</source>
         <translation>Současné rozložení se na desku nevejde; nejdřív ho upravte (viz hlášení pod náhledem).</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/main_window.py" line="1149"/>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="1195"/>
         <source>No more copies fit on the board.</source>
         <translation>Na desku se už žádná další kopie nevejde.</translation>
     </message>
     <message numerus="yes">
-        <location filename="../src/grid_arranger/gui/main_window.py" line="1160"/>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="1206"/>
         <source>Added %n copies — the board is full.</source>
         <translation>
             <numerusform>Přidána %n kopie — deska je plná.</numerusform>
@@ -651,148 +675,157 @@ Při hlášení problému prosím pošlete podrobnosti níže.</translation>
         </translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/main_window.py" line="1352"/>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="1456"/>
         <source>— no profile —</source>
         <translation>— bez profilu —</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/main_window.py" line="1406"/>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="1510"/>
         <source>Profile “{name}” applied.</source>
         <translation>Použit profil „{name}“.</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/main_window.py" line="1412"/>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="1516"/>
         <source>Save profile</source>
         <translation>Uložit profil</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/main_window.py" line="1412"/>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="1516"/>
         <source>Profile name (grid, gaps, fill order, rotation, placement):</source>
         <translation>Název profilu (mřížka, mezery, pořadí plnění, natočení, umístění):</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/main_window.py" line="1417"/>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="1521"/>
         <source>The profile “{name}” already exists. Overwrite it?</source>
         <translation>Profil „{name}“ už existuje. Přepsat ho?</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/main_window.py" line="1421"/>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="1525"/>
         <source>Profile “{name}” saved.</source>
         <translation>Profil „{name}“ uložen.</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/main_window.py" line="1426"/>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="1530"/>
         <source>Delete the profile “{name}”?</source>
         <translation>Smazat profil „{name}“?</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/main_window.py" line="1512"/>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="1618"/>
         <source>Translation catalogue is missing; showing English.</source>
         <translation>Chybí katalog překladu; zobrazuje se angličtina.</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/main_window.py" line="1521"/>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="1627"/>
         <source>The output is prepared for the laser {laser} (origin {origin}). Layer settings (power, speed) stay as in the project — check them in LightBurn.</source>
         <translation>Výstup se připraví pro laser {laser} (počátek {origin}). Nastavení vrstev (výkon, rychlost) zůstává z projektu — zkontrolujte ho v LightBurnu.</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/main_window.py" line="1526"/>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="1632"/>
         <source>The grid cannot be calculated.</source>
         <translation>Mřížku nelze vypočítat.</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/main_window.py" line="1544"/>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="1650"/>
         <source>The layout passed all checks.</source>
         <translation>Rozložení prošlo všemi kontrolami.</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/main_window.py" line="1581"/>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="1687"/>
         <source>Choose another name or folder.</source>
         <translation>Zvolte jiný název nebo složku.</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/main_window.py" line="1587"/>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="1693"/>
         <source>Saved:
 {out}</source>
         <translation>Uloženo:
 {out}</translation>
     </message>
+    <message numerus="yes">
+        <location filename="../src/grid_arranger/gui/main_window.py" line="1695"/>
+        <source>Left out of the output: %n object(s).</source>
+        <translation>
+            <numerusform>Vynechán z výstupu: %n objekt.</numerusform>
+            <numerusform>Vynechány z výstupu: %n objekty.</numerusform>
+            <numerusform>Vynecháno z výstupu: %n objektů.</numerusform>
+        </translation>
+    </message>
     <message>
-        <location filename="../src/grid_arranger/gui/main_window.py" line="1589"/>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="1697"/>
         <source>Protocol:
 {proto}</source>
         <translation>Protokol:
 {proto}</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/main_window.py" line="1753"/>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="1866"/>
         <source>Save as new project</source>
         <translation>Uložit jako nový projekt</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/main_window.py" line="1753"/>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="1866"/>
         <source>LightBurn project (*.lbrn2)</source>
         <translation>Projekt LightBurnu (*.lbrn2)</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/main_window.py" line="1744"/>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="1857"/>
         <source>About</source>
         <translation>O aplikaci</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/main_window.py" line="538"/>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="548"/>
         <source>right:</source>
         <translation>vpravo:</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/main_window.py" line="538"/>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="548"/>
         <source>bottom:</source>
         <translation>dole:</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/main_window.py" line="836"/>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="871"/>
         <source>{w} × {h} {unit}</source>
         <translation>{w} × {h} {unit}</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/main_window.py" line="1532"/>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="1638"/>
         <source>Grid {c} × {r}: {w} × {h} {unit}. Corner at the origin side: X {x}, Y {y}.</source>
         <translation>Mřížka {c} × {r}: {w} × {h} {unit}. Roh u počátku: X {x}, Y {y}.</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/main_window.py" line="1593"/>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="1701"/>
         <source>Open it in LightBurn (button below, or File → Open — not Import) and check the layers, Preview and the position on the machine before cutting.</source>
         <translation>Otevřete ho v LightBurnu (tlačítkem níže, nebo File → Open — ne Import) a před řezáním zkontrolujte vrstvy, Preview a polohu na stroji.</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/main_window.py" line="1595"/>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="1703"/>
         <source>The original project stays open here. To continue arranging the saved file instead, tick the option below.</source>
         <translation>V aplikaci zůstává otevřený původní projekt. Chcete‑li dál upravovat uložený soubor, zaškrtněte volbu níže.</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/main_window.py" line="1607"/>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="1715"/>
         <source>Open in LightBurn</source>
         <translation>Otevřít v LightBurnu</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/main_window.py" line="1610"/>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="1718"/>
         <source>Continue working on the saved file here (instead of the original)</source>
         <translation>Pokračovat v aplikaci s uloženým souborem (místo originálu)</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/main_window.py" line="1623"/>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="1731"/>
         <source>Now working on the saved file {name}. The original is unchanged.</source>
         <translation>Nyní pracujete s uloženým souborem {name}. Originál je beze změny.</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/main_window.py" line="1632"/>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="1740"/>
         <source>The saved project was not found:
 {path}</source>
         <translation>Uložený projekt nebyl nalezen:
 {path}</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/main_window.py" line="1635"/>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="1743"/>
         <source>The project could not be opened. Check that .lbrn2 files are associated with LightBurn (right-click a .lbrn2 file → Open with → LightBurn, &quot;Always&quot;).
 
 {path}</source>
@@ -801,12 +834,12 @@ Při hlášení problému prosím pošlete podrobnosti níže.</translation>
 {path}</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/main_window.py" line="1639"/>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="1747"/>
         <source>Opening in LightBurn: {name}</source>
         <translation>Otevírám v LightBurnu: {name}</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/main_window.py" line="1745"/>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="1858"/>
         <source>&lt;b&gt;Grid Arranger for LightBurn&lt;/b&gt; {version}&lt;br&gt;&lt;br&gt;Moves existing groups of a LightBurn project into an exact grid and saves a new .lbrn2 file.&lt;br&gt;&lt;br&gt;Unofficial tool — not a product of LightBurn Software. Always check the result in LightBurn before cutting.</source>
         <translation>&lt;b&gt;Grid Arranger for LightBurn&lt;/b&gt; {version}&lt;br&gt;&lt;br&gt;Přesune existující skupiny projektu LightBurnu do přesné mřížky a uloží nový soubor .lbrn2.&lt;br&gt;&lt;br&gt;Neoficiální nástroj — není produktem LightBurn Software. Výsledek vždy zkontrolujte v LightBurnu před řezáním.</translation>
     </message>
@@ -875,8 +908,8 @@ Při hlášení problému prosím pošlete podrobnosti níže.</translation>
     </message>
     <message>
         <location filename="../src/grid_arranger/gui/messages.py" line="27"/>
-        <source>To prepare the project for a laser with a different origin, all items must be selected and the project must not contain other objects ({objects}) — they would be mirrored on the other laser.</source>
-        <translation>Pro přípravu na laser s jiným počátkem musí být vybrány všechny výrobky a projekt nesmí obsahovat jiné objekty ({objects}) — na druhém laseru by byly zrcadlově.</translation>
+        <source>To prepare the project for a laser with a different origin, all items must be selected and the project must not contain other objects ({objects}) — they would be mirrored on the other laser. Tick them, or leave them out of the output.</source>
+        <translation>Pro přípravu na laser s jiným počátkem musí být vybrány všechny výrobky a projekt nesmí obsahovat jiné objekty ({objects}) — na druhém laseru by byly zrcadlově. Zaškrtněte je, nebo je vynechejte z výstupu.</translation>
     </message>
     <message>
         <location filename="../src/grid_arranger/gui/messages.py" line="28"/>
@@ -1085,41 +1118,56 @@ Při hlášení problému prosím pošlete podrobnosti níže.</translation>
     </message>
     <message>
         <location filename="../src/grid_arranger/gui/messages.py" line="72"/>
+        <source>An object that is left out of the output cannot be arranged at the same time ({items}).</source>
+        <translation>Objekt vynechaný z výstupu nelze zároveň rozmístit ({items}).</translation>
+    </message>
+    <message>
+        <location filename="../src/grid_arranger/gui/messages.py" line="73"/>
+        <source>Nothing would be left in the output.</source>
+        <translation>Ve výstupu by nic nezůstalo.</translation>
+    </message>
+    <message>
+        <location filename="../src/grid_arranger/gui/messages.py" line="74"/>
+        <source>An object shares its shape data with an object that is left out, and the data cannot be moved safely.</source>
+        <translation>Objekt sdílí data tvaru s vynechaným objektem a ta nelze bezpečně přesunout.</translation>
+    </message>
+    <message>
+        <location filename="../src/grid_arranger/gui/messages.py" line="75"/>
         <source>The layout did not pass the check; nothing was saved.</source>
         <translation>Rozložení neprošlo kontrolou; nic nebylo uloženo.</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/messages.py" line="73"/>
+        <location filename="../src/grid_arranger/gui/messages.py" line="76"/>
         <source>The output check failed; nothing was saved.</source>
         <translation>Kontrola výstupu selhala; nic nebylo uloženo.</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/messages.py" line="74"/>
+        <location filename="../src/grid_arranger/gui/messages.py" line="77"/>
         <source>The original file has changed since it was opened. Open it again.</source>
         <translation>Původní soubor se od otevření změnil. Otevřete ho znovu.</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/messages.py" line="75"/>
+        <location filename="../src/grid_arranger/gui/messages.py" line="78"/>
         <source>The file already exists (or its protocol .json does). The application never overwrites files; nothing was saved.</source>
         <translation>Soubor už existuje (nebo jeho protokol .json). Aplikace nikdy nepřepisuje soubory; nic nebylo uloženo.</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/messages.py" line="76"/>
+        <location filename="../src/grid_arranger/gui/messages.py" line="79"/>
         <source>The output would overwrite the original; refused.</source>
         <translation>Výstup by přepsal originál; odmítnuto.</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/messages.py" line="77"/>
+        <location filename="../src/grid_arranger/gui/messages.py" line="80"/>
         <source>Saving failed: {detail}</source>
         <translation>Uložení selhalo: {detail}</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/messages.py" line="78"/>
+        <location filename="../src/grid_arranger/gui/messages.py" line="81"/>
         <source>There is no free name for the output file.</source>
         <translation>Pro výstupní soubor není volný název.</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/messages.py" line="81"/>
+        <location filename="../src/grid_arranger/gui/messages.py" line="84"/>
         <source>Error {code}</source>
         <translation>Chyba {code}</translation>
     </message>
@@ -1127,193 +1175,213 @@ Při hlášení problému prosím pošlete podrobnosti níže.</translation>
 <context>
     <name>SettingsDialog</name>
     <message>
-        <location filename="../src/grid_arranger/gui/settings_dialog.py" line="166"/>
+        <location filename="../src/grid_arranger/gui/settings_dialog.py" line="181"/>
         <source>Settings</source>
         <translation>Nastavení</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/settings_dialog.py" line="169"/>
+        <location filename="../src/grid_arranger/gui/settings_dialog.py" line="184"/>
         <source>Close</source>
         <translation>Zavřít</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/settings_dialog.py" line="170"/>
+        <location filename="../src/grid_arranger/gui/settings_dialog.py" line="185"/>
         <source>General</source>
         <translation>Obecné</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/settings_dialog.py" line="170"/>
+        <location filename="../src/grid_arranger/gui/settings_dialog.py" line="185"/>
         <source>Saving</source>
         <translation>Uložení</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/settings_dialog.py" line="170"/>
+        <location filename="../src/grid_arranger/gui/settings_dialog.py" line="185"/>
         <source>Updates</source>
         <translation>Aktualizace</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/settings_dialog.py" line="170"/>
+        <location filename="../src/grid_arranger/gui/settings_dialog.py" line="185"/>
         <source>Lasers</source>
         <translation>Lasery</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/settings_dialog.py" line="173"/>
+        <location filename="../src/grid_arranger/gui/settings_dialog.py" line="188"/>
         <source>Lasers you prepare projects for. Lasers from opened projects are added automatically. The name must match the device name in LightBurn; the board is offered when the laser is selected.</source>
         <translation>Lasery, pro které připravujete projekty. Lasery z otevřených projektů se přidají samy. Název musí odpovídat názvu zařízení v LightBurnu; deska se nabídne po výběru laseru.</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/settings_dialog.py" line="175"/>
+        <location filename="../src/grid_arranger/gui/settings_dialog.py" line="190"/>
         <source>Add…</source>
         <translation>Přidat…</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/settings_dialog.py" line="176"/>
+        <location filename="../src/grid_arranger/gui/settings_dialog.py" line="191"/>
         <source>Edit…</source>
         <translation>Upravit…</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/settings_dialog.py" line="177"/>
+        <location filename="../src/grid_arranger/gui/settings_dialog.py" line="192"/>
         <source>Remove</source>
         <translation>Odebrat</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/settings_dialog.py" line="179"/>
+        <location filename="../src/grid_arranger/gui/settings_dialog.py" line="194"/>
         <source>Language:</source>
         <translation>Jazyk:</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/settings_dialog.py" line="179"/>
+        <location filename="../src/grid_arranger/gui/settings_dialog.py" line="194"/>
         <source>Appearance:</source>
         <translation>Vzhled:</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/settings_dialog.py" line="179"/>
+        <location filename="../src/grid_arranger/gui/settings_dialog.py" line="194"/>
         <source>Units:</source>
         <translation>Jednotky:</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/settings_dialog.py" line="180"/>
+        <location filename="../src/grid_arranger/gui/settings_dialog.py" line="195"/>
         <source>Layout panel:</source>
         <translation>Panel rozložení:</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/settings_dialog.py" line="183"/>
-        <location filename="../src/grid_arranger/gui/settings_dialog.py" line="184"/>
+        <location filename="../src/grid_arranger/gui/settings_dialog.py" line="198"/>
+        <location filename="../src/grid_arranger/gui/settings_dialog.py" line="199"/>
         <source>Automatic (system)</source>
         <translation>Automaticky (podle systému)</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/settings_dialog.py" line="184"/>
+        <location filename="../src/grid_arranger/gui/settings_dialog.py" line="199"/>
         <source>Light</source>
         <translation>Světlý</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/settings_dialog.py" line="184"/>
+        <location filename="../src/grid_arranger/gui/settings_dialog.py" line="199"/>
         <source>Dark</source>
         <translation>Tmavý</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/settings_dialog.py" line="185"/>
+        <location filename="../src/grid_arranger/gui/settings_dialog.py" line="200"/>
         <source>Millimetres (mm)</source>
         <translation>Milimetry (mm)</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/settings_dialog.py" line="185"/>
+        <location filename="../src/grid_arranger/gui/settings_dialog.py" line="200"/>
         <source>Inches (in)</source>
         <translation>Palce (in)</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/settings_dialog.py" line="186"/>
+        <location filename="../src/grid_arranger/gui/settings_dialog.py" line="201"/>
         <source>Left of the preview</source>
         <translation>Vlevo od náhledu</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/settings_dialog.py" line="186"/>
+        <location filename="../src/grid_arranger/gui/settings_dialog.py" line="201"/>
         <source>Right of the preview</source>
         <translation>Vpravo od náhledu</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/settings_dialog.py" line="187"/>
+        <location filename="../src/grid_arranger/gui/settings_dialog.py" line="202"/>
         <source>Side of the window with the Project, Items, Grid, Placement and Board sections.</source>
         <translation>Strana okna se sekcemi Projekt, Výrobky, Mřížka, Umístění a Deska.</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/settings_dialog.py" line="188"/>
+        <location filename="../src/grid_arranger/gui/settings_dialog.py" line="203"/>
         <source>Units change only how values are shown and entered; the calculation and the saved project always use millimetres.</source>
         <translation>Jednotky mění jen zobrazení a zadávání hodnot; výpočet i uložený projekt jsou vždy v milimetrech.</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/settings_dialog.py" line="190"/>
+        <location filename="../src/grid_arranger/gui/settings_dialog.py" line="205"/>
+        <source>Objects that are not ticked</source>
+        <translation>Nezaškrtnuté objekty</translation>
+    </message>
+    <message>
+        <location filename="../src/grid_arranger/gui/settings_dialog.py" line="206"/>
+        <source>Leave out of the output</source>
+        <translation>Vynechat z výstupu</translation>
+    </message>
+    <message>
+        <location filename="../src/grid_arranger/gui/settings_dialog.py" line="207"/>
+        <source>Keep in place (the grid avoids them)</source>
+        <translation>Ponechat na místě (mřížka se jim vyhne)</translation>
+    </message>
+    <message>
+        <location filename="../src/grid_arranger/gui/settings_dialog.py" line="209"/>
+        <source>Unticked groups and loose objects. Left-out objects are not drawn in the preview and are not in the saved project; the original project is never changed.</source>
+        <translation>Nezaškrtnuté skupiny a volné objekty. Vynechané objekty se nekreslí v náhledu a nejsou v uloženém projektu; původní projekt se nikdy nemění.</translation>
+    </message>
+    <message>
+        <location filename="../src/grid_arranger/gui/settings_dialog.py" line="211"/>
         <source>Save protocol</source>
         <translation>Protokol uložení</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/settings_dialog.py" line="191"/>
+        <location filename="../src/grid_arranger/gui/settings_dialog.py" line="212"/>
         <source>Do not save</source>
         <translation>Neukládat</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/settings_dialog.py" line="192"/>
+        <location filename="../src/grid_arranger/gui/settings_dialog.py" line="213"/>
         <source>Next to the saved project</source>
         <translation>Vedle uloženého projektu</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/settings_dialog.py" line="193"/>
+        <location filename="../src/grid_arranger/gui/settings_dialog.py" line="214"/>
         <source>In the application&apos;s protocol folder</source>
         <translation>Do složky protokolů aplikace</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/settings_dialog.py" line="194"/>
+        <location filename="../src/grid_arranger/gui/settings_dialog.py" line="215"/>
         <source>A record (.json) of what the output was made from and how — useful for tracing or reporting a problem. It contains no artwork or texts.</source>
         <translation>Záznam (.json) o tom, z čeho a jak výstup vznikl — pro dohledání nebo hlášení chyby. Neobsahuje motivy ani texty.</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/settings_dialog.py" line="196"/>
+        <location filename="../src/grid_arranger/gui/settings_dialog.py" line="217"/>
         <source>Open protocol folder</source>
         <translation>Otevřít složku protokolů</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/settings_dialog.py" line="197"/>
+        <location filename="../src/grid_arranger/gui/settings_dialog.py" line="218"/>
         <source>Check for updates &amp;automatically</source>
         <translation>&amp;Automaticky kontrolovat aktualizace</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/settings_dialog.py" line="198"/>
+        <location filename="../src/grid_arranger/gui/settings_dialog.py" line="219"/>
         <source>Include &amp;pre-release versions</source>
         <translation>Nabízet i &amp;předběžné verze</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/settings_dialog.py" line="199"/>
+        <location filename="../src/grid_arranger/gui/settings_dialog.py" line="220"/>
         <source>Installed version: {version}</source>
         <translation>Nainstalovaná verze: {version}</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/settings_dialog.py" line="200"/>
+        <location filename="../src/grid_arranger/gui/settings_dialog.py" line="221"/>
         <source>Check for &amp;updates…</source>
         <translation>Zkontrolovat &amp;aktualizace…</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/settings_dialog.py" line="255"/>
+        <location filename="../src/grid_arranger/gui/settings_dialog.py" line="278"/>
         <source>top left</source>
         <translation>vlevo nahoře</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/settings_dialog.py" line="255"/>
+        <location filename="../src/grid_arranger/gui/settings_dialog.py" line="278"/>
         <source>top right</source>
         <translation>vpravo nahoře</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/settings_dialog.py" line="256"/>
+        <location filename="../src/grid_arranger/gui/settings_dialog.py" line="279"/>
         <source>bottom left</source>
         <translation>vlevo dole</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/settings_dialog.py" line="256"/>
+        <location filename="../src/grid_arranger/gui/settings_dialog.py" line="279"/>
         <source>bottom right</source>
         <translation>vpravo dole</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/settings_dialog.py" line="265"/>
+        <location filename="../src/grid_arranger/gui/settings_dialog.py" line="288"/>
         <source>origin {origin}</source>
         <translation>počátek {origin}</translation>
     </message>

@@ -3,9 +3,10 @@
 Après l'ouverture d'un projet (icône **Ouvrir un projet** de la barre d'outils, **Fichier → Ouvrir un projet** ou Ctrl+O), la liste affiche tous les groupes de premier niveau :
 
 - Les éléments **cochés** sont disposés dans la grille. Le nombre devant le nom est leur position dans la grille.
-- Les éléments **non cochés** restent à leur place et l'application veille à ce que la grille ne les touche pas.
+- Les éléments **non cochés** sont exclus de la sortie : ils ne figurent pas dans le projet enregistré et la grille ne les prend pas en compte. Pour les laisser plutôt à leur place, choisissez **Paramètres → Enregistrement → Objets non cochés → Laisser en place** — la grille les évite alors.
 - Les éléments **grisés** (« ne peut pas être déplacé ») ont été refusés — survolez-les pour voir pourquoi. Ils ne sont jamais déplacés.
 - ⚠ signale un avertissement (p. ex. un texte qui ne peut pas être mesuré) — l'élément est utilisable, mais vérifiez-le dans Preview.
+- **Exclure des objets :** sélectionnez des éléments dans la liste (y compris les grisés) et appuyez sur **Suppr** (ou **Édition → Exclure de la sortie**, ou clic droit). Ils passent barrés en bas de la liste et ne figurent pas dans le projet enregistré — pratique quand vous n'avez besoin que d'une partie d'un grand projet. **Édition → Restaurer les objets exclus** fait revenir ceux qui sont sélectionnés. Les copies sélectionnées sont simplement supprimées. Le projet d'origine n'est jamais modifié.
 
 Ordre : **saisissez un élément dans l'aperçu avec la souris et faites-le glisser à la place d'un autre élément** — un cadre vert indique où il atterrira ; **les deux éléments échangent leurs places**, tous les autres restent et la liste est renumérotée. Relâcher en dehors des éléments annule le glissement. Ou sélectionnez un élément dans la liste et utilisez **Monter / Descendre**. Un élément nouvellement coché est ajouté à la fin. **Ordre par défaut** rétablit l'ordre du fichier. **Tout sélectionner / Ne rien sélectionner** changent la sélection d'un coup.
 

@@ -3,9 +3,10 @@
 Nach dem Öffnen eines Projekts (Symbol **Projekt öffnen** in der Werkzeugleiste, **Datei → Projekt öffnen** oder Strg+O) zeigt die Liste alle Gruppen der obersten Ebene:
 
 - **Angehakte** Objekte werden im Raster angeordnet. Die Zahl vor dem Namen ist ihre Position im Raster.
-- **Nicht angehakte** Objekte bleiben, wo sie sind, und die Anwendung achtet darauf, dass das Raster sie nicht trifft.
+- **Nicht angehakte** Objekte werden nicht in die Ausgabe geschrieben: Sie sind nicht im gespeicherten Projekt und das Raster berücksichtigt sie nicht. Wenn sie stattdessen an Ort und Stelle bleiben sollen, wählen Sie **Einstellungen → Speichern → Nicht angehakte Objekte → An Ort und Stelle lassen** — das Raster weicht ihnen dann aus.
 - **Graue** Objekte („kann nicht verschoben werden“) wurden abgelehnt — fahren Sie mit der Maus darüber, um den Grund zu sehen. Sie werden nie verschoben.
 - ⚠ kennzeichnet eine Warnung (z. B. einen Text, der nicht vermessen werden kann) — das Objekt kann verwendet werden, prüfen Sie es aber in der Vorschau.
+- **Objekte weglassen:** Objekte in der Liste auswählen (auch graue) und **Entf** drücken (oder **Bearbeiten → Aus der Ausgabe weglassen** bzw. Rechtsklick). Sie wandern durchgestrichen ans Ende der Liste und sind nicht im gespeicherten Projekt — praktisch, wenn Sie aus einem großen Projekt nur einen Teil brauchen. **Bearbeiten → Weggelassene Objekte wiederherstellen** holt die ausgewählten zurück. Ausgewählte Kopien werden einfach entfernt. Das ursprüngliche Projekt ändert sich nie.
 
 Reihenfolge: **Greifen Sie ein Objekt in der Vorschau mit der Maus und ziehen Sie es auf die Stelle eines anderen Objekts** — ein grüner Rahmen zeigt, wo es landet; **die beiden Objekte tauschen die Plätze**, alle anderen bleiben, und die Liste wird neu nummeriert. Loslassen außerhalb der Objekte bricht das Ziehen ab. Oder wählen Sie ein Objekt in der Liste und nutzen Sie **Nach oben / Nach unten**. Ein neu angehaktes Objekt kommt ans Ende. **Standardreihenfolge** stellt die Reihenfolge aus der Datei wieder her. **Alle auswählen / Keine auswählen** ändern die Auswahl auf einmal.
 

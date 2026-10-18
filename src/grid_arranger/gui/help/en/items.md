@@ -3,9 +3,10 @@
 After opening a project (the **Open project** toolbar icon, **File → Open project** or Ctrl+O) the list shows all top-level groups:
 
 - **Checked** items are arranged into the grid. The number before the name is their position in the grid.
-- **Unchecked** items stay where they are and the application makes sure the grid does not hit them.
+- **Unchecked** items are left out of the output: they are not in the saved project and the grid ignores them. To keep them where they are instead, choose **Settings → Saving → Objects that are not ticked → Keep in place** — the grid then avoids them.
 - **Grey** items ("cannot be moved") were refused — hover over them to see why. They are never moved.
 - ⚠ marks a warning (for example a text that cannot be measured) — the item can be used, but check it in Preview.
+- **Leaving objects out:** select items in the list (grey ones too) and press **Delete** (or **Edit → Leave out of the output**, or right-click). They move to the bottom of the list, crossed out, and are not in the saved project — handy when you only need part of a large project. **Edit → Restore left-out objects** brings the selected ones back. Selected copies are simply removed. The original project never changes.
 
 Order: **grab an item in the preview with the mouse and drag it onto the place of another item** — a green frame shows where it will land; **the two items swap places**, all others stay where they are and the list is renumbered. Releasing outside the items cancels the drag. Or select an item in the list and use **Up / Down**. A newly checked item is added at the end. **Default order** restores the order from the file. **Select all / Select none** change the selection at once.
 

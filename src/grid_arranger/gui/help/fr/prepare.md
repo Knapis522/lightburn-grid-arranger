@@ -12,7 +12,7 @@ Pris en charge : LightBurn 2.2, projets `.lbrn2`, lasers dont l'origine est dans
 Un projet enregistré pour un laser peut être préparé pour un autre, p. ex. d'un laser avec l'origine en haut à droite vers un laser avec l'origine en haut à gauche — sans changer d'appareil ni retourner le dessin dans LightBurn. Dans la section **Projet**, choisissez **Préparer pour :** un laser du catalogue. L'application propose sa plaque, remplit la grille depuis son origine, et le fichier enregistré (`…__Nom_du_laser__grid_001.lbrn2`) est prêt pour lui : le fichier indique le laser cible et les éléments sont mis en miroir pour avoir le même aspect sur celui-ci (textes lisibles).
 
 - Catalogue des lasers : **Paramètres → Lasers** (ou *Gérer les lasers…* dans la liste). Les lasers des projets ouverts sont ajoutés automatiquement ; ajoutez les autres (p. ex. un laser à diode) manuellement — **le nom doit correspondre à l'appareil dans LightBurn** ; choisissez le coin de l'origine et la plaque.
-- Avec une autre origine, **tous les éléments** doivent être sélectionnés et le projet ne doit pas contenir d'autres objets (ils resteraient en miroir sur l'autre laser).
+- Avec une autre origine, **tous les éléments** doivent être sélectionnés et le projet ne doit pas contenir d'autres objets (ils resteraient en miroir sur l'autre laser). Cela ne concerne que les objets conservés dans la sortie — les objets non cochés et exclus ne figurent pas dans la sortie (par défaut) et ne gênent donc pas.
 - **Les réglages des calques (puissance, vitesse) ne sont pas convertis** — ils restent ceux du projet d'origine. Ouvrez la sortie dans LightBurn avec le laser cible et vérifiez les calques.
 
 [← Introduction](index.md) · [Suite : éléments →](items.md)

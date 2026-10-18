@@ -12,7 +12,7 @@ Compatible: LightBurn 2.2, proyectos `.lbrn2`, láseres con el origen en cualqui
 Un proyecto guardado para un láser se puede preparar para otro, p. ej. de un láser con el origen arriba a la derecha para un láser con el origen arriba a la izquierda — sin cambiar de dispositivo ni voltear el diseño en LightBurn. En la sección **Proyecto**, elija en **Preparar para:** un láser del catálogo. La aplicación ofrece su plancha, llena la cuadrícula desde su origen y el archivo guardado (`…__Nombre_del_laser__grid_001.lbrn2`) queda listo para él: el archivo indica el láser de destino y los elementos se reflejan para que se vean igual en él (textos legibles).
 
 - Catálogo de láseres: **Configuración → Láseres** (o *Gestionar láseres…* en la lista). Los láseres de los proyectos abiertos se añaden automáticamente; añada otros (p. ej. un láser de diodo) manualmente — **el nombre debe coincidir con el dispositivo en LightBurn**; elija la esquina del origen y la plancha.
-- Con otro origen deben estar seleccionados **todos los elementos** y el proyecto no debe contener otros objetos (quedarían reflejados en el otro láser).
+- Con otro origen deben estar seleccionados **todos los elementos** y el proyecto no debe contener otros objetos (quedarían reflejados en el otro láser). Esto solo afecta a los objetos que se conservan en la salida — los objetos sin marcar y excluidos no están en la salida (opción predeterminada), así que no estorban.
 - **Los ajustes de las capas (potencia, velocidad) no se convierten** — se mantienen como en el proyecto original. Abra la salida en LightBurn con el láser de destino y compruebe las capas.
 
 [← Introducción](index.md) · [Siguiente: elementos →](items.md)

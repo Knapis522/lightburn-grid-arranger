@@ -30,7 +30,8 @@ from pathlib import Path
 
 from ..adapters.lightburn.coords import Orientation
 from ..adapters.lightburn.read import LoadedProject, load_project
-from ..adapters.lightburn.write import apply_with_copies, header_patches, next_output_path, plan_patches, write_new_file
+from ..adapters.lightburn.write import (apply_with_copies, header_patches, next_output_path, omit_shapes, plan_patches,
+                                        write_new_file)
 from ..core import arrange_to_grid, validate_layout
 from ..core.rotation import min_area_angle, rotated_bounds
 from ..core.collision import ValidationReport, usable_area
@@ -102,6 +103,24 @@ class ArrangeParams:
     samostatný výrobek, jen pokud je v ``order``; do výstupu se zapíše jako nová skupina."""
     target: TargetLaser | None = None
     """Jiný laser, pro který se výstup připraví; None = laser projektu (spec. v1.23)."""
+    omit: frozenset[str] = frozenset()
+    """Objekty (výrobky ``G…`` i volné tvary ``S…``), které se do výstupu nezapíší a mřížka s nimi
+    nepočítá (spec. v1.27). Nesmí být v ``order`` ani zdrojem rozmisťované kopie."""
+
+
+def top_index(project: LoadedProject, object_id: str) -> int:
+    """Pořadí nejvyššího tvaru (1-based) výrobku ``G…`` nebo volného tvaru ``S…``."""
+    for it in project.items:
+        if it.id == object_id:
+            return it.source_order
+    for ls in project.loose:
+        if ls.id == object_id:
+            return int(ls.id[1:])
+    raise GridError("unknown_item", "Neznámý objekt.", item_id=object_id)
+
+
+def _obstacles(project: LoadedProject, order, omit: frozenset[str]):
+    return [ob for ob in project.obstacles_for(set(order)) if ob.id not in omit]
 
 
 class ItemGeometry:
@@ -251,6 +270,8 @@ class Plan:
     """Cílový laser, liší-li se od projektu (hlavička výstupu a zrcadlení výrobků)."""
     columns_auto: bool = False
     """Počet sloupců zvolen automaticky podle šířky desky."""
+    omitted: frozenset[str] = frozenset()
+    """Objekty vynechané z výstupu (spec. v1.27)."""
 
     @property
     def orientation(self) -> Orientation:
@@ -300,6 +321,12 @@ def make_plan(project: LoadedProject, params: ArrangeParams, geometry: ItemGeome
         raise GridError("invalid_rotation", "Neplatný úhel natočení.")
     order = params.order if params.order is not None else tuple(it.id for it in project.items if it.supported)
     copies = {cid: src for cid, src in params.copies.items() if cid in order}
+    omit = frozenset(params.omit)
+    for oid in omit:
+        top_index(project, oid)  # neznámé id → chyba
+    clash = sorted(set(order) & omit) + sorted(cid for cid, src in copies.items() if src in omit)
+    if clash:
+        raise GridError("omitted_selected", "Vynechaný objekt nelze zároveň rozmístit.", items=clash)
     if copies:
         project = _with_copies(project, copies)
         if geometry is not None:
@@ -318,7 +345,7 @@ def make_plan(project: LoadedProject, params: ArrangeParams, geometry: ItemGeome
     mirrored = o != src_o
     if mirrored:
         # zrcadlený převod: nevybrané výrobky ani volné objekty by zůstaly zrcadlově → jen celý projekt
-        rest = [ob.id for ob in project.obstacles_for(set(order))]
+        rest = [ob.id for ob in _obstacles(project, order, omit)]
         if rest:
             raise GridError("convert_needs_whole_project", "Pro převod na laser s jiným počátkem musí být vybrány "
                             "všechny objekty projektu.", objects=rest)
@@ -365,7 +392,7 @@ def make_plan(project: LoadedProject, params: ArrangeParams, geometry: ItemGeome
 
     req = GridRequest(tuple(order), params.columns, params.gap_x, params.gap_y, sx, sy, fill_from=corner)
     layout = arrange_to_grid(core_items, req)
-    report = validate_layout(layout, req.gap_x, req.gap_y, material, project.obstacles_for(set(order)))
+    report = validate_layout(layout, req.gap_x, req.gap_y, material, _obstacles(project, order, omit))
     moves: dict[str, tuple[float, ...]] = {}
     pivots: dict[str, tuple[float, float]] = {}
     for p in layout.placements:
@@ -387,7 +414,7 @@ def make_plan(project: LoadedProject, params: ArrangeParams, geometry: ItemGeome
     return Plan(project, req, layout, report, moves, o.to_file_point(*corner_screen), params.anchor, params.fill,
                 {k: v for k, v in rotations.items() if k in moves}, pivots, params.rotation,
                 frozenset(k for k in params.angles if k in moves),
-                {cid: copies[cid] for cid in order if cid in copies}, target)
+                {cid: copies[cid] for cid in order if cid in copies}, target, omitted=omit)
 
 
 def _auto_columns_plan(project: LoadedProject, params: ArrangeParams, geometry: ItemGeometry | None) -> Plan:
@@ -465,6 +492,7 @@ def _protocol(plan: Plan, output: Path, out_bytes: bytes, problems: list[str]) -
             "grid_corner_at_origin_lightburn_xy": plan.origin_corner_lightburn,
         },
         "pieces_per_item": _pieces(plan),
+        "omitted": [{"id": oid, "label": _label(p, oid)} for oid in sorted(plan.omitted, key=lambda i: top_index(p, i))],
         "grid": {"columns": plan.layout.columns, "columns_auto": plan.columns_auto, "rows": plan.layout.rows,
                  "width_mm": plan.layout.grid_bounds.width, "height_mm": plan.layout.grid_bounds.height},
         "placements": [
@@ -535,11 +563,12 @@ def execute(plan: Plan, out_dir: Path | None = None, output: Path | None = None,
     copy_moves = [(src, plan.moves_file[cid]) for cid, src in plan.copies.items()]
     header = _target_header(plan)
     ops = sorted(plan_patches(project, originals) + header_patches(project, header), key=lambda op: op.start)
-    out_bytes = apply_with_copies(project, ops, copy_moves)
+    omitted = omitted_indices(plan)
+    out_bytes = omit_shapes(apply_with_copies(project, ops, copy_moves), omitted)
 
     tops = {it.id: it.source_order for it in project.items if it.id not in plan.copies}
     problems = verify_output(project.data, out_bytes, {tops[k]: v for k, v in originals.items()},
-                             [(tops[src], move) for src, move in copy_moves], header=header)
+                             [(tops[src], move) for src, move in copy_moves], header=header, omitted=omitted)
     if not problems:
         problems += _check_reloaded_bounds(plan, out_bytes)
     if problems:
@@ -558,6 +587,14 @@ def execute(plan: Plan, out_dir: Path | None = None, output: Path | None = None,
     if hashlib.sha256(src_path.read_bytes()).hexdigest() != project.info.sha256:
         raise GridError("source_changed", "Původní soubor se během zápisu změnil.")
     return JobResult(plan, target, proto_path, problems)
+
+
+def _label(project: LoadedProject, object_id: str) -> str:
+    return next((it.label for it in project.items if it.id == object_id), "")
+
+
+def omitted_indices(plan: Plan) -> frozenset[int]:
+    return frozenset(top_index(plan.project, oid) for oid in plan.omitted)
 
 
 def _pieces(plan: Plan) -> dict[str, int]:
@@ -593,9 +630,17 @@ def _check_reloaded_bounds(plan: Plan, out_bytes: bytes) -> list[str]:
         problems.append("target_device_mismatch")
     geo_out = None
     n_top = len(plan.project.root.findall("Shape"))
-    reload_id = {cid: f"G{n_top + k}" for k, cid in enumerate(plan.copies, start=1)}
-    if len(reloaded.items) != len([it for it in plan.project.items if it.id not in plan.copies]) + len(plan.copies):
+    omitted = omitted_indices(plan)
+    kept = [i for i in range(1, n_top + 1) if i not in omitted]
+    new_index = {i: k for k, i in enumerate(kept, start=1)}
+    reload_id = {it.id: f"G{new_index[it.source_order]}" for it in plan.project.items
+                 if it.id not in plan.copies and it.source_order in new_index}
+    reload_id.update({cid: f"G{len(kept) + k}" for k, cid in enumerate(plan.copies, start=1)})
+    expected_items = len([it for it in plan.project.items if it.id not in plan.copies and it.id not in plan.omitted])
+    if len(reloaded.items) != expected_items + len(plan.copies):
         return ["copy_count_mismatch"]
+    if len(reloaded.root.findall("Shape")) != len(kept) + len(plan.copies):
+        return ["omitted_count_mismatch"]
     for pl in plan.layout.placements:
         exp = pl.target_bounds
         rid = reload_id.get(pl.item_id, pl.item_id)
@@ -618,8 +663,8 @@ def _check_reloaded_bounds(plan: Plan, out_bytes: bytes) -> list[str]:
                               abs(got.right - exp.right), abs(got.bottom - exp.bottom)) > tol:
             problems.append(f"outline_not_at_target: {pl.item_id}")
     for it in plan.project.items:
-        if it.id not in plan.moves_file and it.supported and it.id not in plan.copies:
-            if reloaded.item(it.id).file_bbox != it.file_bbox:
+        if it.id not in plan.moves_file and it.supported and it.id not in plan.copies and it.id not in plan.omitted:
+            if reloaded.item(reload_id[it.id]).file_bbox != it.file_bbox:
                 problems.append(f"unselected_moved: {it.id}")
     return problems
 

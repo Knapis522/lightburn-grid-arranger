@@ -12,7 +12,7 @@ Obsługiwane: LightBurn 2.2, projekty `.lbrn2`, lasery z punktem zerowym w dowol
 Projekt zapisany dla jednego lasera można przygotować dla innego, np. z lasera z punktem zerowym w prawym górnym rogu dla lasera z punktem zerowym w lewym górnym rogu — bez przełączania urządzenia i ręcznego odbijania projektu w LightBurn. W sekcji **Projekt** wybierz **Przygotuj dla:** laser z katalogu. Aplikacja zaproponuje jego płytę, wypełni siatkę od jego punktu zerowego, a zapisany plik (`…__Nazwa_lasera__grid_001.lbrn2`) będzie od razu dla niego: plik wskazuje docelowy laser, a elementy są odbite lustrzanie tak, aby wyglądały na nim tak samo (teksty czytelne).
 
 - Katalog laserów: **Ustawienia → Lasery** (lub *Zarządzaj laserami…* na liście). Lasery z otwartych projektów są dodawane automatycznie; kolejne (np. diodowy) dodaj ręcznie — **nazwa musi odpowiadać urządzeniu w LightBurn**; wybierz róg punktu zerowego i płytę.
-- Przy innym punkcie zerowym muszą być zaznaczone **wszystkie elementy**, a projekt nie może zawierać innych obiektów (na drugim laserze pozostałyby odbite lustrzanie).
+- Przy innym punkcie zerowym muszą być zaznaczone **wszystkie elementy**, a projekt nie może zawierać innych obiektów (na drugim laserze pozostałyby odbite lustrzanie). Dotyczy to tylko obiektów pozostawionych w wyniku — niezaznaczone i pominięte obiekty nie trafiają do wyniku (ustawienie domyślne), więc nie przeszkadzają.
 - **Ustawienia warstw (moc, prędkość) nie są przeliczane** — pozostają jak w oryginalnym projekcie. Otwórz wynik w LightBurn z docelowym laserem i sprawdź warstwy.
 
 [← Wprowadzenie](index.md) · [Dalej: elementy →](items.md)

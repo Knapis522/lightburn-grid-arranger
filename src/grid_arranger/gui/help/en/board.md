@@ -8,7 +8,7 @@ Before saving, the application checks that:
 
 - all moved items lie within the usable board area,
 - items do not overlap and keep the gap,
-- items keep the gap from **unmoved** groups and loose objects as well,
+- items keep the gap from **unmoved** groups and loose objects as well, if they stay in the output (Settings → Saving); left-out objects are ignored,
 - an object whose size cannot be determined **blocks** saving (safety cannot be confirmed).
 
 Errors (✖) block saving and name the items concerned. Warnings (⚠) do not. The application never scales, rotates or moves unselected objects by itself.

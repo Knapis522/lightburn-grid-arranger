@@ -8,7 +8,7 @@ Prima del salvataggio l'applicazione verifica che:
 
 - tutti gli elementi spostati si trovino nell'area utile della lastra,
 - gli elementi non si sovrappongano e rispettino la spaziatura,
-- gli elementi rispettino la spaziatura anche rispetto ai gruppi **non spostati** e agli oggetti sciolti,
+- gli elementi rispettino la spaziatura anche rispetto ai gruppi **non spostati** e agli oggetti sciolti, se restano nell'output (Impostazioni → Salvataggio); gli oggetti esclusi vengono ignorati,
 - un oggetto la cui dimensione non può essere determinata **blocchi** il salvataggio (la sicurezza non può essere confermata).
 
 Gli errori (✖) bloccano il salvataggio e indicano gli elementi interessati. Gli avvisi (⚠) no. L'applicazione non ridimensiona, non ruota e non sposta mai da sola gli oggetti non selezionati.

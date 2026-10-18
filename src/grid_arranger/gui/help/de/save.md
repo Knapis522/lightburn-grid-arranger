@@ -2,7 +2,7 @@
 
 Das Symbol **Als neues Projekt speichern** in der Werkzeugleiste (oder **Datei → Als neues Projekt speichern**, Strg+S) ist nur aktiv, wenn das Layout die Prüfung bestanden hat. Ein Speicherdialog öffnet sich mit dem vorgeschlagenen Namen `original__grid_001.lbrn2` (dann `_002`, …) im Ordner des Originals — **Ordner und Name können Sie ändern**. Nach dem Bestätigen:
 
-1. bereitet die Anwendung eine neue Datei vor, in der sich nur die Positionen der ausgewählten Gruppen (und ihrer Texte) ändern,
+1. bereitet die Anwendung eine neue Datei vor, in der sich nur die Positionen der ausgewählten Gruppen (und ihrer Texte) ändern, weggelassene Objekte werden entfernt,
 2. prüft sie unabhängig, dass sich nichts anderes geändert hat (Ebenen, Leistung, Texte, andere Objekte),
 3. prüft sie, dass sich das Original seit dem Öffnen nicht geändert hat,
 4. speichert sie eine **neue** Datei unter dem gewählten Namen.

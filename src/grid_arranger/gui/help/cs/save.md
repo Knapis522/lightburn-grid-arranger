@@ -2,7 +2,7 @@
 
 Ikona **Uložit jako nový projekt** na nástrojové liště (nebo **Soubor → Uložit jako nový projekt**, Ctrl+S) je aktivní, jen když rozložení prošlo kontrolou. Otevře se okno pro uložení: navržený je název `původní__grid_001.lbrn2` (další `_002`, …) ve složce originálu — **složku i název můžete změnit**. Po potvrzení aplikace:
 
-1. připraví nový soubor, ve kterém se změní jen polohy vybraných skupin (a jejich textů),
+1. připraví nový soubor, ve kterém se změní jen polohy vybraných skupin (a jejich textů), vynechané objekty se odeberou,
 2. nezávisle ověří, že se nic jiného nezměnilo (vrstvy, výkony, texty, ostatní objekty),
 3. ověří, že se originál od otevření nezměnil,
 4. uloží **nový** soubor pod zvoleným názvem.

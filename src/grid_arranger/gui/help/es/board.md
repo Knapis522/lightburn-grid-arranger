@@ -8,7 +8,7 @@ Antes de guardar, la aplicación comprueba que:
 
 - todos los elementos movidos están dentro del área útil de la plancha,
 - los elementos no se solapan y mantienen la separación,
-- los elementos mantienen la separación también respecto a los grupos **no movidos** y los objetos sueltos,
+- los elementos mantienen la separación también respecto a los grupos **no movidos** y los objetos sueltos, si permanecen en la salida (Configuración → Guardado); los objetos excluidos se ignoran,
 - un objeto cuyo tamaño no se puede determinar **bloquea** el guardado (no se puede confirmar la seguridad).
 
 Los errores (✖) bloquean el guardado y nombran los elementos afectados. Los avisos (⚠) no. La aplicación nunca escala, gira ni mueve por sí misma los objetos no seleccionados.

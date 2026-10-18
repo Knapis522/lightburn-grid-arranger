@@ -16,6 +16,12 @@ poslední nejvyšší ``Shape`` dokumentu. V kopii se stejně jako u přesunu zm
 skupiny a ``BackupPath`` textů (``T ∘ XForm``) a u cest se sdíleným seznamem vrcholů
 (``VertID`` / ``PrimID``) se vynechá ``VertList`` / ``PrimList`` — kopie na ně odkazuje stejně,
 jako to dělá LightBurn sám u opakovaných tvarů (ověřeno v KAL-02, Convert to Path).
+
+**Vynechané objekty (spec. v1.27):** celé nejvyšší tvary vynechané uživatelem se z výstupu odeberou
+(celé řádky elementu). Definuje-li vynechaný tvar sdílený seznam (``VertList`` s ``VertID`` /
+``PrimList`` s ``PrimID``), na který odkazuje ponechaný tvar, přesune se bajtově shodná definice
+do **prvního** ponechaného tvaru, který na ni odkazuje (hned za jeho ``XForm``) — jako by ho
+LightBurn uložil jako první výskyt.
 """
 
 from __future__ import annotations
@@ -234,6 +240,82 @@ def apply_with_copies(project: LoadedProject, ops: list[PatchOp], copies: list[t
     block = b"".join(copy_block(project, src, move) for src, move in copies)
     pos = at + shift
     return out[:pos] + block + out[pos:]
+
+
+# --- vynechané objekty -------------------------------------------------------------------------
+
+SHARED_LISTS = (("VertList", "VertID"), ("PrimList", "PrimID"))
+
+
+def omit_shapes(data: bytes, omitted: set[int] | frozenset[int]) -> bytes:
+    """Odebere nejvyšší tvary s pořadím ``omitted`` (1-based, pořadí v ``data``) a přesune sdílenou geometrii.
+
+    Musí zůstat aspoň jeden nejvyšší tvar. Odkaz na ID, které nikde nezůstane definované, je chyba."""
+    if not omitted:
+        return data
+    from .xmltree import parse
+
+    root = parse(data)
+    tops = root.findall("Shape")
+    if any(i < 1 or i > len(tops) for i in omitted):
+        raise GridError("unknown_item", "Vynechaný objekt v projektu není.")
+    if len(omitted) >= len(tops):
+        raise GridError("nothing_left", "Ve výstupu by nezůstal žádný objekt.")
+    nl = b"\r\n" if b"\r\n" in data else b"\n"
+
+    defs: dict[tuple[str, str], Node] = {}  # (tag, id) → definice ve vynechaném tvaru
+    for i in sorted(omitted):
+        for n in tops[i - 1].iter():
+            if n.tag != "Shape":
+                continue
+            for tag, attr in SHARED_LISTS:
+                c = n.find(tag)
+                if attr in n.attrs and c is not None:
+                    defs.setdefault((tag, n.attrs[attr]), c)
+
+    edits: list[tuple[int, int, bytes]] = []
+    kept_defined: set[tuple[str, str]] = set()
+    for i, top in enumerate(tops, start=1):
+        if i in omitted:
+            continue
+        for n in top.iter():
+            if n.tag != "Shape":
+                continue
+            need: list[Node] = []
+            for tag, attr in SHARED_LISTS:
+                if attr not in n.attrs:
+                    continue
+                key = (tag, n.attrs[attr])
+                if n.find(tag) is not None:
+                    kept_defined.add(key)
+                elif key not in kept_defined and key in defs:
+                    need.append(defs[key])
+                    kept_defined.add(key)
+            if not need:
+                continue
+            after = n.find("XForm")
+            own_v = n.find("VertList")
+            if [d.tag for d in need] == ["PrimList"] and own_v is not None:
+                after = own_v
+            if after is None:
+                raise GridError("shared_geometry", "Sdílenou geometrii nelze přesunout (tvar bez XForm).")
+            a, b = _line_span(data, after.start, element_end(data, after))
+            whole_line = a != after.start or b != element_end(data, after)
+            ind = data[a:after.start] if whole_line else b""
+            block = b"".join((ind + data[d.start:element_end(data, d)] + (nl if whole_line else b"")) for d in need)
+            edits.append((b, b, block))
+    for i in sorted(omitted):
+        a, b = _line_span(data, tops[i - 1].start, element_end(data, tops[i - 1]))
+        edits.append((a, b, b""))
+    edits.sort(key=lambda e: (e[0], e[1]))
+    out, last = bytearray(), 0
+    for a, b, new in edits:
+        if a < last:
+            raise GridError("overlapping_patch", "Interní chyba: překrývající se úpravy při vynechání.")
+        out += data[last:a] + new
+        last = b
+    out += data[last:]
+    return bytes(out)
 
 
 def name_tag(text: str, limit: int = 30) -> str:

@@ -24,7 +24,7 @@ TEMPLATES: dict[str, str] = {
     "unknown_orientation": QT_TRANSLATE_NOOP("Messages", "The project has an invalid mirror setting."),
     "unknown_project_attribute": QT_TRANSLATE_NOOP("Messages", "The project contains unknown properties ({attrs}) and cannot be processed safely."),
     "multi_page_unsupported": QT_TRANSLATE_NOOP("Messages", "Projects with several pages are not supported."),
-    "convert_needs_whole_project": QT_TRANSLATE_NOOP("Messages", "To prepare the project for a laser with a different origin, all items must be selected and the project must not contain other objects ({objects}) — they would be mirrored on the other laser."),
+    "convert_needs_whole_project": QT_TRANSLATE_NOOP("Messages", "To prepare the project for a laser with a different origin, all items must be selected and the project must not contain other objects ({objects}) — they would be mirrored on the other laser. Tick them, or leave them out of the output."),
     "bad_header_change": QT_TRANSLATE_NOOP("Messages", "The project header could not be changed for the target laser ({attr})."),
     # výrobek
     "unknown_element": QT_TRANSLATE_NOOP("Messages", "Contains unknown data that could be damaged by moving."),
@@ -69,6 +69,9 @@ TEMPLATES: dict[str, str] = {
     "degenerate_item": QT_TRANSLATE_NOOP("Messages", "An item has zero size."),
     "internal_overlap": QT_TRANSLATE_NOOP("Messages", "Internal error: the grid calculation violated the gap. Nothing was saved."),
     "item_not_supported": QT_TRANSLATE_NOOP("Messages", "The selected item cannot be moved."),
+    "omitted_selected": QT_TRANSLATE_NOOP("Messages", "An object that is left out of the output cannot be arranged at the same time ({items})."),
+    "nothing_left": QT_TRANSLATE_NOOP("Messages", "Nothing would be left in the output."),
+    "shared_geometry": QT_TRANSLATE_NOOP("Messages", "An object shares its shape data with an object that is left out, and the data cannot be moved safely."),
     "validation_failed": QT_TRANSLATE_NOOP("Messages", "The layout did not pass the check; nothing was saved."),
     "verification_failed": QT_TRANSLATE_NOOP("Messages", "The output check failed; nothing was saved."),
     "source_changed": QT_TRANSLATE_NOOP("Messages", "The original file has changed since it was opened. Open it again."),

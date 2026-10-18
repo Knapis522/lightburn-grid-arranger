@@ -29,62 +29,62 @@ Invia i dettagli seguenti quando segnali il problema.</translation>
 <context>
     <name>LaserDialog</name>
     <message>
-        <location filename="../src/grid_arranger/gui/settings_dialog.py" line="338"/>
+        <location filename="../src/grid_arranger/gui/settings_dialog.py" line="361"/>
         <source>Name in LightBurn:</source>
         <translation>Nome in LightBurn:</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/settings_dialog.py" line="338"/>
+        <location filename="../src/grid_arranger/gui/settings_dialog.py" line="361"/>
         <source>Laser origin:</source>
         <translation>Origine del laser:</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/settings_dialog.py" line="338"/>
+        <location filename="../src/grid_arranger/gui/settings_dialog.py" line="361"/>
         <source>Board width:</source>
         <translation>Larghezza della lastra:</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/settings_dialog.py" line="338"/>
+        <location filename="../src/grid_arranger/gui/settings_dialog.py" line="361"/>
         <source>Board height:</source>
         <translation>Altezza della lastra:</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/settings_dialog.py" line="339"/>
+        <location filename="../src/grid_arranger/gui/settings_dialog.py" line="362"/>
         <source>Margin left:</source>
         <translation>Margine sinistro:</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/settings_dialog.py" line="339"/>
+        <location filename="../src/grid_arranger/gui/settings_dialog.py" line="362"/>
         <source>Margin right:</source>
         <translation>Margine destro:</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/settings_dialog.py" line="339"/>
+        <location filename="../src/grid_arranger/gui/settings_dialog.py" line="362"/>
         <source>Margin top:</source>
         <translation>Margine superiore:</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/settings_dialog.py" line="339"/>
+        <location filename="../src/grid_arranger/gui/settings_dialog.py" line="362"/>
         <source>Margin bottom:</source>
         <translation>Margine inferiore:</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/settings_dialog.py" line="350"/>
+        <location filename="../src/grid_arranger/gui/settings_dialog.py" line="373"/>
         <source>Edit laser</source>
         <translation>Modifica laser</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/settings_dialog.py" line="350"/>
+        <location filename="../src/grid_arranger/gui/settings_dialog.py" line="373"/>
         <source>Add laser</source>
         <translation>Aggiungi laser</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/settings_dialog.py" line="358"/>
+        <location filename="../src/grid_arranger/gui/settings_dialog.py" line="381"/>
         <source>Enter the laser name as shown in LightBurn.</source>
         <translation>Inserisci il nome del laser come lo mostra LightBurn.</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/settings_dialog.py" line="360"/>
+        <location filename="../src/grid_arranger/gui/settings_dialog.py" line="383"/>
         <source>A laser with this name is already in the catalogue.</source>
         <translation>Un laser con questo nome è già nel catalogo.</translation>
     </message>
@@ -92,476 +92,490 @@ Invia i dettagli seguenti quando segnali il problema.</translation>
 <context>
     <name>MainWindow</name>
     <message>
-        <location filename="../src/grid_arranger/gui/main_window.py" line="453"/>
-        <location filename="../src/grid_arranger/gui/selftest.py" line="72"/>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="462"/>
         <source>&amp;File</source>
         <translation>&amp;File</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/main_window.py" line="454"/>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="463"/>
         <source>&amp;Open project…</source>
         <translation>&amp;Apri progetto…</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/main_window.py" line="455"/>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="464"/>
         <source>&amp;Save as new project…</source>
         <translation>&amp;Salva come nuovo progetto…</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/main_window.py" line="456"/>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="465"/>
         <source>&amp;Quit</source>
         <translation>&amp;Esci</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/main_window.py" line="457"/>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="466"/>
         <source>Open saved project in &amp;LightBurn</source>
         <translation>Apri il progetto salvato in &amp;LightBurn</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/main_window.py" line="458"/>
-        <location filename="../src/grid_arranger/gui/main_window.py" line="459"/>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="467"/>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="468"/>
         <source>&amp;Settings</source>
         <translation>&amp;Impostazioni</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/main_window.py" line="460"/>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="469"/>
         <source>&amp;Help</source>
         <translation>&amp;Guida</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/main_window.py" line="461"/>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="470"/>
         <source>User &amp;guide</source>
         <translation>&amp;Guida utente</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/main_window.py" line="462"/>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="471"/>
         <source>Check for &amp;updates…</source>
         <translation>Verifica &amp;aggiornamenti…</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/main_window.py" line="463"/>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="472"/>
         <source>&amp;About</source>
         <translation>In&amp;formazioni</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/main_window.py" line="464"/>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="473"/>
         <source>Fit view</source>
         <translation>Adatta la vista</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/main_window.py" line="465"/>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="474"/>
         <source>&amp;Edit</source>
         <translation>&amp;Modifica</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/main_window.py" line="466"/>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="475"/>
         <source>&amp;Undo</source>
         <translation>&amp;Annulla</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/main_window.py" line="467"/>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="476"/>
         <source>&amp;Redo</source>
         <translation>&amp;Ripeti</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/main_window.py" line="468"/>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="477"/>
         <source>&amp;Copy items</source>
         <translation>&amp;Copia elementi</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/main_window.py" line="469"/>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="478"/>
         <source>&amp;Paste copies</source>
         <translation>&amp;Incolla copie</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/main_window.py" line="470"/>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="479"/>
         <source>Create &amp;copies…</source>
         <translation>Crea &amp;copie…</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/main_window.py" line="471"/>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="480"/>
         <source>&amp;Fill the board with copies</source>
         <translation>Riem&amp;pi la lastra di copie</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/main_window.py" line="472"/>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="481"/>
         <source>Automatic</source>
         <translation>Automatico</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/main_window.py" line="473"/>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="482"/>
         <source>As many columns as fit on the board width</source>
         <translation>Tante colonne quante ne entrano nella larghezza della lastra</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/main_window.py" line="474"/>
-        <source>&amp;Remove copies</source>
-        <translation>Rimuovi c&amp;opie</translation>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="483"/>
+        <source>&amp;Leave out of the output</source>
+        <translation>&amp;Escludi dall&apos;output</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/main_window.py" line="475"/>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="484"/>
+        <source>Res&amp;tore left-out objects</source>
+        <translation>Ri&amp;pristina oggetti esclusi</translation>
+    </message>
+    <message>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="485"/>
         <source>Clear &amp;selection</source>
         <translation>Annulla la &amp;selezione</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/main_window.py" line="476"/>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="486"/>
         <source>Toolbar</source>
         <translation>Barra degli strumenti</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/main_window.py" line="480"/>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="490"/>
         <source>Drag to rearrange the toolbar</source>
         <translation>Trascina per riordinare la barra degli strumenti</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/main_window.py" line="482"/>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="492"/>
         <source>Project</source>
         <translation>Progetto</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/main_window.py" line="483"/>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="493"/>
         <source>Prepare for:</source>
         <translation>Prepara per:</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/main_window.py" line="484"/>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="494"/>
         <source>Items (groups)</source>
         <translation>Elementi (gruppi)</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/main_window.py" line="485"/>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="495"/>
         <source>Up</source>
         <translation>Su</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/main_window.py" line="486"/>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="496"/>
         <source>Down</source>
         <translation>Giù</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/main_window.py" line="487"/>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="497"/>
         <source>Default order</source>
         <translation>Ordine predefinito</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/main_window.py" line="488"/>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="498"/>
         <source>Select all</source>
         <translation>Seleziona tutto</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/main_window.py" line="489"/>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="499"/>
         <source>Select none</source>
         <translation>Deseleziona tutto</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/main_window.py" line="491"/>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="501"/>
         <source>Layout profile</source>
         <translation>Profilo di disposizione</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/main_window.py" line="492"/>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="502"/>
         <source>Save…</source>
         <translation>Salva…</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/main_window.py" line="493"/>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="503"/>
         <source>Save the grid, gaps, fill order, rotation and placement as a named profile</source>
         <translation>Salva griglia, spaziature, ordine di riempimento, rotazione e posizionamento come profilo con nome</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/main_window.py" line="494"/>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="504"/>
         <source>Delete</source>
         <translation>Elimina</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/main_window.py" line="496"/>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="506"/>
         <source>Grid</source>
         <translation>Griglia</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/main_window.py" line="497"/>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="507"/>
         <source>Columns:</source>
         <translation>Colonne:</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/main_window.py" line="497"/>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="507"/>
         <source>Gap X:</source>
         <translation>Spaziatura X:</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/main_window.py" line="497"/>
-        <location filename="../src/grid_arranger/gui/main_window.py" line="523"/>
-        <location filename="../src/grid_arranger/gui/main_window.py" line="537"/>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="507"/>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="533"/>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="547"/>
         <source>Y:</source>
         <translation>Y:</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/main_window.py" line="497"/>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="507"/>
         <source>Fill order:</source>
         <translation>Ordine di riempimento:</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/main_window.py" line="497"/>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="507"/>
         <source>Rotation:</source>
         <translation>Rotazione:</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/main_window.py" line="503"/>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="513"/>
         <source>Do not rotate</source>
         <translation>Non ruotare</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/main_window.py" line="503"/>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="513"/>
         <source>In 90° steps</source>
         <translation>A passi di 90°</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/main_window.py" line="503"/>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="513"/>
         <source>Any angle (smallest area)</source>
         <translation>Qualsiasi angolo (area minima)</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/main_window.py" line="505"/>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="515"/>
         <source>Rotate items to save material: each item is turned so that the rectangle around it is as small as possible, and the orientation giving the smallest grid is chosen. Exceptions: select an item and click “No rotation”.</source>
         <translation>Ruota gli elementi per risparmiare materiale: ogni elemento viene ruotato in modo che il rettangolo che lo racchiude sia il più piccolo possibile, e viene scelto l&apos;orientamento che dà la griglia più piccola. Eccezioni: seleziona un elemento e fai clic su «Non ruotare».</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/main_window.py" line="507"/>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="517"/>
         <source>No rotation</source>
         <translation>Non ruotare</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/main_window.py" line="508"/>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="518"/>
         <source>The selected items will never be rotated.</source>
         <translation>Gli elementi selezionati non verranno mai ruotati.</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/main_window.py" line="509"/>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="519"/>
         <source>Angle of selected:</source>
         <translation>Angolo della selezione:</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/main_window.py" line="510"/>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="520"/>
         <source>Pieces:</source>
         <translation>Pezzi:</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/main_window.py" line="511"/>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="521"/>
         <source>Number of pieces of the selected items (original + copies right after it). 0 = do not place.</source>
         <translation>Numero di pezzi degli elementi selezionati (originale + copie subito dopo). 0 = non posizionare.</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/main_window.py" line="514"/>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="524"/>
         <source>Rotation of the selected items in degrees (positive = clockwise). Select items in the list or by clicking them in the preview (Ctrl+click adds more). A manual angle is kept as entered.</source>
         <translation>Rotazione degli elementi selezionati in gradi (positivo = senso orario). Seleziona gli elementi nell&apos;elenco o facendo clic su di essi nell&apos;anteprima (Ctrl+clic ne aggiunge altri). Un angolo manuale viene mantenuto come inserito.</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/main_window.py" line="516"/>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="526"/>
         <source>Rotate the selected items 90° anticlockwise</source>
         <translation>Ruota gli elementi selezionati di 90° in senso antiorario</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/main_window.py" line="517"/>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="527"/>
         <source>Rotate the selected items 90° clockwise</source>
         <translation>Ruota gli elementi selezionati di 90° in senso orario</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/main_window.py" line="518"/>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="528"/>
         <source>Auto</source>
         <translation>Auto</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/main_window.py" line="519"/>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="529"/>
         <source>Remove the manual angle: the selected items are rotated automatically again</source>
         <translation>Rimuovi l&apos;angolo manuale: gli elementi selezionati tornano a essere ruotati automaticamente</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/main_window.py" line="520"/>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="530"/>
         <source>From the laser origin</source>
         <translation>Dall&apos;origine del laser</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/main_window.py" line="520"/>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="530"/>
         <source>Reading order (from top left)</source>
         <translation>Ordine di lettura (dall&apos;alto a sinistra)</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/main_window.py" line="522"/>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="532"/>
         <source>Placement</source>
         <translation>Posizionamento</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/main_window.py" line="523"/>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="533"/>
         <source>Place grid:</source>
         <translation>Posiziona la griglia:</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/main_window.py" line="523"/>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="533"/>
         <source>Corner X:</source>
         <translation>Angolo X:</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/main_window.py" line="527"/>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="537"/>
         <source>In the board corner at the laser origin</source>
         <translation>Nell&apos;angolo della lastra all&apos;origine del laser</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/main_window.py" line="528"/>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="538"/>
         <source>In the centre of the board</source>
         <translation>Al centro della lastra</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/main_window.py" line="529"/>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="539"/>
         <source>Manually (LightBurn coordinates)</source>
         <translation>Manualmente (coordinate di LightBurn)</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/main_window.py" line="530"/>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="540"/>
         <source>At the original position of the items</source>
         <translation>Nella posizione originale degli elementi</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/main_window.py" line="532"/>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="542"/>
         <source>Position of the grid corner nearest to the laser origin, in LightBurn X/Y coordinates.</source>
         <translation>Posizione dell&apos;angolo della griglia più vicino all&apos;origine del laser, in coordinate X/Y di LightBurn.</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/main_window.py" line="536"/>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="546"/>
         <source>Board</source>
         <translation>Lastra</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/main_window.py" line="537"/>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="547"/>
         <source>Width:</source>
         <translation>Larghezza:</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/main_window.py" line="537"/>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="547"/>
         <source>Height:</source>
         <translation>Altezza:</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/main_window.py" line="537"/>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="547"/>
         <source>Board corner X:</source>
         <translation>Angolo della lastra X:</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/main_window.py" line="538"/>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="548"/>
         <source>Margin left:</source>
         <translation>Margine sinistro:</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/main_window.py" line="538"/>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="548"/>
         <source>right:</source>
         <translation>destro:</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/main_window.py" line="538"/>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="548"/>
         <source>Margin top:</source>
         <translation>Margine superiore:</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/main_window.py" line="538"/>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="548"/>
         <source>bottom:</source>
         <translation>inferiore:</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/main_window.py" line="541"/>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="551"/>
         <source>Save as default for this laser</source>
         <translation>Salva come predefinito per questo laser</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/main_window.py" line="542"/>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="552"/>
         <source>Show artwork</source>
         <translation>Mostra grafica</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/main_window.py" line="629"/>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="639"/>
         <source>top right</source>
         <translation>in alto a destra</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/main_window.py" line="630"/>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="640"/>
         <source>top left</source>
         <translation>in alto a sinistra</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/main_window.py" line="631"/>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="641"/>
         <source>bottom left</source>
         <translation>in basso a sinistra</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/main_window.py" line="632"/>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="642"/>
         <source>bottom right</source>
         <translation>in basso a destra</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/main_window.py" line="636"/>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="646"/>
         <source>Grid Arranger for LightBurn</source>
         <translation>Grid Arranger for LightBurn</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/main_window.py" line="645"/>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="655"/>
         <source>(last saved as {name})</source>
         <translation>(ultimo salvataggio come {name})</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/main_window.py" line="663"/>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="673"/>
         <source>No project open. Save the project in LightBurn first, then open the saved .lbrn2 file.</source>
         <translation>Nessun progetto aperto. Salva prima il progetto in LightBurn, poi apri il file .lbrn2 salvato.</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/main_window.py" line="670"/>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="680"/>
         <source>Last saved as &lt;b&gt;{name}&lt;/b&gt;. You keep arranging the project opened above; the next save creates another file.</source>
         <translation>Ultimo salvataggio come &lt;b&gt;{name}&lt;/b&gt;. Continui a disporre il progetto aperto sopra; il prossimo salvataggio crea un altro file.</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/main_window.py" line="674"/>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="684"/>
         <source>Saved for laser: {device}, origin {origin} (LightBurn {version}).</source>
         <translation>Salvato per il laser: {device}, origine {origin} (LightBurn {version}).</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/main_window.py" line="677"/>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="687"/>
         <source>After switching the laser in LightBurn, save the project again and reopen it here.</source>
         <translation>Dopo aver cambiato laser in LightBurn, salva di nuovo il progetto e riaprilo qui.</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/main_window.py" line="684"/>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="694"/>
         <source>Open LightBurn project</source>
         <translation>Apri progetto LightBurn</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/main_window.py" line="685"/>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="695"/>
         <source>LightBurn project (*.lbrn2);;All files (*)</source>
         <translation>Progetto LightBurn (*.lbrn2);;Tutti i file (*)</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/main_window.py" line="728"/>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="739"/>
         <source>Board saved as default for {device}.</source>
         <translation>Lastra salvata come predefinita per {device}.</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/main_window.py" line="743"/>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="754"/>
         <source>As in the project ({device})</source>
         <translation>Come nel progetto ({device})</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/main_window.py" line="749"/>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="760"/>
         <source>Manage lasers…</source>
         <translation>Gestisci laser…</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/main_window.py" line="754"/>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="765"/>
         <source>Prepare the output for another laser from the catalogue. Items are mirrored so that they look the same on a laser with a different origin.</source>
         <translation>Prepara l&apos;output per un altro laser del catalogo. Gli elementi vengono specchiati in modo da apparire uguali su un laser con un&apos;altra origine.</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/main_window.py" line="813"/>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="821"/>
+        <source>Not in the output (Settings → Saving).</source>
+        <translation>Non sarà nell&apos;output (Impostazioni → Salvataggio).</translation>
+    </message>
+    <message>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="828"/>
         <source>Outline layer: {layer}</source>
         <translation>Livello del contorno: {layer}</translation>
     </message>
+    <message>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="854"/>
+        <source>Left out of the output. Restore it with Edit → Restore left-out objects.</source>
+        <translation>Escluso dall&apos;output. Ripristinalo con Modifica → Ripristina oggetti esclusi.</translation>
+    </message>
     <message numerus="yes">
-        <location filename="../src/grid_arranger/gui/main_window.py" line="826"/>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="861"/>
         <source>Selected %n item(s)</source>
         <translation>
             <numerusform>%n elemento selezionato</numerusform>
@@ -569,42 +583,52 @@ Invia i dettagli seguenti quando segnali il problema.</translation>
         </translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/main_window.py" line="826"/>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="861"/>
         <source>supported: {s}, total: {t}</source>
         <translation>supportati: {s}, totale: {t}</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/main_window.py" line="836"/>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="871"/>
         <source>{w} × {h} {unit}</source>
         <translation>{w} × {h} {unit}</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/main_window.py" line="838"/>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="873"/>
         <source>(copy of {src})</source>
         <translation>(copia di {src})</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/main_window.py" line="845"/>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="880"/>
         <source>(no rotation)</source>
         <translation>(senza rotazione)</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/main_window.py" line="850"/>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="885"/>
         <source>(manual)</source>
         <translation>(manuale)</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/main_window.py" line="852"/>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="887"/>
         <source>cannot be moved</source>
         <translation>non può essere spostato</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/main_window.py" line="969"/>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="896"/>
+        <source>left out</source>
+        <translation>escluso</translation>
+    </message>
+    <message>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="898"/>
+        <source>loose object ({kind})</source>
+        <translation>oggetto sciolto ({kind})</translation>
+    </message>
+    <message>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="1015"/>
         <source>Restore default toolbar layout</source>
         <translation>Ripristina la disposizione predefinita della barra degli strumenti</translation>
     </message>
     <message numerus="yes">
-        <location filename="../src/grid_arranger/gui/main_window.py" line="1008"/>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="1054"/>
         <source>Added %n copies.</source>
         <translation>
             <numerusform>Aggiunta %n copia.</numerusform>
@@ -612,7 +636,7 @@ Invia i dettagli seguenti quando segnali il problema.</translation>
         </translation>
     </message>
     <message numerus="yes">
-        <location filename="../src/grid_arranger/gui/main_window.py" line="1030"/>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="1076"/>
         <source>Copied %n item(s). Paste with Ctrl+V.</source>
         <translation>
             <numerusform>%n elemento copiato. Incolla con Ctrl+V.</numerusform>
@@ -620,17 +644,17 @@ Invia i dettagli seguenti quando segnali il problema.</translation>
         </translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/main_window.py" line="1039"/>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="1085"/>
         <source>First select the items to copy — in the list or by clicking them in the preview.</source>
         <translation>Seleziona prima gli elementi da copiare — nell&apos;elenco o facendo clic su di essi nell&apos;anteprima.</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/main_window.py" line="1041"/>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="1087"/>
         <source>Create copies</source>
         <translation>Crea copie</translation>
     </message>
     <message numerus="yes">
-        <location filename="../src/grid_arranger/gui/main_window.py" line="1042"/>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="1088"/>
         <source>Number of copies of each selected item (%n selected):</source>
         <translation>
             <numerusform>Numero di copie di ogni elemento selezionato (%n selezionato):</numerusform>
@@ -638,22 +662,22 @@ Invia i dettagli seguenti quando segnali il problema.</translation>
         </translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/main_window.py" line="1135"/>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="1181"/>
         <source>First select the item(s) to fill the board with — in the list or by clicking them in the preview.</source>
         <translation>Seleziona prima l&apos;elemento (o gli elementi) con cui riempire la lastra — nell&apos;elenco o facendo clic su di essi nell&apos;anteprima.</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/main_window.py" line="1138"/>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="1184"/>
         <source>The current layout does not fit on the board; fix it first (see the messages below the preview).</source>
         <translation>La disposizione attuale non entra nella lastra; correggila prima (vedi i messaggi sotto l&apos;anteprima).</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/main_window.py" line="1149"/>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="1195"/>
         <source>No more copies fit on the board.</source>
         <translation>Nella lastra non entra più nessuna copia.</translation>
     </message>
     <message numerus="yes">
-        <location filename="../src/grid_arranger/gui/main_window.py" line="1160"/>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="1206"/>
         <source>Added %n copies — the board is full.</source>
         <translation>
             <numerusform>Aggiunta %n copia — la lastra è piena.</numerusform>
@@ -661,118 +685,126 @@ Invia i dettagli seguenti quando segnali il problema.</translation>
         </translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/main_window.py" line="1352"/>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="1456"/>
         <source>— no profile —</source>
         <translation>— nessun profilo —</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/main_window.py" line="1406"/>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="1510"/>
         <source>Profile “{name}” applied.</source>
         <translation>Profilo «{name}» applicato.</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/main_window.py" line="1412"/>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="1516"/>
         <source>Save profile</source>
         <translation>Salva profilo</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/main_window.py" line="1412"/>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="1516"/>
         <source>Profile name (grid, gaps, fill order, rotation, placement):</source>
         <translation>Nome del profilo (griglia, spaziature, ordine di riempimento, rotazione, posizionamento):</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/main_window.py" line="1417"/>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="1521"/>
         <source>The profile “{name}” already exists. Overwrite it?</source>
         <translation>Il profilo «{name}» esiste già. Sovrascriverlo?</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/main_window.py" line="1421"/>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="1525"/>
         <source>Profile “{name}” saved.</source>
         <translation>Profilo «{name}» salvato.</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/main_window.py" line="1426"/>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="1530"/>
         <source>Delete the profile “{name}”?</source>
         <translation>Eliminare il profilo «{name}»?</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/main_window.py" line="1512"/>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="1618"/>
         <source>Translation catalogue is missing; showing English.</source>
         <translation>Manca il catalogo di traduzione; viene mostrato l&apos;inglese.</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/main_window.py" line="1521"/>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="1627"/>
         <source>The output is prepared for the laser {laser} (origin {origin}). Layer settings (power, speed) stay as in the project — check them in LightBurn.</source>
         <translation>L&apos;output viene preparato per il laser {laser} (origine {origin}). Le impostazioni dei livelli (potenza, velocità) restano come nel progetto — controllale in LightBurn.</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/main_window.py" line="1526"/>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="1632"/>
         <source>The grid cannot be calculated.</source>
         <translation>Impossibile calcolare la griglia.</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/main_window.py" line="1532"/>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="1638"/>
         <source>Grid {c} × {r}: {w} × {h} {unit}. Corner at the origin side: X {x}, Y {y}.</source>
         <translation>Griglia {c} × {r}: {w} × {h} {unit}. Angolo lato origine: X {x}, Y {y}.</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/main_window.py" line="1544"/>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="1650"/>
         <source>The layout passed all checks.</source>
         <translation>La disposizione ha superato tutti i controlli.</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/main_window.py" line="1581"/>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="1687"/>
         <source>Choose another name or folder.</source>
         <translation>Scegli un altro nome o cartella.</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/main_window.py" line="1587"/>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="1693"/>
         <source>Saved:
 {out}</source>
         <translation>Salvato:
 {out}</translation>
     </message>
+    <message numerus="yes">
+        <location filename="../src/grid_arranger/gui/main_window.py" line="1695"/>
+        <source>Left out of the output: %n object(s).</source>
+        <translation>
+            <numerusform>Escluso dall&apos;output: %n oggetto.</numerusform>
+            <numerusform>Esclusi dall&apos;output: %n oggetti.</numerusform>
+        </translation>
+    </message>
     <message>
-        <location filename="../src/grid_arranger/gui/main_window.py" line="1589"/>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="1697"/>
         <source>Protocol:
 {proto}</source>
         <translation>Protocollo:
 {proto}</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/main_window.py" line="1593"/>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="1701"/>
         <source>Open it in LightBurn (button below, or File → Open — not Import) and check the layers, Preview and the position on the machine before cutting.</source>
         <translation>Aprilo in LightBurn (pulsante qui sotto, oppure File → Open — non Import) e prima di tagliare controlla i livelli, l&apos;anteprima (Preview) e la posizione sulla macchina.</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/main_window.py" line="1595"/>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="1703"/>
         <source>The original project stays open here. To continue arranging the saved file instead, tick the option below.</source>
         <translation>Il progetto originale resta aperto qui. Per continuare invece con il file salvato, seleziona l&apos;opzione qui sotto.</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/main_window.py" line="1607"/>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="1715"/>
         <source>Open in LightBurn</source>
         <translation>Apri in LightBurn</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/main_window.py" line="1610"/>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="1718"/>
         <source>Continue working on the saved file here (instead of the original)</source>
         <translation>Continua qui con il file salvato (invece dell&apos;originale)</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/main_window.py" line="1623"/>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="1731"/>
         <source>Now working on the saved file {name}. The original is unchanged.</source>
         <translation>Ora stai lavorando sul file salvato {name}. L&apos;originale non è cambiato.</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/main_window.py" line="1632"/>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="1740"/>
         <source>The saved project was not found:
 {path}</source>
         <translation>Il progetto salvato non è stato trovato:
 {path}</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/main_window.py" line="1635"/>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="1743"/>
         <source>The project could not be opened. Check that .lbrn2 files are associated with LightBurn (right-click a .lbrn2 file → Open with → LightBurn, &quot;Always&quot;).
 
 {path}</source>
@@ -781,27 +813,27 @@ Invia i dettagli seguenti quando segnali il problema.</translation>
 {path}</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/main_window.py" line="1639"/>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="1747"/>
         <source>Opening in LightBurn: {name}</source>
         <translation>Apertura in LightBurn: {name}</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/main_window.py" line="1744"/>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="1857"/>
         <source>About</source>
         <translation>Informazioni</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/main_window.py" line="1745"/>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="1858"/>
         <source>&lt;b&gt;Grid Arranger for LightBurn&lt;/b&gt; {version}&lt;br&gt;&lt;br&gt;Moves existing groups of a LightBurn project into an exact grid and saves a new .lbrn2 file.&lt;br&gt;&lt;br&gt;Unofficial tool — not a product of LightBurn Software. Always check the result in LightBurn before cutting.</source>
         <translation>&lt;b&gt;Grid Arranger for LightBurn&lt;/b&gt; {version}&lt;br&gt;&lt;br&gt;Sposta i gruppi esistenti di un progetto LightBurn in una griglia esatta e salva un nuovo file .lbrn2.&lt;br&gt;&lt;br&gt;Strumento non ufficiale — non è un prodotto di LightBurn Software. Controlla sempre il risultato in LightBurn prima di tagliare.</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/main_window.py" line="1753"/>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="1866"/>
         <source>Save as new project</source>
         <translation>Salva come nuovo progetto</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/main_window.py" line="1753"/>
+        <location filename="../src/grid_arranger/gui/main_window.py" line="1866"/>
         <source>LightBurn project (*.lbrn2)</source>
         <translation>Progetto LightBurn (*.lbrn2)</translation>
     </message>
@@ -870,8 +902,8 @@ Invia i dettagli seguenti quando segnali il problema.</translation>
     </message>
     <message>
         <location filename="../src/grid_arranger/gui/messages.py" line="27"/>
-        <source>To prepare the project for a laser with a different origin, all items must be selected and the project must not contain other objects ({objects}) — they would be mirrored on the other laser.</source>
-        <translation>Per preparare il progetto per un laser con un&apos;altra origine, devono essere selezionati tutti gli elementi e il progetto non deve contenere altri oggetti ({objects}) — sull&apos;altro laser risulterebbero specchiati.</translation>
+        <source>To prepare the project for a laser with a different origin, all items must be selected and the project must not contain other objects ({objects}) — they would be mirrored on the other laser. Tick them, or leave them out of the output.</source>
+        <translation>Per preparare il progetto per un laser con un&apos;altra origine, devono essere selezionati tutti gli elementi e il progetto non deve contenere altri oggetti ({objects}) — sull&apos;altro laser risulterebbero specchiati. Spuntali oppure escludili dall&apos;output.</translation>
     </message>
     <message>
         <location filename="../src/grid_arranger/gui/messages.py" line="28"/>
@@ -1080,41 +1112,56 @@ Invia i dettagli seguenti quando segnali il problema.</translation>
     </message>
     <message>
         <location filename="../src/grid_arranger/gui/messages.py" line="72"/>
+        <source>An object that is left out of the output cannot be arranged at the same time ({items}).</source>
+        <translation>Un oggetto escluso dall&apos;output non può essere disposto contemporaneamente ({items}).</translation>
+    </message>
+    <message>
+        <location filename="../src/grid_arranger/gui/messages.py" line="73"/>
+        <source>Nothing would be left in the output.</source>
+        <translation>Nell&apos;output non resterebbe nulla.</translation>
+    </message>
+    <message>
+        <location filename="../src/grid_arranger/gui/messages.py" line="74"/>
+        <source>An object shares its shape data with an object that is left out, and the data cannot be moved safely.</source>
+        <translation>Un oggetto condivide i dati di forma con un oggetto escluso e tali dati non possono essere spostati in sicurezza.</translation>
+    </message>
+    <message>
+        <location filename="../src/grid_arranger/gui/messages.py" line="75"/>
         <source>The layout did not pass the check; nothing was saved.</source>
         <translation>La disposizione non ha superato il controllo; non è stato salvato nulla.</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/messages.py" line="73"/>
+        <location filename="../src/grid_arranger/gui/messages.py" line="76"/>
         <source>The output check failed; nothing was saved.</source>
         <translation>Il controllo dell&apos;output non è riuscito; non è stato salvato nulla.</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/messages.py" line="74"/>
+        <location filename="../src/grid_arranger/gui/messages.py" line="77"/>
         <source>The original file has changed since it was opened. Open it again.</source>
         <translation>Il file originale è cambiato dopo l&apos;apertura. Aprilo di nuovo.</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/messages.py" line="75"/>
+        <location filename="../src/grid_arranger/gui/messages.py" line="78"/>
         <source>The file already exists (or its protocol .json does). The application never overwrites files; nothing was saved.</source>
         <translation>Il file esiste già (o il suo protocollo .json). L&apos;applicazione non sovrascrive mai i file; non è stato salvato nulla.</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/messages.py" line="76"/>
+        <location filename="../src/grid_arranger/gui/messages.py" line="79"/>
         <source>The output would overwrite the original; refused.</source>
         <translation>L&apos;output sovrascriverebbe l&apos;originale; rifiutato.</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/messages.py" line="77"/>
+        <location filename="../src/grid_arranger/gui/messages.py" line="80"/>
         <source>Saving failed: {detail}</source>
         <translation>Salvataggio non riuscito: {detail}</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/messages.py" line="78"/>
+        <location filename="../src/grid_arranger/gui/messages.py" line="81"/>
         <source>There is no free name for the output file.</source>
         <translation>Non c&apos;è un nome libero per il file di output.</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/messages.py" line="81"/>
+        <location filename="../src/grid_arranger/gui/messages.py" line="84"/>
         <source>Error {code}</source>
         <translation>Errore {code}</translation>
     </message>
@@ -1122,193 +1169,213 @@ Invia i dettagli seguenti quando segnali il problema.</translation>
 <context>
     <name>SettingsDialog</name>
     <message>
-        <location filename="../src/grid_arranger/gui/settings_dialog.py" line="166"/>
+        <location filename="../src/grid_arranger/gui/settings_dialog.py" line="181"/>
         <source>Settings</source>
         <translation>Impostazioni</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/settings_dialog.py" line="169"/>
+        <location filename="../src/grid_arranger/gui/settings_dialog.py" line="184"/>
         <source>Close</source>
         <translation>Chiudi</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/settings_dialog.py" line="170"/>
+        <location filename="../src/grid_arranger/gui/settings_dialog.py" line="185"/>
         <source>General</source>
         <translation>Generale</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/settings_dialog.py" line="170"/>
+        <location filename="../src/grid_arranger/gui/settings_dialog.py" line="185"/>
         <source>Lasers</source>
         <translation>Laser</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/settings_dialog.py" line="170"/>
+        <location filename="../src/grid_arranger/gui/settings_dialog.py" line="185"/>
         <source>Saving</source>
         <translation>Salvataggio</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/settings_dialog.py" line="170"/>
+        <location filename="../src/grid_arranger/gui/settings_dialog.py" line="185"/>
         <source>Updates</source>
         <translation>Aggiornamenti</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/settings_dialog.py" line="173"/>
+        <location filename="../src/grid_arranger/gui/settings_dialog.py" line="188"/>
         <source>Lasers you prepare projects for. Lasers from opened projects are added automatically. The name must match the device name in LightBurn; the board is offered when the laser is selected.</source>
         <translation>I laser per cui prepari i progetti. I laser dei progetti aperti vengono aggiunti automaticamente. Il nome deve corrispondere al nome del dispositivo in LightBurn; la lastra viene proposta quando si seleziona il laser.</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/settings_dialog.py" line="175"/>
+        <location filename="../src/grid_arranger/gui/settings_dialog.py" line="190"/>
         <source>Add…</source>
         <translation>Aggiungi…</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/settings_dialog.py" line="176"/>
+        <location filename="../src/grid_arranger/gui/settings_dialog.py" line="191"/>
         <source>Edit…</source>
         <translation>Modifica…</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/settings_dialog.py" line="177"/>
+        <location filename="../src/grid_arranger/gui/settings_dialog.py" line="192"/>
         <source>Remove</source>
         <translation>Rimuovi</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/settings_dialog.py" line="179"/>
+        <location filename="../src/grid_arranger/gui/settings_dialog.py" line="194"/>
         <source>Language:</source>
         <translation>Lingua:</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/settings_dialog.py" line="179"/>
+        <location filename="../src/grid_arranger/gui/settings_dialog.py" line="194"/>
         <source>Appearance:</source>
         <translation>Aspetto:</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/settings_dialog.py" line="179"/>
+        <location filename="../src/grid_arranger/gui/settings_dialog.py" line="194"/>
         <source>Units:</source>
         <translation>Unità:</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/settings_dialog.py" line="180"/>
+        <location filename="../src/grid_arranger/gui/settings_dialog.py" line="195"/>
         <source>Layout panel:</source>
         <translation>Pannello di disposizione:</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/settings_dialog.py" line="183"/>
-        <location filename="../src/grid_arranger/gui/settings_dialog.py" line="184"/>
+        <location filename="../src/grid_arranger/gui/settings_dialog.py" line="198"/>
+        <location filename="../src/grid_arranger/gui/settings_dialog.py" line="199"/>
         <source>Automatic (system)</source>
         <translation>Automatico (sistema)</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/settings_dialog.py" line="184"/>
+        <location filename="../src/grid_arranger/gui/settings_dialog.py" line="199"/>
         <source>Light</source>
         <translation>Chiaro</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/settings_dialog.py" line="184"/>
+        <location filename="../src/grid_arranger/gui/settings_dialog.py" line="199"/>
         <source>Dark</source>
         <translation>Scuro</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/settings_dialog.py" line="185"/>
+        <location filename="../src/grid_arranger/gui/settings_dialog.py" line="200"/>
         <source>Millimetres (mm)</source>
         <translation>Millimetri (mm)</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/settings_dialog.py" line="185"/>
+        <location filename="../src/grid_arranger/gui/settings_dialog.py" line="200"/>
         <source>Inches (in)</source>
         <translation>Pollici (in)</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/settings_dialog.py" line="186"/>
+        <location filename="../src/grid_arranger/gui/settings_dialog.py" line="201"/>
         <source>Left of the preview</source>
         <translation>A sinistra dell&apos;anteprima</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/settings_dialog.py" line="186"/>
+        <location filename="../src/grid_arranger/gui/settings_dialog.py" line="201"/>
         <source>Right of the preview</source>
         <translation>A destra dell&apos;anteprima</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/settings_dialog.py" line="187"/>
+        <location filename="../src/grid_arranger/gui/settings_dialog.py" line="202"/>
         <source>Side of the window with the Project, Items, Grid, Placement and Board sections.</source>
         <translation>Lato della finestra con le sezioni Progetto, Elementi, Griglia, Posizionamento e Lastra.</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/settings_dialog.py" line="188"/>
+        <location filename="../src/grid_arranger/gui/settings_dialog.py" line="203"/>
         <source>Units change only how values are shown and entered; the calculation and the saved project always use millimetres.</source>
         <translation>Le unità cambiano solo la visualizzazione e l&apos;inserimento dei valori; il calcolo e il progetto salvato usano sempre i millimetri.</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/settings_dialog.py" line="190"/>
+        <location filename="../src/grid_arranger/gui/settings_dialog.py" line="205"/>
+        <source>Objects that are not ticked</source>
+        <translation>Oggetti non spuntati</translation>
+    </message>
+    <message>
+        <location filename="../src/grid_arranger/gui/settings_dialog.py" line="206"/>
+        <source>Leave out of the output</source>
+        <translation>Escludi dall&apos;output</translation>
+    </message>
+    <message>
+        <location filename="../src/grid_arranger/gui/settings_dialog.py" line="207"/>
+        <source>Keep in place (the grid avoids them)</source>
+        <translation>Lascia al proprio posto (la griglia li evita)</translation>
+    </message>
+    <message>
+        <location filename="../src/grid_arranger/gui/settings_dialog.py" line="209"/>
+        <source>Unticked groups and loose objects. Left-out objects are not drawn in the preview and are not in the saved project; the original project is never changed.</source>
+        <translation>Gruppi non spuntati e oggetti sciolti. Gli oggetti esclusi non vengono disegnati nell&apos;anteprima e non sono nel progetto salvato; il progetto originale non viene mai modificato.</translation>
+    </message>
+    <message>
+        <location filename="../src/grid_arranger/gui/settings_dialog.py" line="211"/>
         <source>Save protocol</source>
         <translation>Protocollo di salvataggio</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/settings_dialog.py" line="191"/>
+        <location filename="../src/grid_arranger/gui/settings_dialog.py" line="212"/>
         <source>Do not save</source>
         <translation>Non salvare</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/settings_dialog.py" line="192"/>
+        <location filename="../src/grid_arranger/gui/settings_dialog.py" line="213"/>
         <source>Next to the saved project</source>
         <translation>Accanto al progetto salvato</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/settings_dialog.py" line="193"/>
+        <location filename="../src/grid_arranger/gui/settings_dialog.py" line="214"/>
         <source>In the application&apos;s protocol folder</source>
         <translation>Nella cartella dei protocolli dell&apos;applicazione</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/settings_dialog.py" line="194"/>
+        <location filename="../src/grid_arranger/gui/settings_dialog.py" line="215"/>
         <source>A record (.json) of what the output was made from and how — useful for tracing or reporting a problem. It contains no artwork or texts.</source>
         <translation>Un registro (.json) di da cosa e come è stato creato l&apos;output — utile per la tracciabilità o per segnalare un problema. Non contiene grafica né testi.</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/settings_dialog.py" line="196"/>
+        <location filename="../src/grid_arranger/gui/settings_dialog.py" line="217"/>
         <source>Open protocol folder</source>
         <translation>Apri la cartella dei protocolli</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/settings_dialog.py" line="197"/>
+        <location filename="../src/grid_arranger/gui/settings_dialog.py" line="218"/>
         <source>Check for updates &amp;automatically</source>
         <translation>Verifica gli aggiornamenti &amp;automaticamente</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/settings_dialog.py" line="198"/>
+        <location filename="../src/grid_arranger/gui/settings_dialog.py" line="219"/>
         <source>Include &amp;pre-release versions</source>
         <translation>Includi le versioni &amp;preliminari</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/settings_dialog.py" line="199"/>
+        <location filename="../src/grid_arranger/gui/settings_dialog.py" line="220"/>
         <source>Installed version: {version}</source>
         <translation>Versione installata: {version}</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/settings_dialog.py" line="200"/>
+        <location filename="../src/grid_arranger/gui/settings_dialog.py" line="221"/>
         <source>Check for &amp;updates…</source>
         <translation>Verifica &amp;aggiornamenti…</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/settings_dialog.py" line="255"/>
+        <location filename="../src/grid_arranger/gui/settings_dialog.py" line="278"/>
         <source>top left</source>
         <translation>in alto a sinistra</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/settings_dialog.py" line="255"/>
+        <location filename="../src/grid_arranger/gui/settings_dialog.py" line="278"/>
         <source>top right</source>
         <translation>in alto a destra</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/settings_dialog.py" line="256"/>
+        <location filename="../src/grid_arranger/gui/settings_dialog.py" line="279"/>
         <source>bottom left</source>
         <translation>in basso a sinistra</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/settings_dialog.py" line="256"/>
+        <location filename="../src/grid_arranger/gui/settings_dialog.py" line="279"/>
         <source>bottom right</source>
         <translation>in basso a destra</translation>
     </message>
     <message>
-        <location filename="../src/grid_arranger/gui/settings_dialog.py" line="265"/>
+        <location filename="../src/grid_arranger/gui/settings_dialog.py" line="288"/>
         <source>origin {origin}</source>
         <translation>origine {origin}</translation>
     </message>

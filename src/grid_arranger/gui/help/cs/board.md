@@ -8,7 +8,7 @@ Před uložením aplikace kontroluje:
 
 - všechny přesouvané výrobky leží ve využitelné ploše desky,
 - výrobky se nepřekrývají a dodržují mezeru,
-- výrobky dodržují mezeru i od **nepřesouvaných** skupin a volných objektů,
+- výrobky dodržují mezeru i od **nepřesouvaných** skupin a volných objektů, pokud ve výstupu zůstávají (Nastavení → Uložení); vynechané objekty se nepočítají,
 - objekt, jehož rozměr nejde zjistit, uložení **zablokuje** (nelze potvrdit bezpečnost).
 
 Chyby (✖) uložení blokují a uvádějí konkrétní výrobky. Upozornění (⚠) uložení nebrání. Aplikace nikdy sama nemění měřítko, neotáčí ani neposouvá nevybrané objekty.

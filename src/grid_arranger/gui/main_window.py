@@ -39,7 +39,7 @@ from ..adapters.lightburn.render import ProjectRenderer
 from ..adapters.lightburn.write import name_tag, next_output_path
 from ..application.arrange_job import (
     AUTO_COLUMNS, ROTATION_MODES, ArrangeParams, ItemGeometry, MaterialInput, Plan, TargetLaser, check_output_path, execute, make_plan,
-    material_to_core, normalize_angle,
+    material_to_core, normalize_angle, top_index,
 )
 from ..core.collision import usable_area
 from ..core.order import default_order, deselect, move_down, move_up, select, swap
@@ -85,6 +85,8 @@ class MainWindow(QMainWindow):
         self.manual_angles: dict[str, float] = {}
         self.copies: dict[str, str] = {}
         """Kopie výrobků ``{id kopie: zdroj}`` v pořadí vytvoření (spec. v1.16)."""
+        self.omitted: set[str] = set()
+        """Objekty výslovně vynechané z výstupu (Delete; spec. v1.27)."""
         self._clipboard: list[str] = []
         self.history = History()
         self._restoring = False
@@ -156,9 +158,12 @@ class MainWindow(QMainWindow):
         self.act_fill_board = QAction(self)  # vyplnit desku kopiemi vybraných výrobků (spec. v1.24)
         self.act_fill_board.setShortcut(QKeySequence("Ctrl+Shift+D"))
         self.act_fill_board.triggered.connect(lambda: self.fill_board())
-        self.act_remove_copies = QAction(self)
+        self.act_remove_copies = QAction(self)  # vynechat z výstupu (kopie se odeberou; spec. v1.27)
         self.act_remove_copies.setShortcut(QKeySequence(QKeySequence.StandardKey.Delete))
-        self.act_remove_copies.triggered.connect(self.remove_selected_copies)
+        self.act_remove_copies.triggered.connect(self.omit_selected)
+        self.act_restore = QAction(self)
+        self.act_restore.triggered.connect(self.restore_selected)
+        self.act_restore.setEnabled(False)
         for a in (self.act_copy, self.act_paste, self.act_duplicate, self.act_remove_copies):
             a.setShortcutContext(Qt.ShortcutContext.WindowShortcut)
 
@@ -170,7 +175,9 @@ class MainWindow(QMainWindow):
         self.menu_edit = mb.addMenu("")
         self.menu_edit.addActions([self.act_undo, self.act_redo])
         self.menu_edit.addSeparator()
-        self.menu_edit.addActions([self.act_copy, self.act_paste, self.act_duplicate, self.act_fill_board, self.act_remove_copies])
+        self.menu_edit.addActions([self.act_copy, self.act_paste, self.act_duplicate, self.act_fill_board])
+        self.menu_edit.addSeparator()
+        self.menu_edit.addActions([self.act_remove_copies, self.act_restore])
         self.menu_edit.addSeparator()
         mb.addAction(self.act_settings_menu)  # položka lišty menu otevře rovnou okno Nastavení
         self.menu_help = mb.addMenu("")
@@ -256,6 +263,8 @@ class MainWindow(QMainWindow):
         self.list_items = QListWidget()
         self.list_items.setMinimumHeight(180)
         self.list_items.setSelectionMode(QAbstractItemView.SelectionMode.ExtendedSelection)
+        self.list_items.setContextMenuPolicy(Qt.ContextMenuPolicy.ActionsContextMenu)
+        self.list_items.addActions([self.act_remove_copies, self.act_restore])
         self.list_items.itemChanged.connect(self._on_item_changed)
         self.list_items.itemSelectionChanged.connect(self._on_list_selection)
         iv.addWidget(self.list_items)
@@ -471,7 +480,8 @@ class MainWindow(QMainWindow):
         self.act_fill_board.setText(self.tr("&Fill the board with copies"))
         self.chk_auto_cols.setText(self.tr("Automatic"))
         self.chk_auto_cols.setToolTip(self.tr("As many columns as fit on the board width"))
-        self.act_remove_copies.setText(self.tr("&Remove copies"))
+        self.act_remove_copies.setText(self.tr("&Leave out of the output"))
+        self.act_restore.setText(self.tr("Res&tore left-out objects"))
         self.act_clear_selection.setText(self.tr("Clear &selection"))
         self.toolbar.setWindowTitle(self.tr("Toolbar"))
         for act in self._toolbar_icons:
@@ -699,6 +709,7 @@ class MainWindow(QMainWindow):
         self._geometry = ItemGeometry(project)
         self.manual_angles = {}
         self.copies = {}
+        self.omitted = set()
         self._clipboard = []
         self.history = History()  # krok zpět jen v rámci otevřeného projektu
         self.preview.set_selection(set())
@@ -802,8 +813,12 @@ class MainWindow(QMainWindow):
             return
         items = {it.id: it for it in self.project.items} | {cid: self._lookup(cid) for cid in self.copies}
         rows = [items[i] for i in self.order]
-        rows += [it for it in self.project.items if it.supported and it.id not in self.order]
-        rows += [it for it in self.project.items if not it.supported]
+        rows += [it for it in self.project.items if it.supported and it.id not in self.order and it.id not in self.omitted]
+        rows += [it for it in self.project.items if not it.supported and it.id not in self.omitted]
+        keep = self.settings.unselected_policy() == "keep"
+        omit = self.effective_omit()
+        dim = self.palette().color(QPalette.ColorGroup.Disabled, QPalette.ColorRole.Text)
+        out_note = self.tr("Not in the output (Settings → Saving).")
         for it in rows:
             selected = it.id in self.order
             li = QListWidgetItem(self._item_text(it))
@@ -811,16 +826,36 @@ class MainWindow(QMainWindow):
             tips = [message(r.code, **r.params) for r in it.reasons] + [message(w.code, **w.params) for w in it.warnings]
             if it.outline_layer:
                 tips.insert(0, self.tr("Outline layer: {layer}").format(layer=it.outline_layer))
+            if it.id in omit:
+                tips.append(out_note)
+                li.setForeground(dim)
             li.setToolTip("\n".join(tips))
             if it.supported:
                 li.setFlags(li.flags() | Qt.ItemFlag.ItemIsUserCheckable)
                 li.setCheckState(Qt.CheckState.Checked if selected else Qt.CheckState.Unchecked)
             else:
-                li.setFlags(li.flags() & ~Qt.ItemFlag.ItemIsEnabled)
+                li.setFlags(li.flags() & ~Qt.ItemFlag.ItemIsUserCheckable)
+                li.setForeground(dim)  # nelze rozmístit: jen vybrat (a vynechat)
             self.list_items.addItem(li)
             if it.id == cur:
                 self.list_items.setCurrentItem(li)
             li.setSelected(it.id in chosen)
+        extra = [ls.id for ls in self.project.loose if ls.id not in self.omitted] if keep else []
+        extra += sorted(self.omitted, key=lambda i: top_index(self.project, i))
+        for iid in extra:
+            li = QListWidgetItem(self._row_text(iid))
+            li.setData(Qt.ItemDataRole.UserRole, iid)
+            li.setFlags(li.flags() & ~Qt.ItemFlag.ItemIsUserCheckable)
+            if iid in self.omitted:
+                font = li.font()
+                font.setStrikeOut(True)
+                li.setFont(font)
+                li.setForeground(dim)
+                li.setToolTip(self.tr("Left out of the output. Restore it with Edit → Restore left-out objects."))
+            self.list_items.addItem(li)
+            if iid == cur:
+                self.list_items.setCurrentItem(li)
+            li.setSelected(iid in chosen)
         n_sup = sum(1 for it in self.project.items if it.supported)
         self.lbl_count.setText(
             self.tr("Selected %n item(s)", "", len(self.order)) + " / " + self.tr("supported: {s}, total: {t}").format(s=n_sup, t=len(self.project.items)))
@@ -854,14 +889,24 @@ class MainWindow(QMainWindow):
             text += "  ⚠"
         return text
 
+    def _row_text(self, iid: str) -> str:
+        """Text řádku pro volný objekt nebo vynechaný objekt."""
+        if iid in self.omitted:
+            label = next((it.label for it in self.project.items if it.id == iid), "")
+            return f"{iid}  {label}  —  " + self.tr("left out")
+        kind = next((ls.kind for ls in self.project.loose if ls.id == iid), "?")
+        return f"{iid}  " + self.tr("loose object ({kind})").format(kind=kind)
+
     def _update_item_texts(self) -> None:
         """Po přepočtu jen obnoví texty (úhel natočení) bez přestavby seznamu."""
         if self.project is None:
             return
         self._rebuilding = True
+        loose = {ls.id for ls in self.project.loose}
         for i in range(self.list_items.count()):
             li = self.list_items.item(i)
-            li.setText(self._item_text(self._lookup(li.data(Qt.ItemDataRole.UserRole))))
+            iid = li.data(Qt.ItemDataRole.UserRole)
+            li.setText(self._row_text(iid) if iid in self.omitted or iid in loose else self._item_text(self._lookup(iid)))
         self._rebuilding = False
         self._sync_no_rotate_button()
 
@@ -903,7 +948,7 @@ class MainWindow(QMainWindow):
             (round(self.spin_start_x.mm(), 6), round(self.spin_start_y.mm(), 6)) if manual else None,
             tuple(round(w.mm(), 6) for w in (self.spin_bw, self.spin_bh, self.spin_bx, self.spin_by,
                                               self.spin_ml, self.spin_mr, self.spin_mt, self.spin_mb)),
-            self.target_name, self.chk_auto_cols.isChecked(),
+            self.target_name, self.chk_auto_cols.isChecked(), tuple(sorted(self.omitted)),
         )
 
     def _record_history(self) -> None:
@@ -919,10 +964,11 @@ class MainWindow(QMainWindow):
     def _restore(self, state: tuple | None) -> None:
         if state is None:
             return
-        order, copies, angles, cols, gx, gy, fill, rotation, anchor, start, board, target, auto_cols = state
+        order, copies, angles, cols, gx, gy, fill, rotation, anchor, start, board, target, auto_cols, omitted = state
         self._restoring = True
         try:
             self.order, self.copies, self.manual_angles = tuple(order), dict(copies), dict(angles)
+            self.omitted = set(omitted)
             self.target_name = target
             self._fill_target_combo()
             widgets = [self.spin_cols, self.combo_fill, self.combo_rotation, self.combo_anchor, self.chk_auto_cols]
@@ -1179,6 +1225,57 @@ class MainWindow(QMainWindow):
     def remove_selected_copies(self) -> None:
         self._remove_copies([i for i in self.order if i in self.selected_ids()])
 
+    def effective_omit(self) -> frozenset[str]:
+        """Objekty, které se nezapíší do výstupu: výslovně vynechané + (podle nastavení) nerozmisťované."""
+        if self.project is None:
+            return frozenset()
+        out = set(self.omitted)
+        if self.settings.unselected_policy() == "omit":
+            used = set(self.order) | {self.copies[c] for c in self.order if c in self.copies}
+            out |= {it.id for it in self.project.items if it.id not in used}
+            out |= {ls.id for ls in self.project.loose}
+        return frozenset(out)
+
+    def _omittable(self, ids: set[str]) -> tuple[list[str], list[str]]:
+        """(kopie k odebrání, objekty k vynechání) z výběru v seznamu."""
+        copies = [i for i in self.order if i in ids and i in self.copies]
+        loose = {ls.id for ls in self.project.loose} if self.project else set()
+        originals = [i for i in sorted(ids) if i not in self.copies and i not in self.omitted
+                     and (i in loose or any(it.id == i for it in self.project.items))]
+        return copies, originals
+
+    def omit_selected(self) -> None:
+        """Delete: vybrané kopie odebere, ostatní vybrané objekty vynechá z výstupu (i s jejich kopiemi)."""
+        if self.project is None:
+            return
+        copies, originals = self._omittable(self.selected_ids())
+        if not copies and not originals:
+            return
+        gone = set(copies) | {c for c, src in self.copies.items() if src in originals}
+        for cid in gone:
+            self.copies.pop(cid, None)
+            self.manual_angles.pop(cid, None)
+        for iid in originals:
+            self.omitted.add(iid)
+            self.manual_angles.pop(iid, None)
+        self.order = tuple(i for i in self.order if i not in gone and i not in originals)
+        self._clipboard = [i for i in self._clipboard if i not in gone and i not in originals]
+        self._rebuild_item_list()
+        self.recompute()
+
+    def restore_selected(self) -> None:
+        """Vrátí vybrané vynechané objekty; výrobky, které lze rozmístit, se znovu zaškrtnou (na konec pořadí)."""
+        back = [i for i in self.selected_ids() if i in self.omitted]
+        if not back:
+            return
+        back.sort(key=lambda i: top_index(self.project, i))
+        for iid in back:
+            self.omitted.discard(iid)
+        supported = {it.id for it in self.project.items if it.supported}
+        self.order = self.order + tuple(i for i in back if i in supported and i not in self.order)
+        self._rebuild_item_list()
+        self.recompute()
+
     def clear_selection(self) -> None:
         self.list_items.clearSelection()
         self._on_list_selection()
@@ -1214,7 +1311,13 @@ class MainWindow(QMainWindow):
         self.act_copy.setEnabled(ok)
         self.act_duplicate.setEnabled(self.project is not None)
         self.act_paste.setEnabled(self.project is not None and bool(self._clipboard))
-        self.act_remove_copies.setEnabled(any(i in self.copies for i in ids))
+        if self.project is not None:
+            copies, originals = self._omittable(self.selected_ids())
+            self.act_remove_copies.setEnabled(bool(copies or originals))
+            self.act_restore.setEnabled(any(i in self.omitted for i in self.selected_ids()))
+        else:
+            self.act_remove_copies.setEnabled(False)
+            self.act_restore.setEnabled(False)
         self.spin_angle.blockSignals(True)
         self.spin_angle.setValue(self._effective_angle(ids[0]) if ok else 0.0)
         self.spin_angle.blockSignals(False)
@@ -1302,7 +1405,8 @@ class MainWindow(QMainWindow):
 
     def _select_all(self) -> None:
         if self.project:
-            self.order = self.order + tuple(it.id for it in self.project.items if it.supported and it.id not in self.order)
+            self.order = self.order + tuple(it.id for it in self.project.items
+                                            if it.supported and it.id not in self.order and it.id not in self.omitted)
             self._rebuild_item_list()
             self.recompute()
 
@@ -1453,6 +1557,7 @@ class MainWindow(QMainWindow):
             angles={k: v for k, v in self.manual_angles.items() if k in self.order},
             copies={k: v for k, v in self.copies.items() if k in self.order},
             target=self._target(),
+            omit=self.effective_omit(),
         )
 
     def recompute(self) -> None:
@@ -1488,8 +1593,9 @@ class MainWindow(QMainWindow):
             usable, _ = usable_area(spec)
         sel = set(self.order)
         show = self.chk_art.isChecked()
+        omit = self.effective_omit()
         obstacles = [(ob.id, ob.bounds, self.renderer.strokes(ob.id) if show else [])
-                     for ob in proj.obstacles_for(sel) if ob.bounds is not None]
+                     for ob in proj.obstacles_for(sel) if ob.bounds is not None and ob.id not in omit]
         problems: set[str] = set()
         if self.plan is not None:
             items = [(pl.item_id, pl.index + 1, pl.target_bounds, self.renderer.strokes(self.copies.get(pl.item_id, pl.item_id)) if show else [], pl.dx, pl.dy,
@@ -1585,6 +1691,8 @@ class MainWindow(QMainWindow):
             self._error(message(e.code, **e.params))
             return None
         text = self.tr("Saved:\n{out}").format(out=res.output)
+        if self.plan.omitted:
+            text += "\n\n" + self.tr("Left out of the output: %n object(s).", "", len(self.plan.omitted))
         if res.protocol is not None:
             text += "\n\n" + self.tr("Protocol:\n{proto}").format(proto=res.protocol)
         self.last_saved = res.output
@@ -1679,6 +1787,11 @@ class MainWindow(QMainWindow):
             self.set_panel_side(values["panel_side"])
         if values["protocol"] != s.protocol_mode():
             s.set_protocol_mode(values["protocol"])
+        if "unselected" in values and values["unselected"] != s.unselected_policy():
+            s.set_unselected_policy(values["unselected"])
+            if self.project is not None:
+                self._rebuild_item_list()
+                self.recompute()
         if values["update_auto"] != s.update_auto():
             s.set_update_auto(values["update_auto"])
         if values["update_pre"] != s.update_prerelease():

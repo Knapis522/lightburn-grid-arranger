@@ -2,7 +2,7 @@
 
 L'icône **Enregistrer comme nouveau projet** de la barre d'outils (ou **Fichier → Enregistrer comme nouveau projet**, Ctrl+S) n'est active que si la disposition a passé la vérification. Une boîte d'enregistrement s'ouvre avec le nom proposé `original__grid_001.lbrn2` (puis `_002`, …) dans le dossier de l'original — **vous pouvez changer le dossier et le nom**. Après confirmation, l'application :
 
-1. prépare un nouveau fichier dans lequel seules les positions des groupes sélectionnés (et de leurs textes) changent,
+1. prépare un nouveau fichier dans lequel seules les positions des groupes sélectionnés (et de leurs textes) changent, les objets exclus sont retirés,
 2. vérifie de façon indépendante que rien d'autre n'a changé (calques, puissance, textes, autres objets),
 3. vérifie que l'original n'a pas changé depuis son ouverture,
 4. enregistre un **nouveau** fichier sous le nom choisi.

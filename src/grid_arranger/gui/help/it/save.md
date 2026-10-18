@@ -2,7 +2,7 @@
 
 L'icona **Salva come nuovo progetto** della barra degli strumenti (oppure **File → Salva come nuovo progetto**, Ctrl+S) è attiva solo quando la disposizione ha superato il controllo. Si apre una finestra di salvataggio con il nome proposto `originale__grid_001.lbrn2` (poi `_002`, …) nella cartella dell'originale — **puoi cambiare la cartella e il nome**. Dopo la conferma, l'applicazione:
 
-1. prepara un nuovo file in cui cambiano solo le posizioni dei gruppi selezionati (e dei loro testi),
+1. prepara un nuovo file in cui cambiano solo le posizioni dei gruppi selezionati (e dei loro testi), gli oggetti esclusi vengono rimossi,
 2. verifica in modo indipendente che nient'altro sia cambiato (livelli, potenza, testi, altri oggetti),
 3. verifica che l'originale non sia cambiato dall'apertura,
 4. salva un file **nuovo** con il nome scelto.

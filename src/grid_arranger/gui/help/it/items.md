@@ -3,9 +3,10 @@
 Dopo aver aperto un progetto (icona **Apri progetto** della barra degli strumenti, **File → Apri progetto** o Ctrl+O) l'elenco mostra tutti i gruppi di primo livello:
 
 - Gli elementi **spuntati** vengono disposti nella griglia. Il numero prima del nome è la loro posizione nella griglia.
-- Gli elementi **non spuntati** restano dove sono e l'applicazione fa in modo che la griglia non li tocchi.
+- Gli elementi **non spuntati** sono esclusi dall'output: non saranno nel progetto salvato e la griglia non ne tiene conto. Se preferisci lasciarli al loro posto, scegli **Impostazioni → Salvataggio → Oggetti non spuntati → Lascia al proprio posto** — la griglia li eviterà.
 - Gli elementi **grigi** («non può essere spostato») sono stati rifiutati — passa il mouse sopra per vedere il motivo. Non vengono mai spostati.
 - ⚠ indica un avviso (ad es. un testo che non può essere misurato) — l'elemento si può usare, ma controllalo in Preview.
+- **Escludere oggetti:** seleziona gli elementi nell'elenco (anche quelli grigi) e premi **Canc** (oppure **Modifica → Escludi dall'output**, o clic destro). Passano barrati in fondo all'elenco e non saranno nel progetto salvato — utile quando ti serve solo una parte di un progetto grande. **Modifica → Ripristina oggetti esclusi** riporta quelli selezionati. Le copie selezionate vengono semplicemente rimosse. Il progetto originale non cambia mai.
 
 Ordine: **afferra un elemento nell'anteprima con il mouse e trascinalo al posto di un altro elemento** — una cornice verde indica dove finirà; **i due elementi si scambiano di posto**, tutti gli altri restano e l'elenco viene rinumerato. Rilasciare fuori dagli elementi annulla il trascinamento. Oppure seleziona un elemento nell'elenco e usa **Su / Giù**. Un elemento appena spuntato viene aggiunto alla fine. **Ordine predefinito** ripristina l'ordine del file. **Seleziona tutto / Deseleziona tutto** cambiano la selezione in una volta.
 

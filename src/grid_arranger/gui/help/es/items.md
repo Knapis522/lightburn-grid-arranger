@@ -3,9 +3,10 @@
 Tras abrir un proyecto (icono **Abrir proyecto** de la barra de herramientas, **Archivo → Abrir proyecto** o Ctrl+O), la lista muestra todos los grupos de nivel superior:
 
 - Los elementos **marcados** se distribuyen en la cuadrícula. El número delante del nombre es su posición en la cuadrícula.
-- Los elementos **sin marcar** se quedan donde están y la aplicación se asegura de que la cuadrícula no los toque.
+- Los elementos **sin marcar** se excluyen de la salida: no estarán en el proyecto guardado y la cuadrícula no los tiene en cuenta. Si prefiere dejarlos en su sitio, elija **Configuración → Guardado → Objetos sin marcar → Dejar en su sitio** — entonces la cuadrícula los evita.
 - Los elementos **grises** («no se puede mover») se han rechazado — pase el ratón por encima para ver el motivo. Nunca se mueven.
 - ⚠ indica un aviso (p. ej. un texto que no se puede medir) — el elemento se puede usar, pero compruébelo en Preview.
+- **Excluir objetos:** seleccione elementos en la lista (también los grises) y pulse **Supr** (o **Edición → Excluir de la salida**, o botón derecho). Pasan tachados al final de la lista y no estarán en el proyecto guardado — útil cuando solo necesita una parte de un proyecto grande. **Edición → Restaurar objetos excluidos** devuelve los seleccionados. Las copias seleccionadas simplemente se quitan. El proyecto original nunca cambia.
 
 Orden: **tome un elemento en la vista previa con el ratón y arrástrelo al lugar de otro elemento** — un marco verde indica dónde caerá; **los dos elementos intercambian sus posiciones**, los demás se quedan y la lista se renumera. Soltar fuera de los elementos cancela el arrastre. O seleccione un elemento en la lista y use **Subir / Bajar**. Un elemento recién marcado se añade al final. **Orden predeterminado** restaura el orden del archivo. **Seleccionar todo / No seleccionar nada** cambian la selección de una vez.
 

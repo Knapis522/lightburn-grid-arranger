@@ -80,7 +80,7 @@ def test_blocked_item_is_disabled_with_reason(make_window, tmp_path):
     bad = Group([rect(0, 0, 100, 60, prims="L0 1L1 2L2 3")])
     w.open_project(write(tmp_path, project([card(10, 20), bad])))
     li = w.list_items.item(w.list_items.count() - 1)
-    assert not (li.flags() & Qt.ItemFlag.ItemIsEnabled)
+    assert not (li.flags() & Qt.ItemFlag.ItemIsUserCheckable)  # nelze zaškrtnout, jen vybrat a vynechat
     assert "No closed cut outline" in li.toolTip()
     assert w.order == ("G1",)
 
@@ -921,7 +921,10 @@ def test_prepare_for_other_laser_mirrors_and_sets_header(make_window, tmp_path, 
     assert w.target_name is None and w.combo_target.currentIndex() == 0
     w.set_target(None)
     w.order = ("G1",)
-    w.set_target("Modrý Ruida 643XG")  # jen část projektu: zrcadlový převod odmítnut s vysvětlením
+    w.set_target("Modrý Ruida 643XG")  # nevybraný výrobek se vynechá (výchozí) → převod jde
+    assert w.plan is not None and w.plan.omitted == {"G2"} and w.act_save.isEnabled()
+    w.apply_settings({**w_settings_values(w), "unselected": "keep"})
+    # ponechané nevybrané objekty: zrcadlový převod odmítnut s vysvětlením
     assert w.plan is None and w.plan_error.code == "convert_needs_whole_project" and not w.act_save.isEnabled()
 
 
@@ -1015,3 +1018,94 @@ def test_pieces_per_item_keeps_copies_next_to_original(make_window, tmp_path):
     assert w.order[-2:] == ("G3", "G3+1")
     w.undo()
     assert "G3" not in w.order
+
+
+def w_settings_values(w) -> dict:
+    s = w.settings
+    return {"language": s.language(), "theme": s.theme(), "units": s.units(), "panel_side": s.panel_side(),
+            "protocol": s.protocol_mode(), "update_auto": s.update_auto(), "update_pre": s.update_prerelease(),
+            "lasers": tuple(s.lasers()), "unselected": s.unselected_policy()}
+
+
+def _ids(w) -> list[str]:
+    return [w.list_items.item(i).data(Qt.ItemDataRole.UserRole) for i in range(w.list_items.count())]
+
+
+def test_unticked_objects_are_left_out_by_default(make_window, tmp_path):
+    from grid_arranger.adapters.lightburn.read import load_project
+
+    w = make_window("en")
+    w.open_project(write(tmp_path, project([card(10, 20, text="A"), card(300, 400, text="B"), rect(600, 450, 10, 10)])))
+    _row(w, "G2").setCheckState(Qt.CheckState.Unchecked)
+    assert w.effective_omit() == {"G2", "S3"} and w.plan.omitted == {"G2", "S3"}
+    assert "Not in the output" in _row(w, "G2").toolTip()
+    assert "S3" not in _ids(w)  # volné objekty se při vynechání nezobrazují
+    out = w.save_new_project(confirm=False)
+    o = load_project(out)
+    assert [it.label for it in o.items] == ["A"] and o.loose == []
+    assert any("Left out of the output: 2 objects." in t for k, t in w._dialogs if k == "info")
+
+
+def test_keep_policy_keeps_unticked_objects_and_lists_loose(make_window, tmp_path, settings):
+    from grid_arranger.adapters.lightburn.read import load_project
+
+    settings.set_unselected_policy("keep")
+    w = make_window("en")
+    w.open_project(write(tmp_path, project([card(10, 20, text="A"), card(300, 400, text="B"), rect(600, 450, 10, 10)])))
+    _row(w, "G2").setCheckState(Qt.CheckState.Unchecked)
+    assert w.effective_omit() == set()
+    assert "S3" in _ids(w) and "loose object (Path)" in _row(w, "S3").text()
+    o = load_project(w.save_new_project(confirm=False))
+    assert [it.label for it in o.items] == ["A", "B"] and len(o.loose) == 1
+
+
+def test_delete_leaves_out_and_restore_brings_back(make_window, tmp_path, settings):
+    from grid_arranger.adapters.lightburn.read import load_project
+
+    settings.set_unselected_policy("keep")
+    w = make_window("en")
+    w.open_project(write(tmp_path, project([card(10, 20, text="A"), card(300, 400, text="B"), rect(600, 450, 10, 10)])))
+    w._select_ids({"G1"})
+    w.add_copies(["G1"], 2)
+    w._select_ids({"G2", "S3"})
+    assert w.act_remove_copies.isEnabled() and not w.act_restore.isEnabled()
+    w.act_remove_copies.trigger()  # Delete
+    assert w.omitted == {"G2", "S3"} and "G2" not in w.order
+    assert _ids(w)[-2:] == ["G2", "S3"] and _row(w, "G2").font().strikeOut() and "left out" in _row(w, "G2").text()
+    assert not (_row(w, "G2").flags() & Qt.ItemFlag.ItemIsUserCheckable)
+    o = load_project(w.save_new_project(confirm=False))
+    assert [it.label for it in o.items] == ["A", "A", "A"] and o.loose == []
+    # vynechání originálu odebere i jeho kopie
+    w._select_ids({"G1"})
+    w.act_remove_copies.trigger()
+    assert w.copies == {} and w.order == () and w.omitted == {"G1", "G2", "S3"}
+    w.undo()
+    assert w.omitted == {"G2", "S3"} and set(w.copies) == {"G1+1", "G1+2"}
+    w._select_ids({"G2"})
+    assert w.act_restore.isEnabled()
+    w.act_restore.trigger()
+    assert w.omitted == {"S3"} and w.order[-1] == "G2"
+    assert _row(w, "G2").checkState() == Qt.CheckState.Checked
+
+
+def test_unsupported_group_can_be_left_out(make_window, tmp_path, settings):
+    settings.set_unselected_policy("keep")
+    w = make_window("en")
+    bad = Group([rect(0, 0, 100, 60, prims="L0 1L1 2L2 3")])
+    w.open_project(write(tmp_path, project([card(10, 20), bad])))
+    w._select_ids({"G2"})
+    w.act_remove_copies.trigger()
+    assert w.omitted == {"G2"} and w.plan.omitted == {"G2"}
+
+
+def test_unselected_policy_in_settings_dialog(make_window, tmp_path):
+    from grid_arranger.gui.settings_dialog import SettingsDialog
+
+    w = make_window("en")
+    w.open_project(write(tmp_path, project([card(10, 20, text="A"), card(300, 400, text="B")])))
+    _row(w, "G2").setCheckState(Qt.CheckState.Unchecked)
+    d = SettingsDialog(w)
+    assert d.unselected_radios["omit"].isChecked()
+    d.unselected_radios["keep"].setChecked(True)
+    d.apply()
+    assert w.settings.unselected_policy() == "keep" and w.plan.omitted == frozenset()

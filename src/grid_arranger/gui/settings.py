@@ -28,6 +28,7 @@ APPLICATION = "GridArranger"
 LANGUAGES = ("auto", "cs", "en", "de", "sk", "pl", "fr", "es", "it")
 THEMES = ("auto", "light", "dark")
 PROTOCOL_MODES = ("none", "beside", "appdata")
+UNSELECTED_POLICIES = ("omit", "keep")  # nezaškrtnuté objekty: vynechat z výstupu / ponechat na místě (spec. v1.27)
 UNIT_KEYS = ("mm", "in")
 PANEL_SIDES = ("left", "right")
 ORIGINS = ("top_left", "top_right", "bottom_left", "bottom_right")
@@ -249,6 +250,17 @@ class UserSettings:
         if value not in PROTOCOL_MODES:
             raise ValueError(value)
         self._s.setValue("save/protocol", value)
+        self._s.sync()
+
+    def unselected_policy(self) -> str:
+        """Co s objekty, které se nerozmisťují: ``omit`` (výchozí, rozhodnutí vlastníka 2026-10-18) nebo ``keep``."""
+        v = str(self._s.value("save/unselected", "omit"))
+        return v if v in UNSELECTED_POLICIES else "omit"
+
+    def set_unselected_policy(self, value: str) -> None:
+        if value not in UNSELECTED_POLICIES:
+            raise ValueError(value)
+        self._s.setValue("save/unselected", value)
         self._s.sync()
 
     # --- jednotky a sekce panelu ---------------------------------------------------------------

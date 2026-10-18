@@ -126,6 +126,11 @@ def _cmd_arrange(a: argparse.Namespace) -> int:
     if qty:  # počet kusů: kopie hned za výrobkem
         base = order if order is not None else tuple(it.id for it in project.items if it.supported)
         order = _apply_quantities(base, copies, qty)
+    omit = {x.strip() for spec in a.omit for x in spec.split(",") if x.strip()}
+    if a.unselected == "omit":
+        chosen = set(order if order is not None else (it.id for it in project.items if it.supported))
+        chosen |= {copies[c] for c in chosen if c in copies}
+        omit |= {it.id for it in project.items if it.id not in chosen} | {ls.id for ls in project.loose}
     params = ArrangeParams(
         columns=a.columns,
         gap_x=a.gap_x if a.gap_x is not None else a.gap,
@@ -139,6 +144,7 @@ def _cmd_arrange(a: argparse.Namespace) -> int:
         no_rotate=frozenset(a.no_rotate.split(",")) if a.no_rotate else frozenset(),
         angles=_angles(a.angle),
         copies=copies,
+        omit=frozenset(omit),
     )
     plan = make_plan(project, params)
     lay = plan.layout
@@ -153,6 +159,8 @@ def _cmd_arrange(a: argparse.Namespace) -> int:
         dx, dy = (m[0], m[1]) if len(m) == 2 else (m[4], m[5])
         rot = f"  rotate {plan.rotations[pl.item_id]:+.2f}°" if pl.item_id in plan.rotations else ""
         print(f"  {pl.index + 1:>3}. {pl.item_id:>4}  row {pl.row + 1} col {pl.column + 1}  move X {dx:+9.3f}  Y {dy:+9.3f}{rot}")
+    if plan.omitted:
+        print(f"Omitted:   {', '.join(sorted(plan.omitted))} (not written to the output)")
     for issue in plan.report.issues:
         print(f"  [{issue.severity.value.upper()}] {issue.code} {' '.join(issue.item_ids)} {issue.params or ''}")
     if not plan.report.can_save:
@@ -195,6 +203,10 @@ def main(argv: list[str] | None = None) -> int:
                     help="add N copies of an item, placed after the other items (e.g. G5=4); repeatable")
     pa.add_argument("--angle", action="append", default=[], metavar="ID=DEG",
                     help="manual rotation of one item in degrees, clockwise on screen (e.g. G3=90); repeatable")
+    pa.add_argument("--omit", action="append", default=[], metavar="IDS",
+                    help="comma-separated groups/loose objects left out of the output (e.g. G4,S7); repeatable")
+    pa.add_argument("--unselected", choices=("keep", "omit"), default="keep",
+                    help="objects not being arranged: keep them in place and avoid them (default) or leave them out of the output")
     pa.add_argument("--out-dir")
     pa.add_argument("--dry-run", action="store_true")
     a = ap.parse_args(argv)

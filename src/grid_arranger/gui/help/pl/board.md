@@ -8,7 +8,7 @@ Przed zapisem aplikacja sprawdza, czy:
 
 - wszystkie przesuwane elementy leżą w użytecznym obszarze płyty,
 - elementy nie nachodzą na siebie i zachowują odstęp,
-- elementy zachowują odstęp również od **nieprzesuwanych** grup i luźnych obiektów,
+- elementy zachowują odstęp również od **nieprzesuwanych** grup i luźnych obiektów, jeśli pozostają w wyniku (Ustawienia → Zapisywanie); pominięte obiekty nie są brane pod uwagę,
 - obiekt, którego rozmiaru nie da się określić, **blokuje** zapis (nie można potwierdzić bezpieczeństwa).
 
 Błędy (✖) blokują zapis i wskazują dotknięte elementy. Ostrzeżenia (⚠) nie. Aplikacja nigdy sama nie skaluje, nie obraca ani nie przesuwa niezaznaczonych obiektów.

@@ -8,7 +8,7 @@ Avant l'enregistrement, l'application vérifie que :
 
 - tous les éléments déplacés se trouvent dans la zone utile de la plaque,
 - les éléments ne se chevauchent pas et respectent l'espacement,
-- les éléments respectent aussi l'espacement par rapport aux groupes **non déplacés** et aux objets isolés,
+- les éléments respectent aussi l'espacement par rapport aux groupes **non déplacés** et aux objets isolés, s'ils restent dans la sortie (Paramètres → Enregistrement) ; les objets exclus sont ignorés,
 - un objet dont la taille ne peut pas être déterminée **bloque** l'enregistrement (la sécurité ne peut pas être confirmée).
 
 Les erreurs (✖) bloquent l'enregistrement et nomment les éléments concernés. Les avertissements (⚠) non. L'application ne met jamais à l'échelle, ne tourne ni ne déplace d'elle-même les objets non sélectionnés.

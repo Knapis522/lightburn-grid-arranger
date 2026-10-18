@@ -1,6 +1,6 @@
 # Grid Arranger for LightBurn — technická specifikace
 
-**Verze dokumentu:** 1.26 (osm jazyků rozhraní a příručky — strojový návrh; viz kap. 36.5)  
+**Verze dokumentu:** 1.27 (vynechání objektů z výstupu; viz kap. 21.2)  
 **Datum:** 17. 10. 2026  
 **Název produktu:** Grid Arranger for LightBurn; spustitelný soubor `GridArranger.exe`; Python balíček `grid_arranger`; repozitář `lightburn-grid-arranger`. Neoficiální nástroj, nikoli produkt LightBurn Software.  
 **Stav:** Interní pracovní podklad; nikoli hotový nebo otestovaný plugin  
@@ -285,7 +285,7 @@ První laboratorní provedení může použít XML knihovnu pro parsování a se
 - V MVP počet skupin, objektů, cest, obrázků, textů a řezných nastavení souhlasí; ve v1.1/2.0 musí počet objektů přesně odpovídat schválenému plánu instancí dle kap. 25.
 - Všechny referenční `CutIndex` a nastavení `CutSetting` zůstávají stejné.
 - V MVP obsah každého přesouvaného objektu je zachován, pouze očekávaná translace příslušné skupiny se změnila; u nových kopií nebo sloučených zdrojů se ověřuje i mapování zdrojů, referencí a identit.
-- Žádná neselektovaná skupina ani jiný objekt nebyl upraven.
+- Žádná neselektovaná skupina ani jiný objekt nebyl upraven; od v1.27 smí chybět jen objekty vynechané uživatelem (celé) a smí se přesunout jen definice jimi sdílené geometrie (kap. 21.2).
 - Nově vypočtené obrysy odpovídají plánovaným cílovým pozicím.
 - Výstup je znovu čitelný stejným parserem.
 - Volitelně, je-li dostupný, porovnat strojově čitelný souhrn nastavení před/po.
@@ -685,6 +685,15 @@ Tato kapitola je **normativní**: při konfliktu s obecným popisem starších e
 
 **Přijímací důkaz:** T-MVP-05 až 07 včetně testu nevybrané skupiny mezi výrobky.
 
+**Vynechání objektů z výstupu (v1.27, 18. 10. 2026, přání vlastníka):** z rozsáhlého projektu lze uložit jen část.
+- *Nezaškrtnuté objekty:* volba **Nastavení → Uložení → Nezaškrtnuté objekty**: **Vynechat z výstupu** (výchozí, rozhodnutí vlastníka 2026-10-18) nebo **Ponechat na místě** (dosavadní chování: zůstanou na své pozici a mřížka se jim vyhne). Při vynechání se do výstupu nezapíší nezaškrtnuté skupiny, nerozložitelné (šedé) skupiny ani volné objekty; zdroj rozmisťované kopie se nevynechá. Vynechané objekty nejsou překážky, náhled je nekreslí, seznam je ukazuje zašedle s vysvětlením.
+- *Výslovné vynechání:* **Delete** / **Úpravy → Vynechat z výstupu** / kontextová nabídka seznamu: vybrané kopie se odeberou, ostatní vybrané objekty (i šedé skupiny; při volbě *Ponechat* i volné objekty, které seznam pak ukazuje) se vynechají i se svými kopiemi. V seznamu jsou přeškrtnuté na konci; **Úpravy → Obnovit vynechané objekty** je vrátí (výrobek znovu zaškrtnutý na konec pořadí). Krok zpět platí.
+- *Zápis:* celé nejvyšší tvary vynechaných objektů se odeberou (celé řádky). Definuje-li vynechaný tvar sdílený seznam (`VertList`+`VertID` / `PrimList`+`PrimID`), na který odkazuje ponechaný tvar, přesune se **bajtově shodná** definice do prvního ponechaného tvaru, který na ID odkazuje (za jeho `XForm`). Ve výstupu musí zůstat aspoň jeden tvar (`nothing_left`). Vynechaný objekt nesmí být zároveň rozmisťován (`omitted_selected`). `CutSetting` zůstávají beze změny.
+- *Kontrola:* nezávislý ověřovač: chybí právě vynechané nejvyšší tvary, ostatní v původním pořadí; navíc jen přesunuté definice sdílené geometrie (bajtově shodné, v prvním ponechaném odkazujícím tvaru); po jejich odebrání musí výstup proti originálu bez vynechaných tvarů projít všemi dosavadními kontrolami (přesuny, kopie, hlavička cílového laseru). Znovu načtený výstup: počet tvarů a polohy ponechaných výrobků (přečíslované id).
+- *Převod na laser s jiným počátkem:* podmínka „celý projekt“ se týká jen objektů ponechaných ve výstupu.
+- *Protokol:* `omitted` (id, popisek). Hlášení o uložení uvádí počet vynechaných objektů. CLI: `--omit G4,S7`, `--unselected keep|omit` (výchozí `keep`).
+- *Brána KAL-07:* výstupy s vynechanými objekty a přesunutou sdílenou geometrií z reálných testovacích projektů otevřít v LightBurnu — tvary celé, správné vrstvy, Preview; do splnění neoznačovat za ověřené.
+
 ### 21.3 MVP-03 — ruční pořadí výrobků
 
 **Ovládání:** dvě tlačítka Nahoru/Dolů pro právě označenou položku (drag-and-drop volitelně), návrat k výchozímu pořadí. Číslování 1..N musí odpovídat skutečně připravované mřížce. Výběr a pořadí jsou dva různé údaje: odebrání výrobku nemaže jeho identitu a jeho opětovné přidání má předem deterministické pravidlo (např. přidat na konec).
@@ -1065,6 +1074,7 @@ Toto jsou **ověřovací úkoly**, nikoli potvrzené technické možnosti souča
 
 ## 28. Záznam změn specifikace
 
+- **v1.27 (18. 10. 2026):** Na přání vlastníka vynechání objektů z výstupu (kap. 21.2): nezaškrtnuté objekty se ve výchozím stavu do výstupu nezapíší (volba Ponechat na místě v Nastavení → Uložení), Delete vynechá vybrané objekty, Obnovit vynechané objekty je vrátí; přesun sdílené geometrie z vynechaných tvarů, rozšířená nezávislá kontrola; ověření v LightBurnu = KAL-07.
 - **v1.26 (18. 10. 2026):** Na přání vlastníka zahájeno PUBLIC-01 / L10N-PUBLIC-01: katalogy rozhraní a offline příručka v `de/sk/pl/fr/es/it` (vedle `cs/en`), volba jazyka nabízí všech osm jazyků. Překlady jsou **strojový návrh** — stav viz kap. 36.5 (*Stav k v1.26*); jazyk se nesmí prohlásit za ověřený bez lidské revize.
 - **v1.25 (18. 10. 2026):** Počet kusů výrobků (V11-02 dokončeno): pole Počet kusů, kopie hned za originálem, 0 = vynechat; CLI `--quantity` (kap. 22.2).
 - **v1.24 (18. 10. 2026):** Na přání vlastníka automatický počet sloupců podle šířky desky (V11-03, zjednodušené kritérium), *Vyplnit desku kopiemi* a profily rozložení (V11-01, bez desky) (kap. 22.1, 22.3).

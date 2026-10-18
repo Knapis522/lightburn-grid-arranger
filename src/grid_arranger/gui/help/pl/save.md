@@ -2,7 +2,7 @@
 
 Ikona **Zapisz jako nowy projekt** na pasku narzędzi (lub **Plik → Zapisz jako nowy projekt**, Ctrl+S) jest aktywna tylko wtedy, gdy układ przeszedł kontrolę. Otwiera się okno zapisu z proponowaną nazwą `oryginal__grid_001.lbrn2` (potem `_002`, …) w folderze oryginału — **folder i nazwę można zmienić**. Po potwierdzeniu aplikacja:
 
-1. przygotowuje nowy plik, w którym zmieniają się tylko położenia zaznaczonych grup (i ich tekstów),
+1. przygotowuje nowy plik, w którym zmieniają się tylko położenia zaznaczonych grup (i ich tekstów), pominięte obiekty są usuwane,
 2. niezależnie sprawdza, czy nic innego się nie zmieniło (warstwy, moc, teksty, inne obiekty),
 3. sprawdza, czy oryginał nie zmienił się od otwarcia,
 4. zapisuje **nowy** plik pod wybraną nazwą.

@@ -3,9 +3,10 @@
 Po otevření projektu (ikona **Otevřít projekt** na nástrojové liště, **Soubor → Otevřít projekt** nebo Ctrl+O) se v seznamu zobrazí všechny skupiny nejvyšší úrovně:
 
 - **Zaškrtnuté** výrobky se rozmístí do mřížky. Číslo před názvem je jejich pořadí v mřížce.
-- **Nezaškrtnuté** výrobky zůstanou na místě a aplikace hlídá, aby do nich mřížka nenarazila.
+- **Nezaškrtnuté** výrobky se do výstupu nezapíší: v uloženém projektu nebudou a mřížka s nimi nepočítá. Pokud je chcete raději ponechat na místě, zvolte **Nastavení → Uložení → Nezaškrtnuté objekty → Ponechat na místě** — mřížka se jim pak vyhne.
 - **Šedé** položky („nelze přesunout“) aplikace odmítla — důvod uvidíte po najetí myší. Nikdy se nepřesunou.
 - ⚠ znamená upozornění (např. text, který nejde změřit) — výrobek lze použít, ale zkontrolujte ho v Preview.
+- **Vynechání objektů:** vyberte položky v seznamu (i šedé) a stiskněte **Delete** (nebo **Úpravy → Vynechat z výstupu**, případně pravým tlačítkem). Přesunou se přeškrtnuté na konec seznamu a v uloženém projektu nebudou — hodí se, když z rozsáhlého projektu potřebujete jen část. **Úpravy → Obnovit vynechané objekty** vybrané vrátí. Vybrané kopie se jednoduše odeberou. Původní projekt se nikdy nemění.
 
 Pořadí: **chyťte kartičku v náhledu myší a přetáhněte ji na místo jiné kartičky** — zelený rámeček ukazuje, kam dopadne; **obě kartičky si prohodí místa**, ostatní zůstanou, kde jsou, a seznam se přečísluje. Puštění mimo kartičky tažení zruší. Nebo vyberte položku v seznamu a použijte **Nahoru / Dolů**. Nově zaškrtnutý výrobek se zařadí na konec. **Výchozí pořadí** vrátí pořadí ze souboru. **Vybrat vše / Zrušit výběr** hromadně mění výběr.
 

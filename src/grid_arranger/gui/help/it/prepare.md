@@ -12,7 +12,7 @@ Supportati: LightBurn 2.2, progetti `.lbrn2`, laser con l'origine in qualsiasi a
 Un progetto salvato per un laser può essere preparato per un altro, ad es. da un laser con l'origine in alto a destra per un laser con l'origine in alto a sinistra — senza cambiare dispositivo né capovolgere il disegno in LightBurn. Nella sezione **Progetto** scegli in **Prepara per:** un laser del catalogo. L'applicazione propone la sua lastra, riempie la griglia dalla sua origine e il file salvato (`…__Nome_laser__grid_001.lbrn2`) è già pronto per esso: il file indica il laser di destinazione e gli elementi sono specchiati in modo da apparire uguali su di esso (testi leggibili).
 
 - Catalogo dei laser: **Impostazioni → Laser** (oppure *Gestisci laser…* nell'elenco). I laser dei progetti aperti vengono aggiunti automaticamente; aggiungi gli altri (ad es. un laser a diodo) manualmente — **il nome deve corrispondere al dispositivo in LightBurn**; scegli l'angolo dell'origine e la lastra.
-- Con un'altra origine devono essere selezionati **tutti gli elementi** e il progetto non deve contenere altri oggetti (sull'altro laser resterebbero specchiati).
+- Con un'altra origine devono essere selezionati **tutti gli elementi** e il progetto non deve contenere altri oggetti (sull'altro laser resterebbero specchiati). Questo riguarda solo gli oggetti mantenuti nell'output — gli oggetti non spuntati ed esclusi non sono nell'output (impostazione predefinita), quindi non sono d'ostacolo.
 - **Le impostazioni dei livelli (potenza, velocità) non vengono convertite** — restano come nel progetto originale. Apri l'output in LightBurn con il laser di destinazione e controlla i livelli.
 
 [← Introduzione](index.md) · [Avanti: elementi →](items.md)

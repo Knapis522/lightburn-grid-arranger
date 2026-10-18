@@ -32,7 +32,8 @@ from PySide6.QtWidgets import (
 
 from ..version import display_version
 from .i18n import NATIVE_NAMES
-from .settings import LANGUAGES, ORIGINS, PANEL_SIDES, PROTOCOL_MODES, THEMES, UNIT_KEYS, BoardPreset, LaserProfile
+from .settings import (LANGUAGES, ORIGINS, PANEL_SIDES, PROTOCOL_MODES, THEMES, UNIT_KEYS, UNSELECTED_POLICIES, BoardPreset,
+                       LaserProfile)
 from .widgets import UNITS, LengthSpin
 
 if TYPE_CHECKING:
@@ -101,9 +102,23 @@ class SettingsDialog(QDialog):
         self._lasers: list[LaserProfile] = []
         self.stack.addWidget(lasers)
 
-        # --- Uložení: protokol
+        # --- Uložení: nezaškrtnuté objekty, protokol
         saving = QWidget()
         sv = QVBoxLayout(saving)
+        self.box_unselected = QGroupBox()
+        uvl = QVBoxLayout(self.box_unselected)
+        self.unselected_group = QButtonGroup(self)
+        self.unselected_radios: dict[str, QRadioButton] = {}
+        for k in UNSELECTED_POLICIES:
+            r = QRadioButton()
+            self.unselected_group.addButton(r)
+            self.unselected_radios[k] = r
+            uvl.addWidget(r)
+            r.toggled.connect(self._sync_buttons)
+        self.lbl_unselected_note = QLabel()
+        self.lbl_unselected_note.setWordWrap(True)
+        uvl.addWidget(self.lbl_unselected_note)
+        sv.addWidget(self.box_unselected)
         self.box_protocol = QGroupBox()
         pv = QVBoxLayout(self.box_protocol)
         self.protocol_group = QButtonGroup(self)
@@ -187,6 +202,12 @@ class SettingsDialog(QDialog):
         self.combo_panel.setToolTip(self.tr("Side of the window with the Project, Items, Grid, Placement and Board sections."))
         self.lbl_units_note.setText(self.tr("Units change only how values are shown and entered; the calculation "
                                             "and the saved project always use millimetres."))
+        self.box_unselected.setTitle(self.tr("Objects that are not ticked"))
+        self.unselected_radios["omit"].setText(self.tr("Leave out of the output"))
+        self.unselected_radios["keep"].setText(self.tr("Keep in place (the grid avoids them)"))
+        self.lbl_unselected_note.setText(self.tr(
+            "Unticked groups and loose objects. Left-out objects are not drawn in the preview and are not in the saved "
+            "project; the original project is never changed."))
         self.box_protocol.setTitle(self.tr("Save protocol"))
         self.protocol_radios["none"].setText(self.tr("Do not save"))
         self.protocol_radios["beside"].setText(self.tr("Next to the saved project"))
@@ -214,7 +235,7 @@ class SettingsDialog(QDialog):
         s = self.win.settings
         return {"language": s.language(), "theme": s.theme(), "units": s.units(), "panel_side": s.panel_side(),
                 "protocol": s.protocol_mode(), "update_auto": s.update_auto(), "update_pre": s.update_prerelease(),
-                "lasers": tuple(s.lasers())}
+                "lasers": tuple(s.lasers()), "unselected": s.unselected_policy()}
 
     def load(self) -> None:
         v = self.current()
@@ -222,6 +243,7 @@ class SettingsDialog(QDialog):
                            (self.combo_panel, "panel_side")):
             combo.setCurrentIndex(combo.findData(v[key]))
         self.protocol_radios[v["protocol"]].setChecked(True)
+        self.unselected_radios[v["unselected"]].setChecked(True)
         self.chk_update_auto.setChecked(v["update_auto"])
         self.chk_update_pre.setChecked(v["update_pre"])
         self._lasers = list(v["lasers"])
@@ -233,7 +255,8 @@ class SettingsDialog(QDialog):
         return {"language": self.combo_lang.currentData(), "theme": self.combo_theme.currentData(),
                 "units": self.combo_units.currentData(), "panel_side": self.combo_panel.currentData(),
                 "protocol": protocol, "update_auto": self.chk_update_auto.isChecked(),
-                "update_pre": self.chk_update_pre.isChecked(), "lasers": tuple(self._lasers)}
+                "update_pre": self.chk_update_pre.isChecked(), "lasers": tuple(self._lasers),
+                "unselected": next((k for k, r in self.unselected_radios.items() if r.isChecked()), UNSELECTED_POLICIES[0])}
 
     def _sync_buttons(self, *_args) -> None:
         if not hasattr(self, "buttons"):

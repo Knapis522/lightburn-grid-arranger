@@ -8,7 +8,7 @@ Vor dem Speichern prüft die Anwendung, dass:
 
 - alle verschobenen Objekte innerhalb der nutzbaren Plattenfläche liegen,
 - sich die Objekte nicht überlappen und den Abstand einhalten,
-- die Objekte den Abstand auch zu **nicht verschobenen** Gruppen und losen Objekten einhalten,
+- die Objekte den Abstand auch zu **nicht verschobenen** Gruppen und losen Objekten einhalten, sofern diese in der Ausgabe bleiben (Einstellungen → Speichern); weggelassene Objekte werden ignoriert,
 - ein Objekt, dessen Größe nicht bestimmt werden kann, das Speichern **blockiert** (die Sicherheit lässt sich nicht bestätigen).
 
 Fehler (✖) blockieren das Speichern und nennen die betroffenen Objekte. Warnungen (⚠) nicht. Die Anwendung skaliert, dreht oder verschiebt nicht ausgewählte Objekte nie von selbst.

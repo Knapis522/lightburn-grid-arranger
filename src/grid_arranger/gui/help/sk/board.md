@@ -8,7 +8,7 @@ Pred uložením aplikácia skontroluje, že:
 
 - všetky presúvané výrobky ležia vnútri využiteľnej plochy dosky,
 - výrobky sa neprekrývajú a dodržiavajú medzeru,
-- výrobky dodržiavajú medzeru aj od **nepresúvaných** skupín a voľných objektov,
+- výrobky dodržiavajú medzeru aj od **nepresúvaných** skupín a voľných objektov, ak vo výstupe zostávajú (Nastavenia → Ukladanie); vynechané objekty sa nepočítajú,
 - objekt, ktorého rozmer nemožno určiť, uloženie **zablokuje** (bezpečnosť nemožno potvrdiť).
 
 Chyby (✖) uloženie blokujú a uvádzajú dotknuté výrobky. Upozornenia (⚠) nie. Aplikácia nikdy sama nemení mierku, neotáča ani nepresúva nevybrané objekty.
