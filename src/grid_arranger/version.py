@@ -9,7 +9,7 @@ from __future__ import annotations
 
 import re
 
-__version__ = "0.1.0a5"
+__version__ = "0.1.0a6"
 
 _PRE = {"a": "alpha", "b": "beta", "rc": "rc"}
 

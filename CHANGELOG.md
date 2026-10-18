@@ -4,6 +4,8 @@ Formát podle [Keep a Changelog](https://keepachangelog.com/), verze podle SemVe
 
 ## [Unreleased]
 
+## [0.1.0-alpha.6] — nevydáno
+
 ## [0.1.0-alpha.5] — 2026-10-18
 
 Předběžné vydání (GitHub Pre-release). Release notes: `docs/releases/v0.1.0-alpha.5.md`.

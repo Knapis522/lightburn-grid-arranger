@@ -72,3 +72,4 @@
 - 2026-10-18 — spec. v1.23: **projekt pro jiný laser** (*Připravit pro:*, zrcadlení výrobků, hlavička cílového laseru, kontrola hlavičky) a **katalog laserů** (Nastavení → Lasery). Čeká na KAL-05 v LightBurnu. 485 testů.
 - 2026-10-18 — spec. v1.24: **automatický počet sloupců** podle šířky desky, **Vyplnit desku kopiemi**, **profily rozložení**. 498 testů. Dál: sestavení a ruční testy (KAL-04, KAL-05, nové funkce), pak alpha.5.
 - 2026-10-18 — **ruční testy alpha.5:** 40/43 OK; **KAL-04 a KAL-05 ověřeny** (upozornění na neověřený počátek dole odstraněno); opraveny B4 (po Použít je Zrušit → Zavřít) a H7 (náhled při odmítnutém převodu, zalomení hlášení). Zbývá sestavení a vydání alpha.5.
+- 2026-10-18 — **alpha.5 vydána** (Pre-release): automatické sloupce, vyplnění desky, profily, katalog laserů a převod na jiný laser, počátek dole, kontrola aktualizací při každém spuštění. Vývoj pokračuje jako `0.1.0-alpha.6`. Dál: ostrý provoz (MVP-ACCEPT).
