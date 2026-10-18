@@ -654,3 +654,22 @@ def test_copy_inherits_manual_angle_and_new_project_clears_copies(make_window, t
     assert w.manual_angles["G1+1"] == 15.0 and w.plan.rotations["G1+1"] == 15.0
     w.open_project(write(tmp_path, project([tilted(0, 0)]), "other.lbrn2"))
     assert w.copies == {} and not w.act_paste.isEnabled()
+
+
+def test_window_size_maximized_state_and_splitter_are_remembered(make_window, settings):
+    w = make_window("en")
+    w.resize(760, 560)  # offscreen obrazovka má 800 × 600
+    w.show()
+    w.splitter.setSizes([250, 650])
+    w.close()
+    geometry = settings.window_geometry()
+    assert geometry and settings.window_splitter()
+    w2 = make_window("en")
+    w2.restore_window_state()
+    assert (w2.width(), w2.height()) == (w.width(), w.height())
+    w2.show()
+    w2.showMaximized()
+    w2.close()
+    w3 = make_window("en")
+    w3.restore_window_state()
+    assert w3.windowState() & Qt.WindowState.WindowMaximized

@@ -51,6 +51,7 @@ def main(argv: list[str] | None = None) -> int:
     locale = LocaleManager(app)
     locale.apply(settings.language())
     win = MainWindow(settings, locale)
+    win.restore_window_state()  # velikost a maximalizace jako při posledním zavření
     win.show()
     QTimer.singleShot(3000, win.updates.maybe_auto_check)  # automatická kontrola aktualizací (lze vypnout)
     if args and args[0].lower().endswith((".lbrn2", ".lbrn")):

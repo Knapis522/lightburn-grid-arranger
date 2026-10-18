@@ -16,7 +16,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-from PySide6.QtCore import QSettings
+from PySide6.QtCore import QByteArray, QSettings
 
 ORGANIZATION = "GridArranger"
 APPLICATION = "GridArranger"
@@ -170,6 +170,20 @@ class UserSettings:
 
     def set_section_expanded(self, key: str, expanded: bool) -> None:
         self._s.setValue(f"ui/sections/{key}", bool(expanded))
+        self._s.sync()
+
+    # --- velikost a poloha okna (včetně maximalizace) a rozdělení panelů ---------------------------
+    def window_geometry(self) -> bytes | None:
+        v = self._s.value("ui/window_geometry")
+        return bytes(v) if v else None
+
+    def window_splitter(self) -> bytes | None:
+        v = self._s.value("ui/window_splitter")
+        return bytes(v) if v else None
+
+    def set_window_state(self, geometry: bytes, splitter: bytes) -> None:
+        self._s.setValue("ui/window_geometry", QByteArray(geometry))
+        self._s.setValue("ui/window_splitter", QByteArray(splitter))
         self._s.sync()
 
     # --- natočení výrobků (spec. v1.13) ----------------------------------------------------------

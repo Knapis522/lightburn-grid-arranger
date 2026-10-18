@@ -4,6 +4,11 @@ Formát podle [Keep a Changelog](https://keepachangelog.com/), verze podle SemVe
 
 ## [Unreleased]
 
+## [0.1.0-alpha.4] — nevydáno
+
+### Opraveno
+- Aplikace si pamatuje velikost a polohu okna včetně maximalizace (přes celou obrazovku) a šířku levého panelu; otevře se tak, jak byla naposledy zavřena. Okno mimo připojené monitory se vrátí na obrazovku.
+
 ## [0.1.0-alpha.3] — 2026-10-17
 
 Interní předběžné vydání (GitHub Pre-release, tag na commitu `a804585`). Release notes: `docs/releases/v0.1.0-alpha.3.md`.

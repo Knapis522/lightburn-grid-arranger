@@ -6,7 +6,7 @@ from dataclasses import replace
 from pathlib import Path
 
 from PySide6 import __version__ as pyside_version
-from PySide6.QtCore import QEvent, QItemSelectionModel, QSize, QStandardPaths, Qt, QUrl, qVersion
+from PySide6.QtCore import QByteArray, QEvent, QItemSelectionModel, QSize, QStandardPaths, Qt, QUrl, qVersion
 from PySide6.QtGui import QAction, QActionGroup, QDesktopServices, QKeySequence, QPalette
 from PySide6.QtWidgets import (
     QApplication,
@@ -379,6 +379,7 @@ class MainWindow(QMainWindow):
         split.addWidget(right)
         split.setStretchFactor(1, 1)
         self.setCentralWidget(split)
+        self.splitter = split
 
     @staticmethod
     def _grid_layout(body: QWidget) -> QGridLayout:
@@ -516,6 +517,20 @@ class MainWindow(QMainWindow):
             combo.addItem(t, k)
         combo.setCurrentIndex(keys.index(current))
         combo.blockSignals(False)
+
+    def restore_window_state(self) -> None:
+        """Velikost, poloha a maximalizace okna z minulého spuštění (volat před ``show()``).
+        Okno mimo připojené monitory Qt samo vrátí na obrazovku."""
+        geometry = self.settings.window_geometry()
+        if geometry:
+            self.restoreGeometry(QByteArray(geometry))
+        splitter = self.settings.window_splitter()
+        if splitter:
+            self.splitter.restoreState(QByteArray(splitter))
+
+    def closeEvent(self, event) -> None:  # noqa: N802
+        self.settings.set_window_state(bytes(self.saveGeometry()), bytes(self.splitter.saveState()))
+        super().closeEvent(event)
 
     def changeEvent(self, event) -> None:  # noqa: N802
         if event.type() == QEvent.Type.LanguageChange:
