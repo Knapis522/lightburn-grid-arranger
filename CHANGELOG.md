@@ -6,6 +6,9 @@ Formát podle [Keep a Changelog](https://keepachangelog.com/), verze podle SemVe
 
 ## [0.1.0-alpha.5] — nevydáno
 
+### Přidáno
+- **Lasery s počátkem dole** (vlevo dole / vpravo dole, typicky diodové lasery s GRBL; spec. v1.22): projekt se načte, mřížka se plní od rohu u počátku (první řádek dole, další nad ním), umístění do rohu desky u počátku, ruční roh i natočení fungují stejně jako u počátku nahoře; nezávislá kontrola výstupu beze změny. Dokud kalibrace KAL-04 v LightBurnu neproběhne, aplikace u těchto projektů zobrazí upozornění (uložení neblokuje).
+
 ### Změněno
 - Automatická kontrola aktualizací proběhne **při každém spuštění** aplikace (dříve nejvýš jednou za ~20 hodin), takže nová verze se nabídne hned při dalším spuštění. Vypnout ji lze v Nastavení → Aktualizace.
 

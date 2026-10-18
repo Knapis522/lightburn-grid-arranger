@@ -557,6 +557,8 @@ class MainWindow(QMainWindow):
         return {
             "top_right": self.tr("top right"),
             "top_left": self.tr("top left"),
+            "bottom_left": self.tr("bottom left"),
+            "bottom_right": self.tr("bottom right"),
         }.get(o, o)
 
     def app_title(self) -> str:
@@ -1130,6 +1132,8 @@ class MainWindow(QMainWindow):
         can_save = False
         if self.locale_mgr.missing_catalog:
             self.list_issues.addItem("⚠ " + self.tr("Translation catalogue is missing; showing English."))
+        if self.project is not None and not self.project.info.orientation.verified:
+            self.list_issues.addItem("⚠ " + message("origin_unverified", origin=self._origin_text()))
         if self.project is None:
             self.lbl_summary.setText("")
         elif self.plan_error is not None:

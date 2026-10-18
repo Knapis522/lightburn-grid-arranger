@@ -66,10 +66,12 @@ class Align(Enum):
 
 
 class Corner(Enum):
-    """Roh, ze kterého se mřížka plní (spec. v1.10). Ověřeny jsou jen horní počátky laseru."""
+    """Roh, ze kterého se mřížka plní — roh u počátku laseru (spec. v1.10, spodní rohy v1.22)."""
 
     TOP_LEFT = "top_left"  # čtení: 1. výrobek vlevo nahoře, řádky doprava
     TOP_RIGHT = "top_right"  # od počátku vpravo nahoře: 1. výrobek vpravo, řádky doleva
+    BOTTOM_LEFT = "bottom_left"  # od počátku vlevo dole: 1. výrobek vlevo dole, řádky doprava, další řádek výš
+    BOTTOM_RIGHT = "bottom_right"  # od počátku vpravo dole: 1. výrobek vpravo dole, řádky doleva, další řádek výš
 
 
 @dataclass(frozen=True, slots=True)

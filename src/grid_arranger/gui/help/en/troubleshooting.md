@@ -4,7 +4,7 @@
 
 **"Unsupported LightBurn version"** — the project was saved by a LightBurn version the application has not been verified with. The output might not be safe, so it is refused.
 
-**"This laser origin has not been verified yet"** — lasers with the origin at the top (left or right) are supported.
+**"The laser origin … has not been verified in LightBurn yet"** — lasers with the origin at the bottom (left or right) work, but this combination has not yet passed the calibration in LightBurn. Saving is not blocked; check the output carefully in LightBurn (position, **Frame**, Preview).
 
 **Item "cannot be moved"** — hover over it. Most often: the group has no closed cut outline, something extends beyond the outline, it is locked, or it contains an object type the application cannot move safely yet (for example a bitmap).
 

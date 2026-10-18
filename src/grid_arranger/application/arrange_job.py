@@ -249,6 +249,15 @@ def _origin_on_right(project: LoadedProject) -> bool:
     return project.info.orientation.mirror_x
 
 
+def _origin_at_bottom(project: LoadedProject) -> bool:
+    return not project.info.orientation.mirror_y
+
+
+ORIGIN_CORNERS = {(False, False): Corner.TOP_LEFT, (True, False): Corner.TOP_RIGHT,
+                  (False, True): Corner.BOTTOM_LEFT, (True, True): Corner.BOTTOM_RIGHT}
+"""Roh mřížky u počátku laseru podle (počátek vpravo, počátek dole)."""
+
+
 def make_plan(project: LoadedProject, params: ArrangeParams, geometry: ItemGeometry | None = None) -> Plan:
     if params.anchor not in ANCHORS:
         raise GridError("invalid_anchor", "Neznámý způsob umístění mřížky.", anchor=params.anchor)
@@ -273,8 +282,8 @@ def make_plan(project: LoadedProject, params: ArrangeParams, geometry: ItemGeome
         raise GridError("empty_selection", "Není vybrán žádný výrobek.")
 
     o = project.info.orientation
-    right = _origin_on_right(project)
-    corner = Corner.TOP_RIGHT if (params.fill == "origin" and right) else Corner.TOP_LEFT
+    right, bottom = _origin_on_right(project), _origin_at_bottom(project)
+    corner = ORIGIN_CORNERS[(right, bottom)] if params.fill == "origin" else Corner.TOP_LEFT
     material = material_to_core(project, params.material) if params.material else None
 
     rotations: dict[str, float] = {}
@@ -302,14 +311,14 @@ def make_plan(project: LoadedProject, params: ArrangeParams, geometry: ItemGeome
         if area is None:
             raise GridError(issues[0].code, "Deska nebo okraje jsou neplatné.", **issues[0].params)
         if params.anchor == "origin":
-            sx, sy = (area.right - gw if right else area.left), area.top
+            sx, sy = (area.right - gw if right else area.left), (area.bottom - gh if bottom else area.top)
         else:
             sx, sy = (area.left + area.right - gw) / 2.0, (area.top + area.bottom - gh) / 2.0
     elif params.anchor == "manual":
         if params.start is None:
             raise GridError("invalid_start", "Pro ruční umístění zadejte souřadnice rohu mřížky u počátku.")
         cx, cy = o.to_screen_point(*params.start)
-        sx, sy = (cx - gw if right else cx), cy
+        sx, sy = (cx - gw if right else cx), (cy - gh if bottom else cy)
     else:  # selection
         sel = [project.item(i).screen_bounds for i in order]
         sx, sy = min(r.left for r in sel), min(r.top for r in sel)
@@ -331,7 +340,7 @@ def make_plan(project: LoadedProject, params: ArrangeParams, geometry: ItemGeome
         moves[p.item_id] = _screen_to_file(t, o.sx, o.sy)
         pivots[p.item_id] = (cx, cy)
     g = layout.grid_bounds
-    corner_screen = (g.right if right else g.left, g.top)
+    corner_screen = (g.right if right else g.left, g.bottom if bottom else g.top)
     return Plan(project, req, layout, report, moves, o.to_file_point(*corner_screen), params.anchor, params.fill,
                 {k: v for k, v in rotations.items() if k in moves}, pivots, params.rotation,
                 frozenset(k for k in params.angles if k in moves),
@@ -369,7 +378,7 @@ def _protocol(plan: Plan, output: Path, out_bytes: bytes, problems: list[str]) -
         "source": {"path": str(info.path), "sha256": info.sha256, "bytes": info.size},
         "output": {"path": str(output), "sha256": hashlib.sha256(out_bytes).hexdigest(), "bytes": len(out_bytes)},
         "lightburn": {"app_version": info.app_version, "format_version": info.format_version,
-                      "device": info.device_name, "origin": o.origin},
+                      "device": info.device_name, "origin": o.origin, "origin_verified": o.verified},
         "parameters": {
             "columns": plan.request.columns, "gap_x_mm": plan.request.gap_x, "gap_y_mm": plan.request.gap_y,
             "anchor": plan.anchor, "fill": plan.fill, "order": list(plan.request.ordered_item_ids),

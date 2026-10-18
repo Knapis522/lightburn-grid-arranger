@@ -320,9 +320,7 @@ def load_project(path: str | Path) -> LoadedProject:
         if a.get(k) not in ("True", "False"):
             raise GridError("unknown_orientation", "Chybí nebo je neplatný příznak zrcadlení.", flag=k, value=a.get(k))
         flags[k] = a[k] == "True"
-    orientation = Orientation(flags["MirrorX"], flags["MirrorY"])
-    if not orientation.verified:
-        raise GridError("unsupported_orientation", "Neověřené nastavení počátku laseru.", origin=orientation.origin)
+    orientation = Orientation(flags["MirrorX"], flags["MirrorY"])  # všechny 4 rohy (spodní od spec. v1.22)
 
     unknown_children = {c.tag for c in root.children} - KNOWN_ROOT_CHILDREN
     if unknown_children:

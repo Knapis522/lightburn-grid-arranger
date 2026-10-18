@@ -10,7 +10,7 @@
 | Pro 2.2.00-RC-7 (Qt 6.11.2) | 1 | totéž; `MirrorX=False, MirrorY=True` | ověřeno | ověřeno (LightBurn) | neověřeno | neověřeno | V-003 |
 | Pro 2.2.00-RC-7 (Qt 6.11.2) | 1 | Nativní tvary `Ellipse`, `Rect` (i se zaoblením `Cr`), `Polygon` (libovolné N) ve skupině, i ve vnořené skupině (klíčenky); oba lasery | ověřeno | ověřeno (shoda s přesunem v LightBurnu) | ověřeno | ověřeno (výstupy otevřeny vlastníkem) | Test_tvary_A / L_A / _posun, Test_klicenky, KAL-02 |
 | Pro 2.2.00-RC-7 (Qt 6.11.2) | 1 | Kopie výrobků jako nové skupiny (sdílená geometrie přes `VertID`/`PrimID`); oba lasery | ověřeno | ověřeno | ověřeno | ověřeno (KAL-03) | `KAL03\` |
-| — | — | `MirrorY=False` (jakékoli `MirrorX`) | — | — | — | — | **nepodporováno v MVP** (neověřeno) |
+| Pro 2.2.00-RC-7 (Qt 6.11.2) | 1 | `MirrorY=False` (počátek vlevo dole / vpravo dole, např. diodové lasery) | implementováno (spec. v1.22) | testy syntetické | — | — | **čeká na KAL-04**; aplikace zobrazí upozornění |
 
 ## Vzorek V-001 (KAL-00, pouze čtení)
 
@@ -164,3 +164,12 @@ Kalibrační výstupy (datová složka, `KAL03\`):
 - [x] Ověřeno vlastníkem 2026-10-17 — v pořádku.
 
 **Stav brány KAL-03: SPLNĚNO 2026-10-17** (LightBurn 2.2.00-RC-7, oba lasery).
+
+## KAL-04 — počátek dole (spec. v1.22, čeká na ověření)
+
+Podle V-003 příznaky `MirrorX/MirrorY` mění jen zobrazení, souřadnice souboru zůstávají (X/Y v UI = soubor). Pro `MirrorY=False` z toho plyne osa Y souboru nahoru: `screen_y = −y` (stejný vzorec, kap. 8). Transformace natočení `S ∘ T ∘ S` je pro determinant ±1 už ověřena (vlevo nahoře det +1, vpravo nahoře det −1; vlevo dole −1, vpravo dole +1).
+
+**Postup ověření (vlastník, bez stroje):** v LightBurnu vytvořit testovací zařízení (Devices → Create Manually → GRBL, počátek *Front Left* / *Front Right*, libovolná plocha), s ním znovu uložit kalibrační projekt (`Kalibrace_A__BL.lbrn2`, `Kalibrace_A__BR.lbrn2`), v aplikaci rozložit (deska, roh u počátku, natočení, kopie) a výstup otevřít v LightBurnu se stejným zařízením: mřížka v rohu u počátku s okrajem, souřadnice prvního výrobku X 5 / Y 5, natočení a texty, Preview. Potom vrátit skutečný laser.
+
+- [ ] vlevo dole (`MirrorX=False, MirrorY=False`)
+- [ ] vpravo dole (`MirrorX=True, MirrorY=False`)

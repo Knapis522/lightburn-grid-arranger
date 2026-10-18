@@ -45,11 +45,15 @@ def test_lb06_verified_orientations(write_project, mx, origin, expected):
     assert p.items[0].screen_bounds == expected
 
 
-@pytest.mark.parametrize("mx", [True, False])
-def test_lb06_unverified_orientation_rejected(write_project, mx):
-    with pytest.raises(GridError) as e:
-        load_project(write_project(project([card(0, 0)], mirror_x=mx, mirror_y=False)))
-    assert e.value.code == "unsupported_orientation"
+@pytest.mark.parametrize(
+    "mx, origin, expected",
+    [(False, "bottom_left", Rect(10, -80, 110, -20)), (True, "bottom_right", Rect(-110, -80, -10, -20))],
+)
+def test_bottom_origins_are_loaded_with_y_up(write_project, mx, origin, expected):
+    # diodové lasery (GRBL) mají počátek často vlevo / vpravo dole: osa Y souboru míří nahoru (spec. v1.22)
+    p = load_project(write_project(project([card(10, 20)], mirror_x=mx, mirror_y=False)))
+    assert p.info.orientation.origin == origin and not p.info.orientation.verified
+    assert p.items[0].screen_bounds == expected
 
 
 # --- T-FMT-02/03: formát a poškozený obsah -------------------------------------------------

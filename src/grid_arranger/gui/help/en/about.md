@@ -1,7 +1,7 @@
 # Version, supported files and data
 
 - Application version: **Help → About**.
-- Verified with: LightBurn 2.2.00, `.lbrn2` projects, lasers with the origin at the top left and top right.
+- Verified with: LightBurn 2.2.00, `.lbrn2` projects, lasers with the origin at the top left and top right (bottom origins supported, verification in LightBurn in progress).
 - The application works **offline** and does not control the laser. The only internet connection is the update check on GitHub (no data about your projects); it can be turned off in **Settings → Updates**.
 - **Settings** (menu bar item, gear icon, Ctrl+,) opens a separate window with the pages *General*, *Saving* and *Updates*. Changes take effect with **OK** or **Apply**; **Cancel** closes the window without changes.
 - **Layout panel:** **Settings → General → Layout panel** — the Project, Items, Grid, Placement and Board sections left or right of the preview.

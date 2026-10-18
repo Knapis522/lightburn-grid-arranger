@@ -859,3 +859,17 @@ def test_issue_list_height_follows_number_of_messages(make_window, tmp_path):
         w.list_issues.addItem(f"⚠ {i}")
     w._fit_issue_list()
     assert one < w.list_issues.height() <= one * w.ISSUE_ROWS_MAX + 10  # roste nejvýš na 6 řádků, pak posuvník
+
+
+@pytest.mark.parametrize("mx, name", [(False, "bottom left"), (True, "bottom right")])
+def test_bottom_origin_project_opens_with_verification_warning(make_window, tmp_path, mx, name):
+    w = make_window("en")
+    data = project([card(10, 20, text="A"), card(300, 400, text="B")], mirror_x=mx, mirror_y=False)
+    assert w.open_project(write(tmp_path, data))
+    assert f"origin {name}" in w.lbl_device.text()
+    assert any("has not been verified in LightBurn" in t for t in w.issues())
+    out = w.save_new_project(confirm=False)  # upozornění neblokuje uložení
+    assert out is not None and out.exists()
+    w2 = make_window("cs")
+    w2.open_project(write(tmp_path, data, "b.lbrn2"))
+    assert "vlevo dole" in w2.lbl_device.text() or "vpravo dole" in w2.lbl_device.text()

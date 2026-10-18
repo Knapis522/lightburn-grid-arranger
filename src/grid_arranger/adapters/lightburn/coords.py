@@ -6,7 +6,9 @@ Ověřeno pro LightBurn 2.2.00: souřadnice v souboru = hodnoty X/Y v UI LightBu
     screen_x = −x  když MirrorX,  jinak +x
     screen_y = +y  když MirrorY,  jinak −y      (jádro: osa Y dolů)
 
-Podporované kombinace: MirrorY = True (počátek nahoře). Ostatní jsou neověřené.
+Podporované jsou všechny čtyři rohy počátku (spodní od spec. v1.22 — stejné vzorce, jen osa Y
+souboru míří nahoru). ``VERIFIED`` = rohy ověřené kalibrací v LightBurnu (KAL-00/01 nahoře,
+KAL-04 dole); u neověřených aplikace jen upozorní, ať se výstup v LightBurnu pečlivě zkontroluje.
 """
 
 from __future__ import annotations

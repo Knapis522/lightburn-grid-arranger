@@ -1,7 +1,7 @@
 # Verze, podporované soubory a data
 
 - Číslo verze aplikace: **Nápověda → O aplikaci**.
-- Ověřeno s: LightBurn 2.2.00, projekty `.lbrn2`, lasery s počátkem vlevo nahoře a vpravo nahoře.
+- Ověřeno s: LightBurn 2.2.00, projekty `.lbrn2`, lasery s počátkem vlevo nahoře a vpravo nahoře (počátek dole podporován, ověření v LightBurnu probíhá).
 - Aplikace pracuje **offline** a neovládá laser. Jediné spojení s internetem je kontrola aktualizací na GitHubu (bez jakýchkoli údajů o projektech); lze ji vypnout v **Nastavení → Aktualizace**.
 - **Nastavení** (položka v liště menu, ikona ozubeného kola, Ctrl+,) se otevře jako samostatné okno se stránkami *Obecné*, *Uložení* a *Aktualizace*. Změny se projeví tlačítkem **OK** nebo **Použít**; **Zrušit** okno zavře beze změny.
 - **Panel rozložení:** **Nastavení → Obecné → Panel rozložení** — sekce Projekt, Výrobky, Mřížka, Umístění a Deska vlevo, nebo vpravo od náhledu.

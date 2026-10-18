@@ -117,19 +117,19 @@ def machine_bboxes(res):
     return {it.id: it.file_bbox for it in out.items}
 
 
-@pytest.mark.parametrize("mx", [True, False])
-def test_manual_start_is_grid_corner_at_origin_in_lightburn_coordinates(write_project, mx):
-    src = write_project(project([card(10, 20), card(300, 400)], mirror_x=mx))
+@pytest.mark.parametrize("mx, my", [(True, True), (False, True), (False, False), (True, False)])
+def test_manual_start_is_grid_corner_at_origin_in_lightburn_coordinates(write_project, mx, my):
+    src = write_project(project([card(10, 20), card(300, 400)], mirror_x=mx, mirror_y=my))
     res = run(src, ArrangeParams(columns=2, gap_x=3, gap_y=3, material=BOARD, anchor="manual", start=(500, 10)))
     b = machine_bboxes(res)
-    # pro oba lasery: roh u počátku = nejmenší X a Y stroje; G1 (plnění od počátku) leží v tomto rohu
+    # pro všechny rohy počátku: roh u počátku = nejmenší X a Y stroje; G1 (plnění od počátku) leží v tomto rohu
     assert b["G1"][0] == pytest.approx(500) and b["G1"][1] == pytest.approx(10)
     assert b["G2"][0] == pytest.approx(603) and b["G2"][1] == pytest.approx(10)
 
 
-@pytest.mark.parametrize("mx", [True, False])
-def test_origin_anchor_puts_grid_into_board_corner_at_origin(write_project, mx):
-    src = write_project(project([card(310, 20, text="A"), card(-300, 400, text="B"), card(50, 50, text="C")], mirror_x=mx))
+@pytest.mark.parametrize("mx, my", [(True, True), (False, True), (False, False), (True, False)])
+def test_origin_anchor_puts_grid_into_board_corner_at_origin(write_project, mx, my):
+    src = write_project(project([card(310, 20, text="A"), card(-300, 400, text="B"), card(50, 50, text="C")], mirror_x=mx, mirror_y=my))
     res = run(src, ArrangeParams(columns=2, gap_x=3, gap_y=3, material=MaterialInput(700, 500)))
     b = machine_bboxes(res)
     assert b["G1"][:2] == pytest.approx((5, 5))  # deska u počátku + okraj 5 mm
@@ -362,3 +362,31 @@ def test_next_output_path_continues_series_of_saved_output(tmp_path):
     (tmp_path / "x__grid_001.lbrn2").write_bytes(b"data")
     assert wr.next_output_path(tmp_path / "x__grid_001.lbrn2").name == "x__grid_002.lbrn2"
     assert wr.next_output_path(tmp_path / "__grid_001.lbrn2").name == "__grid_001__grid_001.lbrn2"
+
+
+@pytest.mark.parametrize("mx", [True, False])
+def test_bottom_origin_fills_rows_upward_from_origin_on_screen(write_project, mx):
+    # počátek dole: 1. řádek u počátku = dole na obrazovce, další řádek nad ním (v souboru větší Y)
+    src = write_project(project([card(0, 0), card(500, 0), card(0, 300)], mirror_x=mx, mirror_y=False))
+    plan = make_plan(load_project(src), ArrangeParams(columns=2, gap_x=3, gap_y=3, material=MaterialInput(700, 500)))
+    t = {p.item_id: p.target_bounds for p in plan.layout.placements}
+    g = plan.layout.grid_bounds
+    assert t["G1"].bottom == pytest.approx(g.bottom) and t["G3"].bottom < t["G1"].top  # G3 o řádek výš
+    assert (t["G1"].right == pytest.approx(g.right)) if mx else (t["G1"].left == pytest.approx(g.left))
+    assert plan.origin_corner_lightburn == pytest.approx((5, 5))
+    res = execute(plan, output=src.with_name("out.lbrn2"))  # nezávislá kontrola výstupu i poloh po načtení
+    assert res.output.exists() and not res.problems
+    b = machine_bboxes(res)
+    assert b["G1"][:2] == pytest.approx((5, 5)) and b["G3"][:2] == pytest.approx((5, 68))  # další řádek dál od počátku
+
+
+@pytest.mark.parametrize("mx", [True, False])
+def test_bottom_origin_rotation_keeps_item_inside_board(write_project, mx):
+    # natočení se v souboru zapíše jako S ∘ T ∘ S i pro osu Y nahoru; výsledek po načtení leží na desce
+    src = write_project(project([card(0, 0, w=100, h=30), card(200, 0, w=100, h=30)], mirror_x=mx, mirror_y=False))
+    params = ArrangeParams(columns=1, gap_x=3, gap_y=3, material=MaterialInput(700, 500), angles={"G1": 30.0})
+    res = run(src, params, write=True, out_dir=None)
+    out = load_project(res.output)
+    for it in out.items:
+        x0, y0, x1, y1 = it.file_bbox
+        assert -1e-6 <= x0 and x1 <= 700 + 1e-6 and -1e-6 <= y0 and y1 <= 500 + 1e-6

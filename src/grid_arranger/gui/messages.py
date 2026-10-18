@@ -20,7 +20,7 @@ TEMPLATES: dict[str, str] = {
     "xml_dtd_forbidden": QT_TRANSLATE_NOOP("Messages", "The file contains constructs that are refused for security reasons."),
     "not_lightburn_project": QT_TRANSLATE_NOOP("Messages", "The file is not a LightBurn project."),
     "unsupported_version": QT_TRANSLATE_NOOP("Messages", "Unsupported LightBurn version ({app_version}, format {format_version}). Supported: LightBurn 2.2."),
-    "unsupported_orientation": QT_TRANSLATE_NOOP("Messages", "This laser origin ({origin}) has not been verified yet. Supported: origin top left or top right."),
+    "origin_unverified": QT_TRANSLATE_NOOP("Messages", "The laser origin {origin} has not been verified in LightBurn yet: check the position of the output in LightBurn (Frame) carefully before cutting."),
     "unknown_orientation": QT_TRANSLATE_NOOP("Messages", "The project has an invalid mirror setting."),
     "unknown_project_attribute": QT_TRANSLATE_NOOP("Messages", "The project contains unknown properties ({attrs}) and cannot be processed safely."),
     "multi_page_unsupported": QT_TRANSLATE_NOOP("Messages", "Projects with several pages are not supported."),

@@ -47,7 +47,7 @@ def test_t_help03_search_filters_topics(qapp):
     h = HelpWindow("cs")
     h.search.setText("Frame")
     names = [h.toc.item(i).data(256) for i in range(h.toc.count())]
-    assert names == ["save"]
+    assert names == ["save", "troubleshooting"]
     h.search.setText("")
     assert h.toc.count() == len(TOPICS)
 

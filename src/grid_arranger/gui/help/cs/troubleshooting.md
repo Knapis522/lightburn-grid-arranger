@@ -4,7 +4,7 @@
 
 **„Nepodporovaná verze LightBurnu“** — projekt uložil LightBurn, se kterým aplikace zatím nebyla ověřena. Výstup by nemusel být bezpečný, proto je odmítnut.
 
-**„Tento počátek laseru zatím nebyl ověřen“** — podporovány jsou lasery s počátkem nahoře (vlevo nebo vpravo).
+**„Počátek laseru … zatím nebyl ověřen v LightBurnu“** — u laserů s počátkem dole (vlevo nebo vpravo) aplikace funguje, ale tato kombinace ještě neprošla kalibrací v LightBurnu. Uložení není blokováno; výstup v LightBurnu pečlivě zkontrolujte (poloha, **Frame**, Preview).
 
 **Výrobek „nelze přesunout“** — najeďte na něj myší. Nejčastěji: skupina nemá uzavřený řezný obrys, něco z ní vyčnívá ven z obrysu, je zamčená, nebo obsahuje typ objektu, který aplikace zatím neumí bezpečně přesunout (např. bitmapu).
 

@@ -1,6 +1,6 @@
 # Grid Arranger for LightBurn — technická specifikace
 
-**Verze dokumentu:** 1.21 (kontrola aktualizací při každém spuštění; viz kap. 32)  
+**Verze dokumentu:** 1.22 (počátek laseru vlevo dole / vpravo dole; viz kap. 9.1 bod 4a)  
 **Datum:** 17. 10. 2026  
 **Název produktu:** Grid Arranger for LightBurn; spustitelný soubor `GridArranger.exe`; Python balíček `grid_arranger`; repozitář `lightburn-grid-arranger`. Neoficiální nástroj, nikoli produkt LightBurn Software.  
 **Stav:** Interní pracovní podklad; nikoli hotový nebo otestovaný plugin  
@@ -260,7 +260,7 @@ Ověřené kombinace: `MirrorX=True, MirrorY=True` (počátek vpravo nahoře) a 
 2. Ověřit příponu, limit velikosti, syntaxi XML, kořen projektu, hlavičku verze a očekávané prvky.
 3. XML parser nastavit bezpečně: žádné externí entity, žádné síťové požadavky, DTD zakázat, nepokoušet se „opravovat“ poškozený dokument.
 4. Zapsat SHA-256 původního souboru a spočítat počty všech objektů/skupin/řezných nastavení.
-4a. **Laser a počátek (MVP, rozhodnutí 16. 10. 2026):** z hlavičky načíst `DeviceName`, `MirrorX`, `MirrorY` a odvodit počátek: True/True = vpravo nahoře, False/True = vlevo nahoře (ověřeno), False/False = vlevo dole, True/False = vpravo dole (neověřeno → nepodporováno, kap. 8). Uživatel počátek **nezadává**. GUI trvale zobrazí „Projekt uložen pro: {DeviceName}, počátek {roh}“ a upozorní, že po přepnutí laseru v LightBurnu je nutné projekt znovu uložit. Velikost pracovní plochy laseru v souboru není; materiál se zadává ručně (profily ve v1.1).
+4a. **Laser a počátek (MVP, rozhodnutí 16. 10. 2026):** z hlavičky načíst `DeviceName`, `MirrorX`, `MirrorY` a odvodit počátek: True/True = vpravo nahoře, False/True = vlevo nahoře (ověřeno), False/False = vlevo dole, True/False = vpravo dole (od v1.22 podporováno se stejným převodem — osa Y souboru nahoru; do kalibrace KAL-04 GUI i CLI zobrazí upozornění, uložení neblokuje; kap. 8). Uživatel počátek **nezadává**. GUI trvale zobrazí „Projekt uložen pro: {DeviceName}, počátek {roh}“ a upozorní, že po přepnutí laseru v LightBurnu je nutné projekt znovu uložit. Velikost pracovní plochy laseru v souboru není; materiál se zadává ručně (profily ve v1.1).
 5. Načíst hierarchii skupin a zjistit, které lze bezpečně přesunout.
 6. Nepodporované či nejednoznačné struktury označit; při riziku ukončit bez výstupního projektu.
 
@@ -1058,6 +1058,7 @@ Toto jsou **ověřovací úkoly**, nikoli potvrzené technické možnosti souča
 
 ## 28. Záznam změn specifikace
 
+- **v1.22 (18. 10. 2026):** Na přání vlastníka (diodové lasery) podporovány počátky **vlevo dole a vpravo dole**: roh plnění u počátku (`Corner.BOTTOM_LEFT/BOTTOM_RIGHT` — první řádek dole, další výš, zarovnání v buňce k počátku), umístění do rohu desky u počátku a ruční roh mřížky u počátku i pro spodní rohy; převod souřadnic beze změny. Do ověření KAL-04 v LightBurnu upozornění (kap. 9.1 bod 4a, `FORMAT_COMPATIBILITY.md`).
 - **v1.21 (18. 10. 2026):** Automatická kontrola aktualizací při každém spuštění aplikace, ne jen jednou denně (kap. 32).
 - **v1.20 (18. 10. 2026):** Na přání vlastníka je Nastavení modální okno se stránkami (Obecné, Uložení, Aktualizace; OK / Zrušit / Použít) místo rozbalovacího menu; nová volba *Panel rozložení* vlevo / vpravo od náhledu (`ui/panel_side`) (kap. 36.3).
 - **v1.19 (18. 10. 2026):** Po uložení titulek a sekce Projekt ukazují naposledy uložený soubor; volba pokračovat s uloženým souborem místo originálu; návrh názvu ze `__grid_NNN` pokračuje v řadě originálu (kap. 9.4).

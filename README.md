@@ -34,7 +34,7 @@ Newer versions are offered by the application itself (*Settings → Updates*); n
 ## Supported projects
 
 - LightBurn 2.2.x projects saved as `.lbrn2`.
-- Lasers with the origin at the **top left or top right**.
+- Lasers with the origin in any corner: **top left, top right**, and — new in v0.1.0-alpha.5, still awaiting verification in LightBurn — **bottom left, bottom right** (typical for diode lasers).
 - Projects with several pages, unknown object types (e.g. bitmaps inside items) or unverified constructions are refused or the affected items are blocked — the application never guesses.
 
 ## Safety

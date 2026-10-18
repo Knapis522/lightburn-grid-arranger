@@ -55,6 +55,8 @@ def _cmd_info(a: argparse.Namespace) -> int:
     print(f"File:      {i.path.name}")
     print(f"LightBurn: {i.app_version} (format {i.format_version})")
     print(f"Device:    {i.device_name} — origin {ORIGIN_TEXT[i.orientation.origin]}")
+    if not i.orientation.verified:
+        print("WARNING:   this laser origin has not been verified in LightBurn yet")
     print(f"SHA-256:   {i.sha256}")
     print(f"Items:     {sum(it.supported for it in p.items)} supported / {len(p.items)} groups; loose objects: {len(p.loose)}")
     for it in p.items:
@@ -104,6 +106,8 @@ def _cmd_arrange(a: argparse.Namespace) -> int:
     lay = plan.layout
     cx, cy = plan.origin_corner_lightburn
     print(f"Laser:     {project.info.device_name} — origin {ORIGIN_TEXT[project.info.orientation.origin]}")
+    if not project.info.orientation.verified:
+        print("WARNING:   this laser origin has not been verified in LightBurn yet - check the output position (Frame) before cutting")
     print(f"Grid: {lay.columns} columns x {lay.rows} rows, {lay.grid_bounds.width:.3f} x {lay.grid_bounds.height:.3f} mm;"
           f" anchor {plan.anchor}, fill from {plan.fill}; grid corner at origin side: LightBurn X {cx:.3f}, Y {cy:.3f}")
     for pl in lay.placements:

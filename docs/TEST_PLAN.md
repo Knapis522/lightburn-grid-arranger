@@ -30,6 +30,7 @@
 | Ruční natočení a výběr v náhledu (automatické) | spec. v1.15 kap. 7.6 | 7.6 | automatický | prochází | `tests/integration/test_rotation_plan.py`, `tests/gui/test_main_window.py` |
 | Kopie výrobků (automatické) | V11-02 / spec. v1.16 kap. 22.2 | 22.2 | automatický | prochází | `tests/integration/test_copies.py`, `tests/gui/test_main_window.py` |
 | Kopie výrobků v LightBurnu | KAL-03 | 22.2 | ruční | ruční – ověřeno | `…__kal03_kopie.lbrn2` (datová složka) |
+| Počátek dole v LightBurnu | KAL-04 | 9.1 | ruční | čeká | testovací zařízení GRBL vlevo dole / vpravo dole |
 | Natočení v LightBurnu | KAL-01 | 7.6 | ruční | ruční – ověřeno | `docs/FORMAT_COMPATIBILITY.md`, protokol níže |
 | Nativní tvary (automatické) | spec. v1.14 kap. 5 body 8–9 | 5 | automatický | prochází | `tests/unit/test_shapes.py`, `tests/integration/test_native_shapes.py`, `tests/integration/test_real_projects.py` (vzorky C, s `GRID_ARRANGER_REAL_DATA`) |
 | Nativní tvary v LightBurnu | vzorky C (výstupy), KAL-02 | 5 | ruční | ruční – ověřeno | `docs/FORMAT_COMPATIBILITY.md` (vzorky C, KAL-02) |

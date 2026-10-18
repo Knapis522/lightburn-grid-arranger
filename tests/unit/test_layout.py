@@ -294,3 +294,30 @@ def test_fill_from_top_right_mixed_sizes_aligned_toward_origin():
     assert lay.placement_for("wide").target_bounds.right == pytest.approx(205)
     assert lay.placement_for("x").target_bounds.right == pytest.approx(205)  # menší kus přiléhá k rohu počátku
     assert lay.placement_for("narrow").target_bounds.left == pytest.approx(0)
+
+
+@pytest.mark.parametrize("corner_name", ["BOTTOM_LEFT", "BOTTOM_RIGHT"])
+def test_fill_from_bottom_mirrors_rows(corner_name):
+    from grid_arranger.domain import Corner
+
+    corner = Corner[corner_name]
+    top = Corner.TOP_LEFT if corner is Corner.BOTTOM_LEFT else Corner.TOP_RIGHT
+    items = scattered_items(7)
+    a = arrange_to_grid(items, request(items, columns=3, fill_from=top))
+    b = arrange_to_grid(items, request(items, columns=3, fill_from=corner))
+    assert a.grid_bounds == b.grid_bounds
+    g = b.grid_bounds
+    first = b.placement_for("g0").target_bounds
+    assert first.bottom == pytest.approx(g.bottom)  # 1. kus v řádku u počátku = dole
+    assert b.placement_for("g6").target_bounds.top == pytest.approx(g.top)  # neúplný řádek nahoře (nejdál od počátku)
+    for pa, pb in zip(a.placements, b.placements):  # zrcadlení řádků v rámci mřížky
+        assert pb.target_bounds.top == pytest.approx(g.top + g.bottom - pa.target_bounds.bottom)
+        assert pb.target_bounds.left == pytest.approx(pa.target_bounds.left)
+
+
+def test_fill_from_bottom_mixed_heights_aligned_toward_origin():
+    from grid_arranger.domain import Corner
+
+    items = [Item("tall", Rect.from_xywh(0, 0, 40, 120)), Item("short", Rect.from_xywh(0, 0, 40, 60))]
+    lay = arrange_to_grid(items, request(items, columns=2, gap=(5, 5), start=(0, 0), fill_from=Corner.BOTTOM_LEFT))
+    assert lay.placement_for("short").target_bounds.bottom == pytest.approx(120)  # přiléhá k řádku u počátku

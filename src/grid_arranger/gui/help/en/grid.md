@@ -8,7 +8,7 @@ If items have **different sizes**, a column is as wide as its widest item and a 
 
 **Fill order**
 
-- *From the laser origin* (default) — item no. 1 is in the corner at the laser origin; with the origin at the top right, rows are filled from right to left.
+- *From the laser origin* (default) — item no. 1 is in the corner at the laser origin; with the origin on the right, rows are filled from right to left; with the origin at the bottom, the first row is at the bottom and the next rows are above it.
 - *Reading order* — item no. 1 is always top left, rows from left to right.
 
 **Placement**

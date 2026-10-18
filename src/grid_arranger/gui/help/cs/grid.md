@@ -8,7 +8,7 @@ Mají-li výrobky **různé rozměry**, šířka sloupce je podle nejširšího 
 
 **Pořadí plnění**
 
-- *Od počátku laseru* (výchozí) — výrobek č. 1 je v rohu u počátku laseru; u laseru s počátkem vpravo nahoře se řádky plní zprava doleva.
+- *Od počátku laseru* (výchozí) — výrobek č. 1 je v rohu u počátku laseru; u laseru s počátkem vpravo se řádky plní zprava doleva, u počátku dole je první řádek dole a další jsou nad ním.
 - *Čtení* — výrobek č. 1 je vždy vlevo nahoře, řádky zleva doprava.
 
 **Umístění mřížky**

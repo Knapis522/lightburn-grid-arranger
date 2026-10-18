@@ -76,21 +76,27 @@ def arrange_to_grid(items: Iterable[Item], request: GridRequest) -> LayoutResult
     col_w = [max(ordered[i].bounds.width for i in range(j, n, cols)) for j in range(cols)]
     row_h = [max(it.bounds.height for it in ordered[r * cols : (r + 1) * cols]) for r in range(rows)]
 
-    # Roh plnění: TOP_LEFT = čtení (1. sloupec vlevo); TOP_RIGHT = od počátku vpravo
-    # (1. sloupec vpravo, řádky se plní doleva; zarovnání v buňce se zrcadlí k rohu plnění).
-    from_right = request.fill_from is Corner.TOP_RIGHT
+    # Roh plnění = roh u počátku laseru: TOP_LEFT = čtení (1. sloupec vlevo, 1. řádek nahoře);
+    # vpravo = 1. sloupec vpravo, řádky se plní doleva; dole = 1. řádek dole, další řádky výš.
+    # Zarovnání v buňce se zrcadlí k rohu plnění.
+    flip = {Align.START: Align.END, Align.END: Align.START}
+    from_right = request.fill_from in (Corner.TOP_RIGHT, Corner.BOTTOM_RIGHT)
+    from_bottom = request.fill_from in (Corner.BOTTOM_LEFT, Corner.BOTTOM_RIGHT)
     vis_w = list(reversed(col_w)) if from_right else col_w
-    align_x = {Align.START: Align.END, Align.END: Align.START}.get(request.align_x, request.align_x) if from_right else request.align_x
+    vis_h = list(reversed(row_h)) if from_bottom else row_h
+    align_x = flip.get(request.align_x, request.align_x) if from_right else request.align_x
+    align_y = flip.get(request.align_y, request.align_y) if from_bottom else request.align_y
     xs = _starts(request.start_x, vis_w, request.gap_x)
-    ys = _starts(request.start_y, row_h, request.gap_y)
+    ys = _starts(request.start_y, vis_h, request.gap_y)
 
     placements: list[Placement] = []
     for index, it in enumerate(ordered):
         r, c = divmod(index, cols)
         v = cols - 1 - c if from_right else c
+        u = rows - 1 - r if from_bottom else r
         w, h = it.bounds.width, it.bounds.height
         left = xs[v] + _offset(vis_w[v], w, align_x)
-        top = ys[r] + _offset(row_h[r], h, request.align_y)
+        top = ys[u] + _offset(vis_h[u], h, align_y)
         placements.append(
             Placement(
                 item_id=it.id,
