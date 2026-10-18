@@ -12,6 +12,6 @@
 4. [Deska, okraje a kontrola kolizí](board.md)
 5. [Uložení a kontrola v LightBurnu](save.md)
 
-**Ovládání:** nástrojová lišta nahoře — **Otevřít projekt** (Ctrl+O), **Uložit jako nový projekt** (Ctrl+S), **Přizpůsobit náhled** (Ctrl+0), **Příručka** (F1); najetím myší na ikonu se zobrazí popis. V titulku okna je název otevřeného projektu.
+**Ovládání:** nástrojová lišta nahoře — **Otevřít projekt** (Ctrl+O), **Uložit jako nový projekt** (Ctrl+S), **Otevřít v LightBurnu** (Ctrl+L), **Krok zpět** (Ctrl+Z) a **Krok vpřed** (Ctrl+Y), **Vytvořit kopie** (Ctrl+D), **Přizpůsobit náhled** (Ctrl+0), **Příručka** (F1); najetím myší na ikonu se zobrazí popis. **Uspořádání lišty** změníte tažením: ikonu chytněte, podržte a přetáhněte na jiné místo (zelená čára ukazuje kam); pořadí si aplikace pamatuje. Pravým tlačítkem na liště ho vrátíte na výchozí. Krok zpět/vpřed se týká rozložení v aplikaci (pořadí, kopie, natočení, mřížka, deska), ne projektu v LightBurnu. V titulku okna je název otevřeného projektu.
 
 Další: [Řešení problémů](troubleshooting.md) · [Verze, podporované soubory a data](about.md)

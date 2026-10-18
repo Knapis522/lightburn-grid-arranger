@@ -299,10 +299,11 @@ def test_title_shows_project_like_lightburn(make_window, tmp_path):
 def test_toolbar_open_save_help_with_icons(make_window, tmp_path):
     w = make_window("en")
     acts = [a for a in w.toolbar.actions() if not a.isSeparator()]
-    assert acts == [w.act_open, w.act_save, w.act_open_in_lb, w.act_fit, w.act_duplicate, w.act_help]
-    assert w.act_fit.toolTip() == "Fit view (Ctrl+0)"
+    assert acts == [w.act_open, w.act_save, w.act_open_in_lb, w.act_undo, w.act_redo, w.act_duplicate, w.act_fit,
+                    w.act_help]
+    assert w.act_fit.toolTip().startswith("Fit view (Ctrl+0)\n")
     assert all(not a.icon().isNull() for a in acts)
-    assert w.act_open.toolTip() == "Open project (Ctrl+O)"
+    assert w.act_open.toolTip().startswith("Open project (Ctrl+O)")
     assert not w.act_save.isEnabled()  # bez projektu nelze uložit — i na liště
     w.open_project(write(tmp_path, four()))
     assert w.act_save.isEnabled()
@@ -694,3 +695,41 @@ def test_open_saved_project_in_lightburn(make_window, tmp_path):
     assert not w.open_in_lightburn() and w._dialogs[-1][0] == "error"
     out2.unlink()
     assert not w.open_in_lightburn() and "not found" in w._dialogs[-1][1]
+
+
+def test_undo_redo_of_layout_changes(make_window, tmp_path):
+    w = make_window("en")
+    w.open_project(write(tmp_path, project([card(0, 0), card(200, 0), card(0, 200)])))
+    assert not w.act_undo.isEnabled() and not w.act_redo.isEnabled()
+    w.spin_cols.setValue(1)
+    w.spin_gap_x.set_mm(10.0)
+    w.preview.itemClicked.emit("G2", False)
+    w._ask_int = lambda *a: 2
+    w.act_duplicate.trigger()
+    assert w.order == ("G1", "G2", "G3", "G2+1", "G2+2")
+    w.act_undo.trigger()  # kopie zpět
+    assert w.order == ("G1", "G2", "G3") and w.copies == {} and w.act_redo.isEnabled()
+    w.act_undo.trigger()
+    assert w.spin_gap_x.mm() == 3.0 and w.spin_cols.value() == 1
+    w.act_undo.trigger()
+    assert w.spin_cols.value() == 3 and not w.act_undo.isEnabled()
+    w.act_redo.trigger()
+    w.act_redo.trigger()
+    w.act_redo.trigger()
+    assert w.order[-2:] == ("G2+1", "G2+2") and w.spin_gap_x.mm() == 10.0 and not w.act_redo.isEnabled()
+    assert len(w.plan.layout.placements) == 5
+    w.act_undo.trigger()
+    w.spin_cols.setValue(2)  # nová změna zahodí kroky vpřed
+    assert not w.act_redo.isEnabled()
+
+
+def test_toolbar_can_be_rearranged_and_order_is_remembered(make_window, settings):
+    w = make_window("en")
+    assert w.toolbar.order()[:3] == ["open", "save", "open_in_lightburn"]
+    assert w.toolbar.move_action("help", "open")
+    assert w.toolbar.order()[0] == "help" and settings.toolbar_order()[0] == "help"
+    w2 = make_window("en")
+    assert w2.toolbar.order() == w.toolbar.order()
+    w2.reset_toolbar()
+    assert w2.toolbar.order() == w2.TOOLBAR_DEFAULT and settings.toolbar_order() == []
+    assert not w2.toolbar.move_action("help", "help")

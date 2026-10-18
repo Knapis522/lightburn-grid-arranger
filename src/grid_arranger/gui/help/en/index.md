@@ -12,6 +12,6 @@
 4. [Board, margins and collision check](board.md)
 5. [Saving and checking in LightBurn](save.md)
 
-**Controls:** the toolbar at the top — **Open project** (Ctrl+O), **Save as new project** (Ctrl+S), **Fit view** (Ctrl+0), **User guide** (F1); hover over an icon to see its description. The window title shows the name of the open project.
+**Controls:** the toolbar at the top — **Open project** (Ctrl+O), **Save as new project** (Ctrl+S), **Open in LightBurn** (Ctrl+L), **Undo** (Ctrl+Z) and **Redo** (Ctrl+Y), **Create copies** (Ctrl+D), **Fit view** (Ctrl+0), **User guide** (F1); hover over an icon to see its description. **Rearrange the toolbar** by dragging: grab an icon, hold and drag it to another place (a green line shows where); the order is remembered. Right-click the toolbar to restore the default layout. Undo/Redo applies to the layout in the application (order, copies, rotation, grid, board), not to the project in LightBurn. The window title shows the name of the open project.
 
 More: [Troubleshooting](troubleshooting.md) · [Version, supported files and data](about.md)

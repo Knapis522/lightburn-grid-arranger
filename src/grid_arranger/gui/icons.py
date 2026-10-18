@@ -27,6 +27,9 @@ _PATHS: dict[str, str] = {
     # dokument se šipkou ven = otevřít uložený projekt v jiné aplikaci (LightBurn); žádné cizí logo
     "send": '<path d="M13 4.5H6.5A1.5 1.5 0 0 0 5 6v12a1.5 1.5 0 0 0 1.5 1.5h11A1.5 1.5 0 0 0 19 18v-6.5"/>'
             '<path d="M15 3.5h5.5V9M20.5 3.5L11 13"/>',
+    # zahnutá šipka doleva / doprava = krok zpět / krok vpřed
+    "undo": '<path d="M9 14L4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 0 11H11"/>',
+    "redo": '<path d="M15 14l5-5-5-5"/><path d="M20 9H9.5a5.5 5.5 0 0 0 0 11H13"/>',
     # otazník v kruhu = příručka
     "help": '<circle cx="12" cy="12" r="8.5"/><path d="M9.6 9.4a2.5 2.5 0 0 1 4.8 1c0 1.7-2.4 2.2-2.4 3.6"/>'
             '<path d="M12 17.2v.1"/>',

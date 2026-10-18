@@ -172,6 +172,15 @@ class UserSettings:
         self._s.setValue(f"ui/sections/{key}", bool(expanded))
         self._s.sync()
 
+    # --- uspořádání nástrojové lišty --------------------------------------------------------------
+    def toolbar_order(self) -> list[str]:
+        v = self._s.value("ui/toolbar_order", "")
+        return [k for k in str(v).split(",") if k] if v else []
+
+    def set_toolbar_order(self, keys: list[str]) -> None:
+        self._s.setValue("ui/toolbar_order", ",".join(keys))
+        self._s.sync()
+
     # --- velikost a poloha okna (včetně maximalizace) a rozdělení panelů ---------------------------
     def window_geometry(self) -> bytes | None:
         v = self._s.value("ui/window_geometry")

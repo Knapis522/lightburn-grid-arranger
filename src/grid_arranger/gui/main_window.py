@@ -46,9 +46,11 @@ from ..version import display_version
 from . import icons
 from .i18n import NATIVE_NAMES, LocaleManager
 from .messages import issue_text, message
+from .history import History
 from .preview import PreviewView
 from .settings import PROTOCOL_MODES, BoardPreset, UserSettings
 from .theme import THEMES, apply_theme
+from .toolbar import ReorderableToolBar, separator
 from .widgets import UNITS, LengthSpin, Section, Unit, section_stylesheet
 from .updates_ui import UpdateController
 
@@ -71,6 +73,8 @@ class MainWindow(QMainWindow):
         self.copies: dict[str, str] = {}
         """Kopie výrobků ``{id kopie: zdroj}`` v pořadí vytvoření (spec. v1.16)."""
         self._clipboard: list[str] = []
+        self.history = History()
+        self._restoring = False
         self.last_saved: Path | None = None
         """Naposledy uložený projekt (pro Otevřít v LightBurnu)."""
         self._open_file = lambda path: QDesktopServices.openUrl(QUrl.fromLocalFile(str(path)))
@@ -145,6 +149,16 @@ class MainWindow(QMainWindow):
         self.unit_actions[self.settings.units()].setChecked(True)
         self.act_check_updates = QAction(self)
         self.act_check_updates.triggered.connect(lambda: self.updates.check(manual=True))
+        # Krok zpět / vpřed (rozložení v aplikaci, ne projekt LightBurnu)
+        self.act_undo = QAction(self)
+        self.act_undo.setShortcut(QKeySequence(QKeySequence.StandardKey.Undo))
+        self.act_undo.triggered.connect(self.undo)
+        self.act_redo = QAction(self)
+        self.act_redo.setShortcuts([QKeySequence("Ctrl+Y"), QKeySequence("Ctrl+Shift+Z")])
+        self.act_redo.triggered.connect(self.redo)
+        for a in (self.act_undo, self.act_redo):
+            a.setEnabled(False)
+            a.setShortcutContext(Qt.ShortcutContext.WindowShortcut)
         # Otevřít uložený projekt v LightBurnu (program přiřazený k .lbrn2 = jako dvojklik v Průzkumníku)
         self.act_open_in_lb = QAction(self)
         self.act_open_in_lb.setShortcut(QKeySequence("Ctrl+L"))
@@ -172,6 +186,8 @@ class MainWindow(QMainWindow):
         self.menu_file.addSeparator()
         self.menu_file.addAction(self.act_quit)
         self.menu_edit = mb.addMenu("")
+        self.menu_edit.addActions([self.act_undo, self.act_redo])
+        self.menu_edit.addSeparator()
         self.menu_edit.addActions([self.act_copy, self.act_paste, self.act_duplicate, self.act_remove_copies])
         self.menu_edit.addSeparator()
         self.menu_settings = mb.addMenu("")
@@ -193,22 +209,33 @@ class MainWindow(QMainWindow):
         self.menu_help.addActions([self.act_help, self.act_check_updates, self.act_about])
 
         # --- nástrojová lišta (ikony; další funkce: nová akce + ikona v gui/icons.py)
-        self.toolbar = QToolBar(self)
+        self.toolbar = ReorderableToolBar(self)  # ikony lze přeuspořádat tažením (pořadí se pamatuje)
         self.toolbar.setObjectName("mainToolbar")
         self.toolbar.setMovable(False)
         self.toolbar.setIconSize(QSize(24, 24))
         self.toolbar.setToolButtonStyle(Qt.ToolButtonStyle.ToolButtonIconOnly)
         self.act_fit = QAction(self)
         self.act_fit.setShortcut(QKeySequence("Ctrl+0"))
-        self.toolbar.addActions([self.act_open, self.act_save, self.act_open_in_lb])
-        self.toolbar.addSeparator()
-        self.toolbar.addAction(self.act_fit)
-        self.toolbar.addAction(self.act_duplicate)
-        self.toolbar.addSeparator()
-        self.toolbar.addAction(self.act_help)
+        self._toolbar_icons = {self.act_open: "open", self.act_save: "save_new", self.act_open_in_lb: "send",
+                               self.act_undo: "undo", self.act_redo: "redo", self.act_duplicate: "copies",
+                               self.act_fit: "fit", self.act_help: "help"}
+        keys = {self.act_open: "open", self.act_save: "save", self.act_open_in_lb: "open_in_lightburn",
+                self.act_undo: "undo", self.act_redo: "redo", self.act_duplicate: "copies", self.act_fit: "fit",
+                self.act_help: "help"}
+        for a, k in keys.items():
+            a.setObjectName(k)
+        self.TOOLBAR_DEFAULT = ["open", "save", "open_in_lightburn", "sep1", "undo", "redo", "sep2", "copies", "fit",
+                                "sep3", "help"]
+        by_key = {k: a for a, k in keys.items()}
+        for k in self.TOOLBAR_DEFAULT:
+            self.toolbar.addAction(by_key[k] if k in by_key else separator(self, k))
+        saved = self.settings.toolbar_order()
+        if saved:
+            self.toolbar.set_order(saved)
+        self.toolbar.orderChanged.connect(self.settings.set_toolbar_order)
+        self.toolbar.setContextMenuPolicy(Qt.ContextMenuPolicy.CustomContextMenu)
+        self.toolbar.customContextMenuRequested.connect(self._toolbar_menu)
         self.addToolBar(Qt.ToolBarArea.TopToolBarArea, self.toolbar)
-        self._toolbar_icons = {self.act_open: "open", self.act_save: "save_new", self.act_fit: "fit", self.act_help: "help",
-                               self.act_duplicate: "copies", self.act_open_in_lb: "send"}
         # Esc = zrušit výběr výrobků (v seznamu i v náhledu)
         self.act_clear_selection = QAction(self)
         self.act_clear_selection.setShortcut(QKeySequence(Qt.Key.Key_Escape))
@@ -440,6 +467,8 @@ class MainWindow(QMainWindow):
         self.act_about.setText(self.tr("&About"))
         self.act_fit.setText(self.tr("Fit view"))
         self.menu_edit.setTitle(self.tr("&Edit"))
+        self.act_undo.setText(self.tr("&Undo"))
+        self.act_redo.setText(self.tr("&Redo"))
         self.act_copy.setText(self.tr("&Copy items"))
         self.act_paste.setText(self.tr("&Paste copies"))
         self.act_duplicate.setText(self.tr("Create &copies…"))
@@ -449,7 +478,7 @@ class MainWindow(QMainWindow):
         for act in self._toolbar_icons:
             tip = act.text().replace("&", "").rstrip("…")
             keys = act.shortcut().toString(QKeySequence.SequenceFormat.NativeText)
-            act.setToolTip(f"{tip} ({keys})" if keys else tip)
+            act.setToolTip((f"{tip} ({keys})" if keys else tip) + "\n" + self.tr("Drag to rearrange the toolbar"))
 
         self.box_project.setTitle(self.tr("Project"))
         self.box_items.setTitle(self.tr("Items (groups)"))
@@ -626,6 +655,7 @@ class MainWindow(QMainWindow):
         self.manual_angles = {}
         self.copies = {}
         self._clipboard = []
+        self.history = History()  # krok zpět jen v rámci otevřeného projektu
         self.preview.set_selection(set())
         self.preview.clear_cache()
         self._refit = True
@@ -752,6 +782,82 @@ class MainWindow(QMainWindow):
             return
         self.preview.set_selection(self.selected_ids() & set(self.order))
         self._sync_no_rotate_button()
+
+    # --- krok zpět / vpřed ----------------------------------------------------------------------
+    def _snapshot(self) -> tuple:
+        manual = self.combo_anchor.currentData() == "manual"
+        return (
+            tuple(self.order), tuple(self.copies.items()), tuple(sorted(self.manual_angles.items())),
+            self.spin_cols.value(), round(self.spin_gap_x.mm(), 6), round(self.spin_gap_y.mm(), 6),
+            self.combo_fill.currentData(), self.combo_rotation.currentData(), self.combo_anchor.currentData(),
+            (round(self.spin_start_x.mm(), 6), round(self.spin_start_y.mm(), 6)) if manual else None,
+            tuple(round(w.mm(), 6) for w in (self.spin_bw, self.spin_bh, self.spin_bx, self.spin_by,
+                                              self.spin_ml, self.spin_mr, self.spin_mt, self.spin_mb)),
+        )
+
+    def _record_history(self) -> None:
+        if self._restoring or self.project is None:
+            return
+        self.history.push(self._snapshot())
+        self._sync_history_actions()
+
+    def _sync_history_actions(self) -> None:
+        self.act_undo.setEnabled(self.history.can_undo())
+        self.act_redo.setEnabled(self.history.can_redo())
+
+    def _restore(self, state: tuple | None) -> None:
+        if state is None:
+            return
+        order, copies, angles, cols, gx, gy, fill, rotation, anchor, start, board = state
+        self._restoring = True
+        try:
+            self.order, self.copies, self.manual_angles = tuple(order), dict(copies), dict(angles)
+            widgets = [self.spin_cols, self.combo_fill, self.combo_rotation, self.combo_anchor]
+            for w in widgets:
+                w.blockSignals(True)
+            self.spin_cols.setValue(cols)
+            for combo, data in ((self.combo_fill, fill), (self.combo_rotation, rotation), (self.combo_anchor, anchor)):
+                i = combo.findData(data)
+                if i >= 0:
+                    combo.setCurrentIndex(i)
+            for w in widgets:
+                w.blockSignals(False)
+            if rotation:
+                self.settings.set_rotation_mode(rotation)
+            self.spin_gap_x.set_mm(gx, emit=False)
+            self.spin_gap_y.set_mm(gy, emit=False)
+            for w, v in zip((self.spin_bw, self.spin_bh, self.spin_bx, self.spin_by,
+                             self.spin_ml, self.spin_mr, self.spin_mt, self.spin_mb), board):
+                w.set_mm(v, emit=False)
+            is_manual = anchor == "manual"
+            if is_manual and start is not None:
+                self.spin_start_x.set_mm(start[0], emit=False)
+                self.spin_start_y.set_mm(start[1], emit=False)
+            self.spin_start_x.setEnabled(is_manual)
+            self.spin_start_y.setEnabled(is_manual)
+            self._rebuild_item_list()
+            self.recompute()
+        finally:
+            self._restoring = False
+        self._sync_history_actions()
+
+    def undo(self) -> None:
+        self._restore(self.history.undo())
+
+    def redo(self) -> None:
+        self._restore(self.history.redo())
+
+    def _toolbar_menu(self, pos) -> None:
+        from PySide6.QtWidgets import QMenu
+
+        menu = QMenu(self)
+        reset = menu.addAction(self.tr("Restore default toolbar layout"))
+        if menu.exec(self.toolbar.mapToGlobal(pos)) is reset:
+            self.reset_toolbar()
+
+    def reset_toolbar(self) -> None:
+        self.toolbar.set_order(self.TOOLBAR_DEFAULT)
+        self.settings.set_toolbar_order([])
 
     # --- kopie výrobků (spec. v1.16) --------------------------------------------------------------
     MAX_COPIES = 999
@@ -1019,6 +1125,7 @@ class MainWindow(QMainWindow):
         self._update_item_texts()
         self._draw()
         self._refresh_issue_texts()
+        self._record_history()
 
     def _draw(self) -> None:
         from ..domain.models import Rect
