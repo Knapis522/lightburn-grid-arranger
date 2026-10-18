@@ -7,7 +7,7 @@ Ikona **Uložit jako nový projekt** na nástrojové liště (nebo **Soubor → 
 3. ověří, že se originál od otevření nezměnil,
 4. uloží **nový** soubor pod zvoleným názvem.
 
-**Protokol uložení** (`.json`) — záznam o tom, z čeho a jak výstup vznikl: kontrolní součty, laser, nastavení mřížky, posuny výrobků a výsledek kontroly (žádné motivy ani texty výrobků). Hodí se pro dohledání nebo hlášení chyby. Nastavení → **Protokol uložení**: *Neukládat* (výchozí), *Vedle uloženého projektu* (`<název>.json`), nebo *Do složky protokolů aplikace* (otevřete ji tamtéž položkou **Otevřít složku protokolů**).
+**Protokol uložení** (`.json`) — záznam o tom, z čeho a jak výstup vznikl: kontrolní součty, laser, nastavení mřížky, posuny výrobků a výsledek kontroly (žádné motivy ani texty výrobků). Hodí se pro dohledání nebo hlášení chyby. **Nastavení → Uložení → Protokol uložení**: *Neukládat* (výchozí), *Vedle uloženého projektu* (`<název>.json`), nebo *Do složky protokolů aplikace* (otevřete ji tamtéž položkou **Otevřít složku protokolů**).
 
 **Po uložení pracujete dál s originálem.** Uložený soubor je samostatná nová kopie; v aplikaci zůstává otevřený původní projekt, takže můžete zkusit jiné rozložení a uložit další variantu (`_002`, …). Titulek okna i sekce Projekt ukazují *naposledy uloženo jako …*. Chcete-li místo toho pokračovat s uloženým souborem (jako „Uložit jako“), zaškrtněte v hlášení o uložení **Pokračovat v aplikaci s uloženým souborem** — otevře se místo originálu, kopie a natočení v něm už jsou napevno a krok zpět začíná znovu. Další uložení pak pokračuje v číselné řadě originálu (`_002`, ne `__grid_001__grid_001`).
 

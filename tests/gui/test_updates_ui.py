@@ -145,8 +145,8 @@ def test_update_settings_defaults_and_menu(make_window):
     s = w.settings
     assert s.update_auto() is True
     assert s.update_prerelease() is current_version().is_prerelease
-    w.act_update_auto.setChecked(False)
-    w.act_update_pre.setChecked(not current_version().is_prerelease)
+    s.set_update_auto(False)
+    s.set_update_prerelease(not current_version().is_prerelease)
     assert s.update_auto() is False and s.update_prerelease() is not current_version().is_prerelease
     assert w.act_check_updates.text() == "Check for &updates…"
     s._s.setValue("updates/auto", "nonsense")

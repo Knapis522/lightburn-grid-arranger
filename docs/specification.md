@@ -1,6 +1,6 @@
 # Grid Arranger for LightBurn — technická specifikace
 
-**Verze dokumentu:** 1.19 (stav po uložení, pokračování s uloženým souborem; viz kap. 9.4)  
+**Verze dokumentu:** 1.20 (okno Nastavení, panel rozložení vlevo/vpravo; viz kap. 36.3)  
 **Datum:** 17. 10. 2026  
 **Název produktu:** Grid Arranger for LightBurn; spustitelný soubor `GridArranger.exe`; Python balíček `grid_arranger`; repozitář `lightburn-grid-arranger`. Neoficiální nástroj, nikoli produkt LightBurn Software.  
 **Stav:** Interní pracovní podklad; nikoli hotový nebo otestovaný plugin  
@@ -437,6 +437,8 @@ Závislosti směrem dovnitř: `UI -> adaptér -> domain/grid engine`, nikdy opa�
 ### 12.3 Uspořádání okna a interakce
 
 Cílové jediné hlavní okno obsahuje nabídku **Nastavení → Jazyk** dostupnou i bez načteného projektu a skládá se z horního panelu projektu, **levého panelu s výběrem výrobků a nastavením mřížky**, **pravého panelu s přibližovatelným náhledem**, spodního stavového řádku s výslednými rozměry a tlačítka pro uložení. Náhled musí odpovídat skutečným souřadnicím; ilustrativní dlaždice nejsou dostatečná výrobní verifikace. Prvky GUI se během chyby zabarví/označí a zobrazí konkrétní vysvětlení. Tlačítko Uložit nový projekt zůstane neaktivní, dokud není projekt validní.
+
+**Okno Nastavení (v1.20, přání vlastníka):** nastavení aplikace se nepřidávají do rozbalovacího menu, ale do modálního okna **Nastavení** (položka v liště menu, ikona ozubeného kola, Ctrl+,) se stránkami vlevo: *Obecné* (Jazyk, Vzhled, Jednotky, Panel rozložení), *Uložení* (Protokol uložení, Otevřít složku protokolů), *Aktualizace* (automatická kontrola, předběžné verze, Zkontrolovat aktualizace). Změny se použijí tlačítkem OK nebo Použít, Zrušit nic nemění. **Panel rozložení** (sekce Projekt, Výrobky, Mřížka, Umístění, Deska) může být vlevo (výchozí) nebo vpravo od náhledu; volba i šířka panelu se pamatují. Odkazy „Nastavení → Jazyk“ apod. v této specifikaci znamenají příslušnou volbu v tomto okně.
 
 **Předběžný textový wireframe:**
 
@@ -1056,6 +1058,7 @@ Toto jsou **ověřovací úkoly**, nikoli potvrzené technické možnosti souča
 
 ## 28. Záznam změn specifikace
 
+- **v1.20 (18. 10. 2026):** Na přání vlastníka je Nastavení modální okno se stránkami (Obecné, Uložení, Aktualizace; OK / Zrušit / Použít) místo rozbalovacího menu; nová volba *Panel rozložení* vlevo / vpravo od náhledu (`ui/panel_side`) (kap. 36.3).
 - **v1.19 (18. 10. 2026):** Po uložení titulek a sekce Projekt ukazují naposledy uložený soubor; volba pokračovat s uloženým souborem místo originálu; návrh názvu ze `__grid_NNN` pokračuje v řadě originálu (kap. 9.4).
 - **v1.18 (18. 10. 2026):** Na přání vlastníka *Otevřít v LightBurnu* — uložený výstup se otevře programem přiřazeným k `.lbrn2`; LightBurn nahradí otevřený projekt a sám upozorní na neuložené změny (kap. 9.5). Okno aplikace si pamatuje velikost a maximalizaci.
 - **v1.17 (18. 10. 2026):** Rozhodnutí vlastníka: repozitář lze zveřejnit už s předběžnými verzemi, aby fungovaly nabízené aktualizace — nová brána PUB-00 (audit historie, MIT `LICENSE`, `THIRD_PARTY_NOTICES.md`, anglický `README`, `SECURITY.md`, vydání jako Pre-release); PUB-01 platí dál pro první veřejnou stabilní verzi 1.0.0 (kap. 29.1, 33.2, 33.3, 35).
@@ -1371,7 +1374,7 @@ Brána PUB-00 **nenahrazuje** PUB-01: první veřejná stabilní verze 1.0.0 mus
 
 ### 36.2 Uživatelské chování (výběr a automatická detekce)
 
-1. Nabídka **Nastavení → Jazyk / Settings → Language** je přístupná i bez otevřeného projektu. Položky: `Automaticky (podle systému)`, `Čeština`, `English`, `Deutsch`, `Slovenčina`, `Polski`, `Français`, `Español`, `Italiano` (interní MVP smí mít zatím jen dostupné CS/EN). Jazyky jsou zobrazeny vlastním názvem, takže se uživatel z chybně zvolené lokalizace snadno vrátí.
+1. Volba **Nastavení → Jazyk / Settings → Language** (od v1.20 v okně Nastavení, stránka Obecné) je přístupná i bez otevřeného projektu. Položky: `Automaticky (podle systému)`, `Čeština`, `English`, `Deutsch`, `Slovenčina`, `Polski`, `Français`, `Español`, `Italiano` (interní MVP smí mít zatím jen dostupné CS/EN). Jazyky jsou zobrazeny vlastním názvem, takže se uživatel z chybně zvolené lokalizace snadno vrátí.
 2. Výchozí nastavení je `auto`. Aplikace načte seznam preferovaných jazyků Windows, vybere první podporovaný jazyk z `cs/en/de/sk/pl/fr/es/it` (v interním MVP `cs/en`). Regionální varianty se normalizují: např. `de-AT → de`, `es-MX → es`. U nepodporovaného jazyka použít `en`; neexistující nebo poškozený katalog nesmí způsobit pád.
 3. Ruční výběr jazyka má před systémovou detekcí přednost a přetrvá restart, přesun ZIP složky i aktualizaci programu. Přepnutí zpět na `auto` obnoví automatickou detekci.
 4. Preferováno je přepnutí celé aplikace **za běhu**. Jestliže konkrétní komponentu nelze bezpečně přeložit, smí aplikace vyžadovat restart se srozumitelným upozorněním, ale nikdy nesmí potichu zahodit neuložený projekt, výběr skupin či nastavené parametry.

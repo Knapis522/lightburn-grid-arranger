@@ -205,7 +205,7 @@ def test_theme_dark_light_and_persistence(make_window, settings, qapp):
     w = make_window("en")
     try:
         w.set_theme("dark")
-        assert settings.theme() == "dark" and w.theme_actions["dark"].isChecked() and w.is_dark
+        assert settings.theme() == "dark" and w.is_dark
         assert qapp.palette().color(QPalette.ColorRole.Window).lightness() < 80  # tmavé ovládání
         assert w.preview.backgroundBrush().color().lightness() > 200  # náhled desky zůstává světlý
         w.set_theme("light")
@@ -300,7 +300,7 @@ def test_toolbar_open_save_help_with_icons(make_window, tmp_path):
     w = make_window("en")
     acts = [a for a in w.toolbar.actions() if not a.isSeparator()]
     assert acts == [w.act_open, w.act_save, w.act_open_in_lb, w.act_undo, w.act_redo, w.act_duplicate, w.act_fit,
-                    w.act_help]
+                    w.act_settings, w.act_help]
     assert w.act_fit.toolTip().startswith("Fit view (Ctrl+0)\n")
     assert all(not a.icon().isNull() for a in acts)
     assert w.act_open.toolTip().startswith("Open project (Ctrl+O)")
@@ -372,11 +372,11 @@ def test_protocol_modes(make_window, tmp_path, monkeypatch):
     from grid_arranger.gui.main_window import MainWindow
 
     w = make_window("en")
-    assert w.settings.protocol_mode() == "none" and w.protocol_actions["none"].isChecked()
+    assert w.settings.protocol_mode() == "none"
     src = write(tmp_path, four())
     w.open_project(src)
 
-    w.protocol_actions["beside"].trigger()
+    w.settings.set_protocol_mode("beside")
     assert w.settings.protocol_mode() == "beside"
     out = w.save_new_project()
     assert out.with_suffix(".json").exists() and "Protocol" in w._dialogs[-1][1]
@@ -388,7 +388,7 @@ def test_protocol_modes(make_window, tmp_path, monkeypatch):
 
     folder = tmp_path / "appdata" / "protocols"
     monkeypatch.setattr(MainWindow, "protocol_folder", staticmethod(lambda: folder))
-    w.protocol_actions["appdata"].trigger()
+    w.settings.set_protocol_mode("appdata")
     w._save_answers = [tmp_path / "a.lbrn2"]
     w.save_new_project()
     (tmp_path / "x").mkdir()
@@ -409,7 +409,7 @@ def test_units_inches_display_only_no_drift(make_window, tmp_path, settings):
     w = make_window("en")
     w.open_project(write(tmp_path, four()))
     before = w.params()
-    w.unit_actions["in"].trigger()
+    w.set_units("in")
     assert settings.units() == "in"
     assert w.spin_bw.suffix() == " in" and w.spin_bw.value() == pytest.approx(700 / 25.4, abs=0.0005)
     assert " in." in w.lbl_summary.text() and " in" in w.list_items.item(0).text()
@@ -607,10 +607,84 @@ def test_fit_on_toolbar_and_artwork_toggle_in_items_header(make_window, tmp_path
     assert all(len(g) == 2 for g in w.preview._graphics.values())  # jen obdélník + popisek, bez kresby
 
 
-def test_check_for_updates_is_also_in_settings_menu(make_window):
+def test_check_for_updates_is_in_help_menu_and_settings_dialog(make_window, monkeypatch):
+    from grid_arranger.gui.settings_dialog import SettingsDialog
+
     w = make_window("en")
-    assert w.act_check_updates in w.menu_updates.actions()
     assert w.act_check_updates in w.menu_help.actions()
+    calls = []
+    monkeypatch.setattr(w.updates, "check", lambda manual=False: calls.append(manual))
+    dlg = SettingsDialog(w)
+    dlg.show_page("updates")
+    dlg.chk_update_pre.setChecked(not w.settings.update_prerelease())
+    want = dlg.chk_update_pre.isChecked()
+    dlg.btn_check.click()  # kontrola s volbami zaškrtnutými v okně
+    assert calls == [True] and w.settings.update_prerelease() is want
+
+
+def test_settings_dialog_is_modal_and_applies_on_ok_or_apply(make_window, tmp_path):
+    from PySide6.QtWidgets import QDialogButtonBox
+
+    from grid_arranger.gui.settings_dialog import SettingsDialog
+
+    w = make_window("en")
+    w.open_project(write(tmp_path, four()))
+    shown = []
+    w._exec_dialog = lambda dlg: shown.append(dlg) or 0
+    w.act_settings_menu.trigger()
+    assert w.act_settings_menu in w.menuBar().actions() and w.act_settings_menu.icon().isNull()  # položka lišty menu otevře rovnou okno
+    w.act_settings.trigger()  # ikona na liště / Ctrl+,
+    assert len(shown) == 2 and w.act_settings.shortcut().toString() == "Ctrl+,"
+    dlg = shown[0]
+    assert isinstance(dlg, SettingsDialog) and dlg.isModal() and dlg.pages.count() == 3
+    assert dlg.values() == dlg.current()
+    apply_btn = dlg.buttons.button(QDialogButtonBox.StandardButton.Apply)
+    assert not apply_btn.isEnabled()
+    dlg.combo_units.setCurrentIndex(dlg.combo_units.findData("in"))
+    dlg.protocol_radios["beside"].setChecked(True)
+    assert apply_btn.isEnabled() and w.settings.units() == "mm"  # bez Použít se nic nemění
+    dlg.reject()
+    assert w.settings.units() == "mm" and w.settings.protocol_mode() == "none"  # Zrušit = beze změny
+
+    dlg = SettingsDialog(w)
+    dlg.combo_units.setCurrentIndex(dlg.combo_units.findData("in"))
+    dlg.combo_lang.setCurrentIndex(dlg.combo_lang.findData("cs"))
+    dlg.protocol_radios["appdata"].setChecked(True)
+    dlg.buttons.button(QDialogButtonBox.StandardButton.Apply).click()
+    assert w.settings.units() == "in" and w.spin_bw.suffix() == " in"
+    assert w.settings.protocol_mode() == "appdata" and w.settings.language() == "cs"
+    assert dlg.windowTitle() == "Nastavení" and dlg.pages.item(0).text() == "Obecné"  # okno přeložené hned
+    assert w.act_settings.text() == "&Nastavení"
+    dlg.combo_theme.setCurrentIndex(dlg.combo_theme.findData("dark"))
+    dlg.chk_update_auto.setChecked(False)
+    dlg.buttons.button(QDialogButtonBox.StandardButton.Ok).click()
+    assert w.settings.theme() == "dark" and w.is_dark and w.settings.update_auto() is False
+    w.set_theme("light")
+    w.set_language("en")
+
+
+def test_layout_panel_left_or_right(make_window, settings, tmp_path):
+    w = make_window("en")
+    assert settings.panel_side() == "left" and w.panel_side() == "left"
+    assert w.splitter.widget(0) is w._left_scroll
+    w.apply_settings({**_dialog_values(w), "panel_side": "right"})
+    assert settings.panel_side() == "right" and w.splitter.widget(1) is w._left_scroll
+    w.close()
+    w2 = make_window("en")  # pamatuje se po spuštění (i rozdělení okna)
+    w2.restore_window_state()
+    assert w2.panel_side() == "right" and w2.splitter.widget(1) is w2._left_scroll
+    w2.set_panel_side("left")
+    assert w2.splitter.widget(0) is w2._left_scroll and settings.panel_side() == "left"
+    settings._s.setValue("ui/panel_side", "top")
+    assert settings.panel_side() == "left"
+    with pytest.raises(ValueError):
+        settings.set_panel_side("top")
+
+
+def _dialog_values(w):
+    from grid_arranger.gui.settings_dialog import SettingsDialog
+
+    return SettingsDialog(w).current()
 
 
 def test_copy_paste_and_duplicate_dialog_fill_the_board(make_window, tmp_path):

@@ -7,7 +7,7 @@ The **Save as new project** icon on the toolbar (or **File → Save as new proje
 3. verifies that the original has not changed since it was opened,
 4. saves a **new** file under the chosen name.
 
-**Save protocol** (`.json`) — a record of what the output was made from and how: checksums, laser, grid settings, item moves and the check result (no artwork or texts of the items). Useful for tracing or reporting a problem. Settings → **Save protocol**: *Do not save* (default), *Next to the saved project* (`<name>.json`), or *In the application's protocol folder* (open it there with **Open protocol folder**).
+**Save protocol** (`.json`) — a record of what the output was made from and how: checksums, laser, grid settings, item moves and the check result (no artwork or texts of the items). Useful for tracing or reporting a problem. **Settings → Saving → Save protocol**: *Do not save* (default), *Next to the saved project* (`<name>.json`), or *In the application's protocol folder* (open it there with **Open protocol folder**).
 
 **After saving you keep working on the original.** The saved file is a separate new copy; the original project stays open in the application, so you can try another layout and save another variant (`_002`, …). The window title and the Project section show *last saved as …*. To continue with the saved file instead (like "Save as"), tick **Continue working on the saved file here** in the save message — it opens instead of the original, its copies and rotations are now fixed and undo starts again. The next save then continues the original's numbering (`_002`, not `__grid_001__grid_001`).
 

@@ -92,7 +92,7 @@ dist\v0.1.0-alpha.2\
 
 - Logika `src\grid_arranger\updates.py` (bez Qt), okna `gui\updates_ui.py`; zdroj GitHub Releases přes anonymní API — funguje až u **veřejného** repozitáře (do té doby ruční kontrola hlásí „žádná veřejná vydání“).
 - Vydání musí obsahovat `GridArranger-Setup-v<verze>-win-x64.exe` a `SHA256SUMS.txt`, jinak aplikace nabídne jen stránku ke stažení.
-- Nastavení → Aktualizace (automaticky / předběžné verze), Nápověda → Zkontrolovat aktualizace. Hodnoty v registru `HKCU\Software\GridArranger\GridArranger\updates`.
+- Okno Nastavení → stránka Aktualizace (automaticky / předběžné verze, Zkontrolovat aktualizace), Nápověda → Zkontrolovat aktualizace. Hodnoty v registru `HKCU\Software\GridArranger\GridArranger\updates`.
 
 Vydání na GitHub (tag, Release, kontrolní součty): `docs/RELEASE_CHECKLIST.md`.
 

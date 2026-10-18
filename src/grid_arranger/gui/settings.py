@@ -7,7 +7,8 @@ aplikace — přežije přesun i výměnu ZIPu. Nic z toho se nezapisuje do `.lb
 * ``boards/<laser>/…`` — výchozí deska pro laser podle ``DeviceName`` z projektu
 * ``layout/rotation`` — natočení výrobků: ``any`` (výchozí, rozhodnutí vlastníka) | ``90`` | ``none``
 * ``ui/units`` — ``mm`` (výchozí) | ``in`` — jen zobrazení, výpočty a soubor jsou vždy v mm
-* ``ui/sections/<klíč>`` — sbalené/rozbalené sekce levého panelu
+* ``ui/sections/<klíč>`` — sbalené/rozbalené sekce panelu nastavení rozložení
+* ``ui/panel_side`` — panel nastavení rozložení ``left`` (výchozí) | ``right`` od náhledu
 * ``save/protocol`` — protokol uložení: ``none`` (výchozí) | ``beside`` | ``appdata``
 * ``updates/…`` — automatická kontrola aktualizací, předběžné verze, přeskočená verze, čas poslední kontroly
 """
@@ -24,6 +25,7 @@ LANGUAGES = ("auto", "cs", "en")
 THEMES = ("auto", "light", "dark")
 PROTOCOL_MODES = ("none", "beside", "appdata")
 UNIT_KEYS = ("mm", "in")
+PANEL_SIDES = ("left", "right")
 ROTATION_KEYS = ("none", "90", "any")  # protokol uložení: vůbec / vedle výstupu / ve složce aplikace
 
 # Výchozí desky vlastníka (spec. v1.10). Před veřejným vydáním nahradit prázdným výchozím stavem.
@@ -179,6 +181,17 @@ class UserSettings:
 
     def set_toolbar_order(self, keys: list[str]) -> None:
         self._s.setValue("ui/toolbar_order", ",".join(keys))
+        self._s.sync()
+
+    # --- strana panelu nastavení rozložení ----------------------------------------------------------
+    def panel_side(self) -> str:
+        v = str(self._s.value("ui/panel_side", "left"))
+        return v if v in PANEL_SIDES else "left"
+
+    def set_panel_side(self, value: str) -> None:
+        if value not in PANEL_SIDES:
+            raise ValueError(value)
+        self._s.setValue("ui/panel_side", value)
         self._s.sync()
 
     # --- velikost a poloha okna (včetně maximalizace) a rozdělení panelů ---------------------------

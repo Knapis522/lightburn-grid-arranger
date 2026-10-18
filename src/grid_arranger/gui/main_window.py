@@ -8,7 +8,7 @@ from pathlib import Path
 
 from PySide6 import __version__ as pyside_version
 from PySide6.QtCore import QByteArray, QEvent, QItemSelectionModel, QSize, QStandardPaths, Qt, QUrl, qVersion
-from PySide6.QtGui import QAction, QActionGroup, QDesktopServices, QKeySequence, QPalette
+from PySide6.QtGui import QAction, QDesktopServices, QKeySequence, QPalette
 from PySide6.QtWidgets import (
     QApplication,
     QCheckBox,
@@ -45,12 +45,12 @@ from ..core.order import default_order, deselect, move_down, move_up, select, sw
 from ..domain.errors import GridError
 from ..version import display_version
 from . import icons
-from .i18n import NATIVE_NAMES, LocaleManager
+from .i18n import LocaleManager
 from .messages import issue_text, message
 from .history import History
 from .preview import PreviewView
-from .settings import PROTOCOL_MODES, BoardPreset, UserSettings
-from .theme import THEMES, apply_theme
+from .settings import BoardPreset, UserSettings
+from .theme import apply_theme
 from .toolbar import ReorderableToolBar, separator
 from .widgets import UNITS, LengthSpin, Section, Unit, section_stylesheet
 from .updates_ui import UpdateController
@@ -107,47 +107,13 @@ class MainWindow(QMainWindow):
         self.act_help.triggered.connect(lambda: self.show_help())
         self.act_about = QAction(self)
         self.act_about.triggered.connect(self.show_about)
-        self.lang_group = QActionGroup(self)
-        self.lang_actions: dict[str, QAction] = {}
-        for key in ("auto", "cs", "en"):
-            a = QAction(self, checkable=True)
-            a.setData(key)
-            a.triggered.connect(lambda _=False, k=key: self.set_language(k))
-            self.lang_group.addAction(a)
-            self.lang_actions[key] = a
-        self.lang_actions[self.settings.language()].setChecked(True)
-        self.theme_group = QActionGroup(self)
-        self.theme_actions: dict[str, QAction] = {}
-        for key in THEMES:
-            a = QAction(self, checkable=True)
-            a.triggered.connect(lambda _=False, k=key: self.set_theme(k))
-            self.theme_group.addAction(a)
-            self.theme_actions[key] = a
-        self.theme_actions[self.settings.theme()].setChecked(True)
-        self.act_update_auto = QAction(self, checkable=True)
-        self.act_update_auto.setChecked(self.settings.update_auto())
-        self.act_update_auto.toggled.connect(self.settings.set_update_auto)
-        self.act_update_pre = QAction(self, checkable=True)
-        self.act_update_pre.setChecked(self.settings.update_prerelease())
-        self.act_update_pre.toggled.connect(self.settings.set_update_prerelease)
-        self.protocol_group = QActionGroup(self)
-        self.protocol_actions: dict[str, QAction] = {}
-        for key in PROTOCOL_MODES:
-            a = QAction(self, checkable=True)
-            a.triggered.connect(lambda _=False, k=key: self.settings.set_protocol_mode(k))
-            self.protocol_group.addAction(a)
-            self.protocol_actions[key] = a
-        self.protocol_actions[self.settings.protocol_mode()].setChecked(True)
-        self.act_open_protocols = QAction(self)
-        self.act_open_protocols.triggered.connect(self.open_protocol_folder)
-        self.unit_group = QActionGroup(self)
-        self.unit_actions: dict[str, QAction] = {}
-        for key in UNITS:
-            a = QAction(self, checkable=True)
-            a.triggered.connect(lambda _=False, k=key: self.set_units(k))
-            self.unit_group.addAction(a)
-            self.unit_actions[key] = a
-        self.unit_actions[self.settings.units()].setChecked(True)
+        # Nastavení aplikace: modální okno se stránkami (gui/settings_dialog.py), ne dlouhé menu
+        self.act_settings = QAction(self)
+        self.act_settings.setShortcut(QKeySequence("Ctrl+,"))
+        self.act_settings.setMenuRole(QAction.MenuRole.PreferencesRole)
+        self.act_settings.triggered.connect(lambda: self.show_settings())
+        self.act_settings_menu = QAction(self)  # v liště menu jen text (ikona je na nástrojové liště)
+        self.act_settings_menu.triggered.connect(lambda: self.show_settings())
         self.act_check_updates = QAction(self)
         self.act_check_updates.triggered.connect(lambda: self.updates.check(manual=True))
         # Krok zpět / vpřed (rozložení v aplikaci, ne projekt LightBurnu)
@@ -191,21 +157,7 @@ class MainWindow(QMainWindow):
         self.menu_edit.addSeparator()
         self.menu_edit.addActions([self.act_copy, self.act_paste, self.act_duplicate, self.act_remove_copies])
         self.menu_edit.addSeparator()
-        self.menu_settings = mb.addMenu("")
-        self.menu_lang = self.menu_settings.addMenu("")
-        self.menu_lang.addActions(list(self.lang_actions.values()))
-        self.menu_theme = self.menu_settings.addMenu("")
-        self.menu_theme.addActions(list(self.theme_actions.values()))
-        self.menu_units = self.menu_settings.addMenu("")
-        self.menu_units.addActions(list(self.unit_actions.values()))
-        self.menu_protocol = self.menu_settings.addMenu("")
-        self.menu_protocol.addActions(list(self.protocol_actions.values()))
-        self.menu_protocol.addSeparator()
-        self.menu_protocol.addAction(self.act_open_protocols)
-        self.menu_updates = self.menu_settings.addMenu("")
-        self.menu_updates.addAction(self.act_check_updates)  # i v Nápovědě
-        self.menu_updates.addSeparator()
-        self.menu_updates.addActions([self.act_update_auto, self.act_update_pre])
+        mb.addAction(self.act_settings_menu)  # položka lišty menu otevře rovnou okno Nastavení
         self.menu_help = mb.addMenu("")
         self.menu_help.addActions([self.act_help, self.act_check_updates, self.act_about])
 
@@ -219,14 +171,14 @@ class MainWindow(QMainWindow):
         self.act_fit.setShortcut(QKeySequence("Ctrl+0"))
         self._toolbar_icons = {self.act_open: "open", self.act_save: "save_new", self.act_open_in_lb: "send",
                                self.act_undo: "undo", self.act_redo: "redo", self.act_duplicate: "copies",
-                               self.act_fit: "fit", self.act_help: "help"}
+                               self.act_fit: "fit", self.act_settings: "settings", self.act_help: "help"}
         keys = {self.act_open: "open", self.act_save: "save", self.act_open_in_lb: "open_in_lightburn",
                 self.act_undo: "undo", self.act_redo: "redo", self.act_duplicate: "copies", self.act_fit: "fit",
-                self.act_help: "help"}
+                self.act_settings: "settings", self.act_help: "help"}
         for a, k in keys.items():
             a.setObjectName(k)
         self.TOOLBAR_DEFAULT = ["open", "save", "open_in_lightburn", "sep1", "undo", "redo", "sep2", "copies", "fit",
-                                "sep3", "help"]
+                                "sep3", "settings", "help"]
         by_key = {k: a for a, k in keys.items()}
         for k in self.TOOLBAR_DEFAULT:
             self.toolbar.addAction(by_key[k] if k in by_key else separator(self, k))
@@ -413,9 +365,11 @@ class MainWindow(QMainWindow):
         split = QSplitter()
         split.addWidget(scroll)
         split.addWidget(right)
-        split.setStretchFactor(1, 1)
+        split.setChildrenCollapsible(False)
         self.setCentralWidget(split)
         self.splitter = split
+        self._preview_panel = right
+        self._place_panel(self.settings.panel_side())
 
     @staticmethod
     def _grid_layout(body: QWidget) -> QGridLayout:
@@ -442,26 +396,8 @@ class MainWindow(QMainWindow):
         self.act_save.setText(self.tr("&Save as new project…"))
         self.act_quit.setText(self.tr("&Quit"))
         self.act_open_in_lb.setText(self.tr("Open saved project in &LightBurn"))
-        self.menu_settings.setTitle(self.tr("&Settings"))
-        self.menu_lang.setTitle(self.tr("&Language"))
-        self.lang_actions["auto"].setText(self.tr("Automatic (system)"))
-        for k in ("cs", "en"):
-            self.lang_actions[k].setText(NATIVE_NAMES[k])  # vlastní název jazyka (kap. 36.2)
-        self.menu_theme.setTitle(self.tr("&Appearance"))
-        self.theme_actions["auto"].setText(self.tr("Automatic (system)"))
-        self.theme_actions["light"].setText(self.tr("Light"))
-        self.theme_actions["dark"].setText(self.tr("Dark"))
-        self.menu_units.setTitle(self.tr("&Units"))
-        self.unit_actions["mm"].setText(self.tr("Millimetres (mm)"))
-        self.unit_actions["in"].setText(self.tr("Inches (in)"))
-        self.menu_protocol.setTitle(self.tr("Save &protocol"))
-        self.protocol_actions["none"].setText(self.tr("Do not save"))
-        self.protocol_actions["beside"].setText(self.tr("Next to the saved project"))
-        self.protocol_actions["appdata"].setText(self.tr("In the application's protocol folder"))
-        self.act_open_protocols.setText(self.tr("Open protocol folder"))
-        self.menu_updates.setTitle(self.tr("&Updates"))
-        self.act_update_auto.setText(self.tr("Check for updates &automatically"))
-        self.act_update_pre.setText(self.tr("Include &pre-release versions"))
+        self.act_settings.setText(self.tr("&Settings"))
+        self.act_settings_menu.setText(self.tr("&Settings"))
         self.menu_help.setTitle(self.tr("&Help"))
         self.act_help.setText(self.tr("User &guide"))
         self.act_check_updates.setText(self.tr("Check for &updates…"))
@@ -557,6 +493,23 @@ class MainWindow(QMainWindow):
         combo.setCurrentIndex(keys.index(current))
         combo.blockSignals(False)
 
+    def _place_panel(self, side: str) -> None:
+        """Panel nastavení rozložení vlevo, nebo vpravo od náhledu; náhled zabírá volné místo."""
+        sizes = self.splitter.sizes()
+        want = 0 if side == "left" else 1
+        if self.splitter.indexOf(self._left_scroll) != want:
+            self.splitter.insertWidget(want, self._left_scroll)
+            self.splitter.setSizes(list(reversed(sizes)))
+        self.splitter.setStretchFactor(want, 0)
+        self.splitter.setStretchFactor(1 - want, 1)
+
+    def panel_side(self) -> str:
+        return "left" if self.splitter.indexOf(self._left_scroll) == 0 else "right"
+
+    def set_panel_side(self, side: str) -> None:
+        self.settings.set_panel_side(side)
+        self._place_panel(side)
+
     def restore_window_state(self) -> None:
         """Velikost, poloha a maximalizace okna z minulého spuštění (volat před ``show()``).
         Okno mimo připojené monitory Qt samo vrátí na obrazovku."""
@@ -593,7 +546,6 @@ class MainWindow(QMainWindow):
     def set_units(self, key: str) -> None:
         """Milimetry / palce (jako v LightBurnu). Jen zobrazení — výpočet a soubor zůstávají v mm."""
         self.settings.set_units(key)
-        self.unit_actions[key].setChecked(True)
         for w in self.length_spins:
             w.set_unit(UNITS[key])
         self._rebuild_item_list()
@@ -1292,11 +1244,40 @@ class MainWindow(QMainWindow):
         folder.mkdir(parents=True, exist_ok=True)
         QDesktopServices.openUrl(QUrl.fromLocalFile(str(folder)))
 
+    # ====================================================================== nastavení
+    def show_settings(self, page: str = "general") -> None:
+        """Modální okno Nastavení (OK / Zrušit / Použít)."""
+        from .settings_dialog import SettingsDialog
+
+        dlg = SettingsDialog(self)
+        dlg.show_page(page)
+        self._exec_dialog(dlg)
+
+    def _exec_dialog(self, dlg) -> int:
+        return dlg.exec()
+
+    def apply_settings(self, values: dict) -> None:
+        """Použije hodnoty z okna Nastavení; mění jen to, co se liší od uloženého."""
+        s = self.settings
+        if values["language"] != s.language():
+            self.set_language(values["language"])
+        if values["theme"] != s.theme():
+            self.set_theme(values["theme"])
+        if values["units"] != s.units():
+            self.set_units(values["units"])
+        if values["panel_side"] != s.panel_side():
+            self.set_panel_side(values["panel_side"])
+        if values["protocol"] != s.protocol_mode():
+            s.set_protocol_mode(values["protocol"])
+        if values["update_auto"] != s.update_auto():
+            s.set_update_auto(values["update_auto"])
+        if values["update_pre"] != s.update_prerelease():
+            s.set_update_prerelease(values["update_pre"])
+
     # ====================================================================== jazyk, nápověda
     def set_language(self, key: str) -> None:
         self.settings.set_language(key)
         self.locale_mgr.apply(key)
-        self.lang_actions[key].setChecked(True)
         self._apply_number_locale()
         self.retranslate()
         self.recompute()
@@ -1305,7 +1286,6 @@ class MainWindow(QMainWindow):
 
     def set_theme(self, key: str) -> None:
         self.settings.set_theme(key)
-        self.theme_actions[key].setChecked(True)
         self._apply_theme(key)
         if self.project is not None:
             self.recompute()
