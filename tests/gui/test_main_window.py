@@ -299,8 +299,8 @@ def test_title_shows_project_like_lightburn(make_window, tmp_path):
 def test_toolbar_open_save_help_with_icons(make_window, tmp_path):
     w = make_window("en")
     acts = [a for a in w.toolbar.actions() if not a.isSeparator()]
-    assert acts == [w.act_open, w.act_save, w.act_open_in_lb, w.act_undo, w.act_redo, w.act_duplicate, w.act_fit,
-                    w.act_settings, w.act_help]
+    assert acts == [w.act_open, w.act_save, w.act_open_in_lb, w.act_undo, w.act_redo, w.act_duplicate, w.act_fill_board,
+                    w.act_fit, w.act_settings, w.act_help]
     assert w.act_fit.toolTip().startswith("Fit view (Ctrl+0)\n")
     assert all(not a.icon().isNull() for a in acts)
     assert w.act_open.toolTip().startswith("Open project (Ctrl+O)")
@@ -922,3 +922,71 @@ def test_prepare_for_other_laser_mirrors_and_sets_header(make_window, tmp_path, 
     w.order = ("G1",)
     w.set_target("Modrý Ruida 643XG")  # jen část projektu: zrcadlový převod odmítnut s vysvětlením
     assert w.plan is None and w.plan_error.code == "convert_needs_whole_project" and not w.act_save.isEnabled()
+
+
+def test_auto_columns_checkbox_shows_computed_value(make_window, tmp_path):
+    w = make_window("en")
+    w.open_project(write(tmp_path, project([card(i * 150, 0, text=f"K{i}") for i in range(10)], mirror_x=False)))
+    w.combo_rotation.setCurrentIndex(w.combo_rotation.findData("none"))
+    w.spin_bw.set_mm(500)
+    w.chk_auto_cols.setChecked(True)
+    assert not w.spin_cols.isEnabled() and w.spin_cols.value() == 4 and w.plan.columns_auto
+    w.spin_bw.set_mm(700)
+    assert w.spin_cols.value() == 6
+    w.undo()
+    assert w.spin_cols.value() == 4 and w.chk_auto_cols.isChecked()
+    w.chk_auto_cols.setChecked(False)
+    assert w.spin_cols.isEnabled() and not w.plan.columns_auto
+
+
+def test_fill_board_adds_as_many_copies_as_fit(make_window, tmp_path):
+    w = make_window("en")
+    w.open_project(write(tmp_path, project([card(0, 0, text="A")], mirror_x=False)))
+    w.spin_bw.set_mm(320)  # 3 sloupce 100 mm (+ mezery 3, okraje 5)
+    w.spin_bh.set_mm(200)  # 3 řádky 60 mm
+    w.chk_auto_cols.setChecked(True)
+    assert w.fill_board() == 0 and "select" in w._dialogs[-1][1]  # nic nevybráno
+    w.list_items.item(0).setSelected(True)
+    assert w.fill_board() == 8  # 3 × 3 = 9 kusů na desce
+    assert len(w.order) == 9 and not w.plan.report.errors and w.plan.layout.columns == 3
+    assert w.fill_board() == 0 and "No more copies" in w._dialogs[-1][1]
+    w.undo()
+    assert len(w.order) == 1
+
+
+def test_fill_board_alternates_selected_items(make_window, tmp_path):
+    w = make_window("en")
+    w.open_project(write(tmp_path, project([card(0, 0, text="A"), card(200, 0, text="B")], mirror_x=False)))
+    w.spin_bw.set_mm(320)
+    w.spin_bh.set_mm(200)
+    w.chk_auto_cols.setChecked(True)
+    w._select_ids({"G1", "G2"})
+    assert w.fill_board() == 7
+    assert sorted(w.copies.values()).count("G1") == 4 and sorted(w.copies.values()).count("G2") == 3
+
+
+def test_layout_profiles_save_apply_delete(make_window, tmp_path, settings):
+    w = make_window("en")
+    w.open_project(write(tmp_path, four()))
+    assert w.combo_profile.currentIndex() == 0 and not w.btn_profile_delete.isEnabled()
+    w.spin_cols.setValue(2)
+    w.spin_gap_x.set_mm(8)
+    w.combo_rotation.setCurrentIndex(w.combo_rotation.findData("none"))
+    w._ask_text = lambda title, label, value: "Klíčenky"
+    assert w.save_profile() == "Klíčenky"
+    assert settings.profile("Klíčenky")["gap_x"] == 8 and w.combo_profile.currentData() == "Klíčenky"
+    w.spin_cols.setValue(4)  # změna → už neodpovídá profilu
+    w.chk_auto_cols.setChecked(True)
+    assert w.combo_profile.currentIndex() == 0
+    w.apply_profile("Klíčenky")
+    assert (w.spin_cols.value(), w.spin_gap_x.mm(), w.chk_auto_cols.isChecked()) == (2, 8, False)
+    assert w.combo_rotation.currentData() == "none" and w.combo_profile.currentData() == "Klíčenky"
+    w.undo()  # profil se vrací jako jeden krok
+    assert w.chk_auto_cols.isChecked()
+    w.apply_profile("Klíčenky")
+    w2 = make_window("cs")  # profily se pamatují
+    assert w2.combo_profile.findData("Klíčenky") > 0
+    assert w.delete_profile() and settings.profiles() == []
+    settings._s.setValue("profiles/x/name", "x")
+    settings._s.setValue("profiles/x/data", "{broken")
+    assert settings.profiles() == [] and settings.profile("x") is None

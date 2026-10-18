@@ -49,6 +49,15 @@ def _angles(specs: list[str]) -> dict[str, float]:
     return out
 
 
+def _columns(text: str) -> int:
+    if text.strip().lower() == "auto":
+        return 0  # AUTO_COLUMNS
+    n = int(text)
+    if n < 1:
+        raise argparse.ArgumentTypeError("columns must be >= 1 or 'auto'")
+    return n
+
+
 def _cmd_info(a: argparse.Namespace) -> int:
     p = load_project(a.file)
     i = p.info
@@ -137,7 +146,7 @@ def main(argv: list[str] | None = None) -> int:
     pi.add_argument("file")
     pa = sub.add_parser("arrange", help="arrange selected groups into a grid and save a NEW .lbrn2")
     pa.add_argument("file")
-    pa.add_argument("--columns", type=int, required=True)
+    pa.add_argument("--columns", type=_columns, required=True, help="number of columns, or 'auto' (as many as fit the board width)")
     pa.add_argument("--gap", type=float, default=3.0, help="gap X and Y in mm (default 3)")
     pa.add_argument("--gap-x", type=float)
     pa.add_argument("--gap-y", type=float)

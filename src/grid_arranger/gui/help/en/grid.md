@@ -1,6 +1,8 @@
 # Grid and placement
 
-**Columns** — how many items are in one row. The number of rows is calculated.
+**Layout profile** — saved settings under a name (e.g. "Key rings 3 mm"): number of columns (or *Automatic*), gaps, fill order, rotation and placement. Choosing a profile in the **Layout profile** section sets the values; **Save…** saves the current settings as a profile (same name = overwrite), **Delete** removes it. When you change a value, the choice switches to *no profile* — the profile itself is not changed. The board is not part of a profile; it belongs to the laser (Settings → Lasers).
+
+**Columns** — how many items are in one row. The number of rows is calculated. With **Automatic** ticked the application uses as many columns as fit on the board width (the usable area inside the margins); the field then shows the calculated number. Useful together with copies and *Fill the board with copies*.
 
 **Gap X / Y** — distance between the cut outlines of neighbouring items in the selected units (horizontal / vertical). A gap of 0 is allowed, but the application warns about the risk when cutting. Enter decimals with a dot (English) or a comma (Czech) depending on the application language.
 

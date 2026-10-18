@@ -20,6 +20,8 @@ Ručně zadaný úhel je v seznamu označen „(ručně)“, aplikace ho neměn�
 
 **Kopie (vyplnění desky):** vyberte výrobky a stiskněte **Ctrl+C** a **Ctrl+V** — přidá se jedna kopie každého. Více kopií najednou: ikona **Vytvořit kopie** na nástrojové liště (nebo **Ctrl+D**, menu Úpravy) a zadejte počet, např. 5. Kopie se přidají na konec pořadí, jsou v seznamu označené „(kopie G5)“, převezmou ruční úhel a dají se natáčet a přesouvat jako ostatní výrobky. Kopii odeberete klávesou **Delete** nebo odškrtnutím. Do uloženého projektu se kopie zapíšou jako nové skupiny; originál projektu se nemění.
 
+**Vyplnit desku kopiemi** (ikona desky s výrobky na nástrojové liště, **Ctrl+Shift+D**, menu Úpravy): přidá tolik kopií vybraných výrobků, kolik se ještě vejde na desku tak, aby rozložení prošlo kontrolou. Je-li vybráno více výrobků, kopie se střídají (A, B, A, B…). Nejlépe funguje s *Automatickým* počtem sloupců; s pevným počtem sloupců přibývají jen řádky.
+
 Číslo **1** se umístí do rohu mřížky podle volby *Pořadí plnění* (viz [mřížka](grid.md)).
 
 [← Příprava](prepare.md) · [Další: mřížka →](grid.md)

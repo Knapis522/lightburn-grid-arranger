@@ -1,6 +1,6 @@
 # Grid Arranger for LightBurn — technická specifikace
 
-**Verze dokumentu:** 1.23 (projekt pro jiný laser, katalog laserů; viz kap. 9.1 bod 4b)  
+**Verze dokumentu:** 1.24 (automatický počet sloupců, vyplnění desky, profily rozložení; viz kap. 22.1, 22.3)  
 **Datum:** 17. 10. 2026  
 **Název produktu:** Grid Arranger for LightBurn; spustitelný soubor `GridArranger.exe`; Python balíček `grid_arranger`; repozitář `lightburn-grid-arranger`. Neoficiální nástroj, nikoli produkt LightBurn Software.  
 **Stav:** Interní pracovní podklad; nikoli hotový nebo otestovaný plugin  
@@ -742,6 +742,8 @@ MVP je **splněné až po současném úspěchu** testů MVP-01 až MVP-07 (vče
 
 **Chování:** vytvořit/upravit/duplikovat/přejmenovat/smazat profil; aktivní profil do formuláře *předvyplní* hodnoty, ale uživatel může parametry aktuální zakázky změnit bez přepsání profilu. Před exportem zobrazit skutečné hodnoty pro danou zakázku. Profily uložit odděleně do lokálního verzovaného JSON; chybný profil nezpůsobí ztrátu ostatních. Neexportovat profily do `.lbrn2` a nesměšovat s `CutSetting`.
 
+**Implementace (v1.24, 18. 10. 2026, přání vlastníka):** sekce *Profil rozložení* v levém panelu; profil = název + `columns`, `auto_columns`, `gap_x/y`, `fill`, `rotation`, `anchor` (JSON v uživatelském nastavení, `profiles/<název>`). **Deska a okraje v profilu nejsou** — patří k laseru v katalogu laserů (v1.23). Výběr profilu hodnoty nastaví (jeden krok zpět); změna hodnot profil nemění, výběr se přepne na „bez profilu“; Uložit… (stejný název = přepsat po potvrzení), Smazat. Poškozený záznam se ignoruje, ostatní profily zůstávají.
+
 **Testy T-11-01 až 05:** načtení přesných rozměrů, uložení a znovunačtení, přepsání lokálních hodnot bez modifikace profilu, odmítnutí chybného schématu, zachování funkce bez uloženého profilu.
 
 ### 22.2 V11-02 — různé množství každé varianty
@@ -770,6 +772,8 @@ MVP je **splněné až po současném úspěchu** testů MVP-01 až MVP-07 (vče
 **Omezení:** každého kandidáta ověřit proti rozměru materiálu, okrajům, zadaným mezerám, kolizím s nevybranými objekty, orientaci a kompatibilitě. Kandidáty se stejnými položkami a stejným pořadím srovnávat deterministicky podle **nejmenší plochy výsledného AABB**, při shodě podle obvodu a dále podle menšího počtu řad a sloupců. Neprohlašovat za globální optimální využití materiálu a nepoužívat imaginární skóre „úspory“ u pevné velikosti desky.
 
 **Chování UI:** přepínač `Počet sloupců ručně / Automatický návrh`; v automatickém režimu nabídnout vítězný výsledek s počtem řad/sloupců a rozměry, případně 2–3 další platné alternativy; uživatel může výsledek převzít či vrátit ruční režim. Při žádném validním kandidátu blokovat export a uvést proč.
+
+**Implementace (v1.24, 18. 10. 2026, přání vlastníka — zjednodušené kritérium):** zaškrtávátko *Automaticky* u Počtu sloupců (`ArrangeParams.columns = AUTO_COLUMNS`). Vybere se **největší počet sloupců, při kterém je mřížka nejvýš tak široká jako využitelná plocha desky** (mřížka se rozloží po šířce desky od počátku, nejméně řádků); kandidáti se počítají celým plánem včetně natočení a kopií, horní mez odhadem z nejmenšího rozměru výrobku. Nevejde-li se ani jeden sloupec, použije se 1 a kontrola ohlásí přesah. Kritérium nejmenší plochy AABB z původního návrhu se nepoužívá (u pevné desky je cílem zaplnit šířku). CLI `--columns auto`. Navazuje **Vyplnit desku kopiemi**: přidá největší počet kopií vybraných výrobků (střídavě), při kterém plán nemá žádnou chybu (zdvojování + půlení intervalu, limit 999 kopií).
 
 **Testy T-11-14 až 20:** různá N, obdélníky 100×60, úzká/široká deska, nevybrané překážky, žádné validní řešení, přesně shodné skóre, stabilní opakovaný výsledek.
 
@@ -1059,6 +1063,7 @@ Toto jsou **ověřovací úkoly**, nikoli potvrzené technické možnosti souča
 
 ## 28. Záznam změn specifikace
 
+- **v1.24 (18. 10. 2026):** Na přání vlastníka automatický počet sloupců podle šířky desky (V11-03, zjednodušené kritérium), *Vyplnit desku kopiemi* a profily rozložení (V11-01, bez desky) (kap. 22.1, 22.3).
 - **v1.23 (18. 10. 2026):** Na přání vlastníka **příprava projektu pro jiný laser** a **katalog laserů** (kap. 9.1 bod 4b). Výstup pro cílový laser: hlavička `DeviceName`, `MirrorX`, `MirrorY` cílového laseru; transformace výrobků `S_cíl ∘ T ∘ S_zdroj` (zrcadlení, výrobek na cílovém laseru vypadá stejně); deska a roh plnění podle cílového laseru; při jiném počátku jen celý projekt (všechny výrobky vybrané, žádné jiné objekty); nastavení vrstev se nepřevádí. Nezávislá kontrola dovoluje v hlavičce změnu jen těchto tří atributů. Katalog v Nastavení → Lasery (`LaserProfile`: název = `DeviceName`, roh počátku, deska s okraji); lasery z otevřených projektů se přidávají automaticky. Ověření v LightBurnu KAL-05.
 - **v1.22 (18. 10. 2026):** Na přání vlastníka (diodové lasery) podporovány počátky **vlevo dole a vpravo dole**: roh plnění u počátku (`Corner.BOTTOM_LEFT/BOTTOM_RIGHT` — první řádek dole, další výš, zarovnání v buňce k počátku), umístění do rohu desky u počátku a ruční roh mřížky u počátku i pro spodní rohy; převod souřadnic beze změny. Do ověření KAL-04 v LightBurnu upozornění (kap. 9.1 bod 4a, `FORMAT_COMPATIBILITY.md`).
 - **v1.21 (18. 10. 2026):** Automatická kontrola aktualizací při každém spuštění aplikace, ne jen jednou denně (kap. 32).

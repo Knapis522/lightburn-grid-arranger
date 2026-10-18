@@ -14,7 +14,8 @@ Windows desktop application that arranges the items (groups) of a **LightBurn `.
 - Choose the items and their order (list, or drag & drop in the preview).
 - Grid: number of columns, gap X/Y, fill order from the laser origin; board size, margins, placement at the origin corner, centred or at a manual position.
 - **Rotation to save material:** automatic (any angle or 90° steps), manual angle per item, or none.
-- **Copies** to fill the board (Ctrl+C / Ctrl+V or *Create copies…*).
+- **Copies** to fill the board (Ctrl+C / Ctrl+V or *Create copies…*), or **Fill the board** with as many copies as fit.
+- **Automatic number of columns** (as many as fit the board width) and named **layout profiles**.
 - **Prepare a project for another laser** from a laser catalogue (e.g. origin top right → top left): the items are mirrored so that they look the same on the target laser (new in v0.1.0-alpha.5, awaiting verification in LightBurn).
 - Collision and board checks, including objects that are not moved.
 - Safe saving: a new file only, independent verification of the output before it is written, optional save protocol.

@@ -38,7 +38,7 @@ from ..adapters.lightburn.read import LoadedProject, load_project
 from ..adapters.lightburn.render import ProjectRenderer
 from ..adapters.lightburn.write import name_tag, next_output_path
 from ..application.arrange_job import (
-    ROTATION_MODES, ArrangeParams, ItemGeometry, MaterialInput, Plan, TargetLaser, check_output_path, execute, make_plan,
+    AUTO_COLUMNS, ROTATION_MODES, ArrangeParams, ItemGeometry, MaterialInput, Plan, TargetLaser, check_output_path, execute, make_plan,
     material_to_core, normalize_angle,
 )
 from ..core.collision import usable_area
@@ -142,6 +142,9 @@ class MainWindow(QMainWindow):
         self.act_duplicate = QAction(self)
         self.act_duplicate.setShortcut(QKeySequence("Ctrl+D"))
         self.act_duplicate.triggered.connect(self.duplicate_dialog)
+        self.act_fill_board = QAction(self)  # vyplnit desku kopiemi vybraných výrobků (spec. v1.24)
+        self.act_fill_board.setShortcut(QKeySequence("Ctrl+Shift+D"))
+        self.act_fill_board.triggered.connect(lambda: self.fill_board())
         self.act_remove_copies = QAction(self)
         self.act_remove_copies.setShortcut(QKeySequence(QKeySequence.StandardKey.Delete))
         self.act_remove_copies.triggered.connect(self.remove_selected_copies)
@@ -156,7 +159,7 @@ class MainWindow(QMainWindow):
         self.menu_edit = mb.addMenu("")
         self.menu_edit.addActions([self.act_undo, self.act_redo])
         self.menu_edit.addSeparator()
-        self.menu_edit.addActions([self.act_copy, self.act_paste, self.act_duplicate, self.act_remove_copies])
+        self.menu_edit.addActions([self.act_copy, self.act_paste, self.act_duplicate, self.act_fill_board, self.act_remove_copies])
         self.menu_edit.addSeparator()
         mb.addAction(self.act_settings_menu)  # položka lišty menu otevře rovnou okno Nastavení
         self.menu_help = mb.addMenu("")
@@ -172,13 +175,14 @@ class MainWindow(QMainWindow):
         self.act_fit.setShortcut(QKeySequence("Ctrl+0"))
         self._toolbar_icons = {self.act_open: "open", self.act_save: "save_new", self.act_open_in_lb: "send",
                                self.act_undo: "undo", self.act_redo: "redo", self.act_duplicate: "copies",
-                               self.act_fit: "fit", self.act_settings: "settings", self.act_help: "help"}
+                               self.act_fill_board: "fill", self.act_fit: "fit", self.act_settings: "settings", self.act_help: "help"}
         keys = {self.act_open: "open", self.act_save: "save", self.act_open_in_lb: "open_in_lightburn",
-                self.act_undo: "undo", self.act_redo: "redo", self.act_duplicate: "copies", self.act_fit: "fit",
+                self.act_undo: "undo", self.act_redo: "redo", self.act_duplicate: "copies",
+                self.act_fill_board: "fill_board", self.act_fit: "fit",
                 self.act_settings: "settings", self.act_help: "help"}
         for a, k in keys.items():
             a.setObjectName(k)
-        self.TOOLBAR_DEFAULT = ["open", "save", "open_in_lightburn", "sep1", "undo", "redo", "sep2", "copies", "fit",
+        self.TOOLBAR_DEFAULT = ["open", "save", "open_in_lightburn", "sep1", "undo", "redo", "sep2", "copies", "fill_board", "fit",
                                 "sep3", "settings", "help"]
         by_key = {k: a for a, k in keys.items()}
         for k in self.TOOLBAR_DEFAULT:
@@ -292,6 +296,20 @@ class MainWindow(QMainWindow):
         self.chk_art.toggled.connect(lambda _: self.recompute())
         self.box_items.add_header_widget(self.chk_art)
 
+        # Profil rozložení (spec. v1.24): uložené nastavení mřížky a umístění pod názvem
+        self.box_profile, body = section("profile")
+        prow = QHBoxLayout(body)
+        self.combo_profile = QComboBox()
+        self.combo_profile.setSizeAdjustPolicy(QComboBox.SizeAdjustPolicy.AdjustToContents)
+        self.combo_profile.setMinimumContentsLength(12)
+        self.combo_profile.activated.connect(self._on_profile_chosen)
+        self.btn_profile_save, self.btn_profile_delete = QPushButton(), QPushButton()
+        self.btn_profile_save.clicked.connect(lambda: self.save_profile())
+        self.btn_profile_delete.clicked.connect(lambda: self.delete_profile())
+        prow.addWidget(self.combo_profile, 1)
+        prow.addWidget(self.btn_profile_save)
+        prow.addWidget(self.btn_profile_delete)
+
         # Mřížka: Sloupce | Mezera X, Y | Pořadí plnění
         self.box_grid, body = section("grid")
         gg = self._grid_layout(body)
@@ -305,6 +323,9 @@ class MainWindow(QMainWindow):
         self.spin_gap_y = length(0, 1000, 3.0)
         self.combo_fill = QComboBox()
         self.combo_rotation = QComboBox()
+        self.chk_auto_cols = QCheckBox()  # automatický počet sloupců podle šířky desky (spec. v1.24)
+        self.chk_auto_cols.toggled.connect(self._on_auto_cols)
+        gg.addWidget(self.chk_auto_cols, 0, 2, 1, 2)
         self.lbls_grid = [
             self._cell(gg, 0, 0, self.spin_cols),
             self._cell(gg, 1, 0, self.spin_gap_x), self._cell(gg, 1, 2, self.spin_gap_y),
@@ -422,6 +443,9 @@ class MainWindow(QMainWindow):
         self.act_copy.setText(self.tr("&Copy items"))
         self.act_paste.setText(self.tr("&Paste copies"))
         self.act_duplicate.setText(self.tr("Create &copies…"))
+        self.act_fill_board.setText(self.tr("&Fill the board with copies"))
+        self.chk_auto_cols.setText(self.tr("Automatic"))
+        self.chk_auto_cols.setToolTip(self.tr("As many columns as fit on the board width"))
         self.act_remove_copies.setText(self.tr("&Remove copies"))
         self.act_clear_selection.setText(self.tr("Clear &selection"))
         self.toolbar.setWindowTitle(self.tr("Toolbar"))
@@ -439,6 +463,11 @@ class MainWindow(QMainWindow):
         self.btn_all.setText(self.tr("Select all"))
         self.btn_none.setText(self.tr("Select none"))
 
+        self.box_profile.setTitle(self.tr("Layout profile"))
+        self.btn_profile_save.setText(self.tr("Save…"))
+        self.btn_profile_save.setToolTip(self.tr("Save the grid, gaps, fill order, rotation and placement as a named profile"))
+        self.btn_profile_delete.setText(self.tr("Delete"))
+        self._fill_profile_combo()
         self.box_grid.setTitle(self.tr("Grid"))
         labels = [self.tr("Columns:"), self.tr("Gap X:"), self.tr("Y:"), self.tr("Fill order:"), self.tr("Rotation:")]
         for lbl, t in zip(self.lbls_grid, labels):
@@ -844,7 +873,7 @@ class MainWindow(QMainWindow):
             (round(self.spin_start_x.mm(), 6), round(self.spin_start_y.mm(), 6)) if manual else None,
             tuple(round(w.mm(), 6) for w in (self.spin_bw, self.spin_bh, self.spin_bx, self.spin_by,
                                               self.spin_ml, self.spin_mr, self.spin_mt, self.spin_mb)),
-            self.target_name,
+            self.target_name, self.chk_auto_cols.isChecked(),
         )
 
     def _record_history(self) -> None:
@@ -860,16 +889,18 @@ class MainWindow(QMainWindow):
     def _restore(self, state: tuple | None) -> None:
         if state is None:
             return
-        order, copies, angles, cols, gx, gy, fill, rotation, anchor, start, board, target = state
+        order, copies, angles, cols, gx, gy, fill, rotation, anchor, start, board, target, auto_cols = state
         self._restoring = True
         try:
             self.order, self.copies, self.manual_angles = tuple(order), dict(copies), dict(angles)
             self.target_name = target
             self._fill_target_combo()
-            widgets = [self.spin_cols, self.combo_fill, self.combo_rotation, self.combo_anchor]
+            widgets = [self.spin_cols, self.combo_fill, self.combo_rotation, self.combo_anchor, self.chk_auto_cols]
             for w in widgets:
                 w.blockSignals(True)
             self.spin_cols.setValue(cols)
+            self.chk_auto_cols.setChecked(auto_cols)
+            self.spin_cols.setEnabled(not auto_cols)
             for combo, data in ((self.combo_fill, fill), (self.combo_rotation, rotation), (self.combo_anchor, anchor)):
                 i = combo.findData(data)
                 if i >= 0:
@@ -981,6 +1012,65 @@ class MainWindow(QMainWindow):
                           self.tr("Number of copies of each selected item (%n selected):", "", len(ids)), 1, 1, self.MAX_COPIES)
         if n:
             self.add_copies(ids, n)
+
+    def _cyclic_copies(self, ids: list[str], k: int) -> list[tuple[str, str]]:
+        """``k`` nových kopií vybraných výrobků střídavě (A, B, A, B…): [(id kopie, zdroj)]."""
+        taken = set(self.copies)
+        out = []
+        for n in range(k):
+            src = self.copies.get(ids[n % len(ids)], ids[n % len(ids)])
+            j = 1
+            while f"{src}+{j}" in taken:
+                j += 1
+            taken.add(f"{src}+{j}")
+            out.append((f"{src}+{j}", src))
+        return out
+
+    def _fits_with(self, ids: list[str], k: int) -> bool:
+        new = self._cyclic_copies(ids, k)
+        p = self.params()
+        p.order = self.order + tuple(c for c, _ in new)
+        p.copies = {**p.copies, **dict(new)}
+        p.angles = {**p.angles, **{c: self.manual_angles[s] for c, s in new if s in self.manual_angles}}
+        try:
+            plan = make_plan(self.project, p, self._geometry)
+        except GridError:
+            return False
+        return not plan.report.errors
+
+    def fill_board(self) -> int:
+        """Přidá tolik kopií vybraných výrobků, kolik se ještě vejde na desku (kontrola bez chyb)."""
+        if self.project is None:
+            return 0
+        ids = self._rotatable_selection()
+        if not ids:
+            self._info(self.tr("First select the item(s) to fill the board with — in the list or by clicking them in the preview."))
+            return 0
+        if self.spin_bw.mm() <= 0 or self.spin_bh.mm() <= 0 or not self._fits_with(ids, 0):
+            self._info(self.tr("The current layout does not fit on the board; fix it first (see the messages below the preview)."))
+            return 0
+        limit = self.MAX_COPIES - len(self.copies)
+        lo, hi = 0, 1  # lo se vejde; hledání zdvojováním a půlením
+        while hi <= limit and self._fits_with(ids, hi):
+            lo, hi = hi, hi * 2
+        hi = min(hi, limit + 1)
+        while hi - lo > 1:
+            mid = (lo + hi) // 2
+            lo, hi = (mid, hi) if self._fits_with(ids, mid) else (lo, mid)
+        if lo == 0:
+            self._info(self.tr("No more copies fit on the board."))
+            return 0
+        new = self._cyclic_copies(ids, lo)
+        for cid, src in new:
+            self.copies[cid] = src
+            if src in self.manual_angles:
+                self.manual_angles[cid] = self.manual_angles[src]
+        self.order = self.order + tuple(c for c, _ in new)
+        self._rebuild_item_list()
+        self._select_ids({c for c, _ in new})
+        self.recompute()
+        self.statusBar().showMessage(self.tr("Added %n copies — the board is full.", "", lo), 8000)
+        return lo
 
     def _ask_int(self, title: str, label: str, value: int, lo: int, hi: int) -> int | None:
         n, ok = QInputDialog.getInt(self, title, label, value, lo, hi)
@@ -1131,6 +1221,13 @@ class MainWindow(QMainWindow):
         self._rebuild_item_list()
         self.recompute()
 
+    def _sync_auto_columns(self) -> None:
+        """U automatického počtu ukazuje (zašedlé) pole Počet sloupců vypočtenou hodnotu."""
+        if self.chk_auto_cols.isChecked() and self.plan is not None:
+            self.spin_cols.blockSignals(True)
+            self.spin_cols.setValue(self.plan.layout.columns)
+            self.spin_cols.blockSignals(False)
+
     def _sync_corner_fields(self) -> None:
         """Mimo režim Ručně ukazují (zašedlá) pole Roh X/Y skutečně vypočtený roh mřížky u počátku.
         Po přepnutí na Ručně tak pole obsahují aktuální roh a mřížka se neposune."""
@@ -1147,11 +1244,111 @@ class MainWindow(QMainWindow):
         self.recompute()
 
     # ====================================================================== výpočet a náhled
+    # ====================================================================== profily rozložení
+    def profile_values(self) -> dict:
+        """Nastavení, které profil ukládá (deska patří k laseru, proto v profilu není)."""
+        return {"columns": self.spin_cols.value(), "auto_columns": self.chk_auto_cols.isChecked(),
+                "gap_x": round(self.spin_gap_x.mm(), 6), "gap_y": round(self.spin_gap_y.mm(), 6),
+                "fill": self.combo_fill.currentData(), "rotation": self.combo_rotation.currentData(),
+                "anchor": self.combo_anchor.currentData()}
+
+    def _fill_profile_combo(self) -> None:
+        c = self.combo_profile
+        c.blockSignals(True)
+        c.clear()
+        c.addItem(self.tr("— no profile —"), None)
+        for name in self.settings.profiles():
+            c.addItem(name, name)
+        c.blockSignals(False)
+        self._sync_profile_combo()
+
+    def _sync_profile_combo(self) -> None:
+        """Vybere profil, jehož hodnoty odpovídají aktuálnímu nastavení (jinak „bez profilu“)."""
+        cur = self.profile_values()
+        match = 0
+        for i in range(1, self.combo_profile.count()):
+            data = self.settings.profile(self.combo_profile.itemData(i))
+            if data is not None and all(data.get(k) == v for k, v in cur.items()
+                                        if not (k == "columns" and cur["auto_columns"])):
+                match = i
+                break
+        self.combo_profile.blockSignals(True)
+        self.combo_profile.setCurrentIndex(match)
+        self.combo_profile.blockSignals(False)
+        self.btn_profile_delete.setEnabled(match > 0)
+
+    def _on_profile_chosen(self, index: int) -> None:
+        name = self.combo_profile.itemData(index)
+        if name:
+            self.apply_profile(name)
+
+    def apply_profile(self, name: str) -> bool:
+        data = self.settings.profile(name)
+        if data is None:
+            return False
+        widgets = [self.spin_cols, self.chk_auto_cols, self.combo_fill, self.combo_rotation, self.combo_anchor]
+        for w in widgets:
+            w.blockSignals(True)
+        try:
+            if isinstance(data.get("columns"), int) and data["columns"] >= 1:
+                self.spin_cols.setValue(data["columns"])
+            self.chk_auto_cols.setChecked(bool(data.get("auto_columns")))
+            self.spin_cols.setEnabled(not self.chk_auto_cols.isChecked())
+            for combo, key in ((self.combo_fill, "fill"), (self.combo_rotation, "rotation"), (self.combo_anchor, "anchor")):
+                i = combo.findData(data.get(key))
+                if i >= 0:
+                    combo.setCurrentIndex(i)
+        finally:
+            for w in widgets:
+                w.blockSignals(False)
+        if self.combo_rotation.currentData():
+            self.settings.set_rotation_mode(self.combo_rotation.currentData())
+        manual = self.combo_anchor.currentData() == "manual"
+        self.spin_start_x.setEnabled(manual)
+        self.spin_start_y.setEnabled(manual)
+        for spin, key in ((self.spin_gap_x, "gap_x"), (self.spin_gap_y, "gap_y")):
+            if isinstance(data.get(key), (int, float)):
+                spin.set_mm(float(data[key]), emit=False)
+        self.recompute()
+        self.statusBar().showMessage(self.tr("Profile “{name}” applied.").format(name=name), 5000)
+        return True
+
+    def save_profile(self, name: str | None = None) -> str | None:
+        if name is None:
+            current = self.combo_profile.currentData() or ""
+            name = self._ask_text(self.tr("Save profile"), self.tr("Profile name (grid, gaps, fill order, rotation, placement):"), current)
+        name = (name or "").strip()
+        if not name:
+            return None
+        if name in self.settings.profiles() and name != self.combo_profile.currentData() and \
+                not self._ask(self.tr("The profile “{name}” already exists. Overwrite it?").format(name=name)):
+            return None
+        self.settings.set_profile(name, self.profile_values())
+        self._fill_profile_combo()
+        self.statusBar().showMessage(self.tr("Profile “{name}” saved.").format(name=name), 5000)
+        return name
+
+    def delete_profile(self) -> bool:
+        name = self.combo_profile.currentData()
+        if not name or not self._ask(self.tr("Delete the profile “{name}”?").format(name=name)):
+            return False
+        self.settings.remove_profile(name)
+        self._fill_profile_combo()
+        return True
+
+    def _ask_text(self, title: str, label: str, value: str) -> str | None:
+        text, ok = QInputDialog.getText(self, title, label, text=value)
+        return text if ok else None
+
+    def _on_auto_cols(self, on: bool) -> None:
+        self.spin_cols.setEnabled(not on)
+        self.recompute()
+
     def params(self) -> ArrangeParams:
         material = MaterialInput(self.spin_bw.mm(), self.spin_bh.mm(), self.spin_bx.mm(), self.spin_by.mm(),
                                  self.spin_ml.mm(), self.spin_mr.mm(), self.spin_mt.mm(), self.spin_mb.mm())
         return ArrangeParams(
-            columns=self.spin_cols.value(),
+            columns=AUTO_COLUMNS if self.chk_auto_cols.isChecked() else self.spin_cols.value(),
             gap_x=self.spin_gap_x.mm(),
             gap_y=self.spin_gap_y.mm(),
             material=material,
@@ -1177,6 +1374,8 @@ class MainWindow(QMainWindow):
         except GridError as e:
             self.plan_error = e
         self._sync_corner_fields()
+        self._sync_auto_columns()
+        self._sync_profile_combo()
         self._update_item_texts()
         self._draw()
         self._refresh_issue_texts()

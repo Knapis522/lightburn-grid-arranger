@@ -30,6 +30,10 @@ _PATHS: dict[str, str] = {
     # zahnutá šipka doleva / doprava = krok zpět / krok vpřed
     "undo": '<path d="M9 14L4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 0 11H11"/>',
     "redo": '<path d="M15 14l5-5-5-5"/><path d="M20 9H9.5a5.5 5.5 0 0 0 0 11H13"/>',
+    # deska plná výrobků = vyplnit desku kopiemi
+    "fill": '<rect x="3.5" y="4.5" width="17" height="15" rx="1.3"/>'
+            '<rect x="6" y="7" width="5" height="4" rx="0.5"/><rect x="13" y="7" width="5" height="4" rx="0.5"/>'
+            '<rect x="6" y="13" width="5" height="4" rx="0.5"/><rect x="13" y="13" width="5" height="4" rx="0.5"/>',
     # ozubené kolo = nastavení
     "settings": '<circle cx="12" cy="12" r="3"/>'
                 '<path d="M10.3 3.5h3.4l.5 2.4 1.6.9 2.3-.8 1.7 2.9-1.8 1.6v1.9l1.8 1.6-1.7 2.9-2.3-.8-1.6.9-.5 2.4h-3.4'

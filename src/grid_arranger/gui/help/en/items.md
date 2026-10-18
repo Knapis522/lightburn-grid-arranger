@@ -20,6 +20,8 @@ A manual angle is marked “(manual)” in the list; the application never chang
 
 **Copies (filling the board):** select items and press **Ctrl+C** and **Ctrl+V** — one copy of each is added. For more copies at once use the **Create copies** icon on the toolbar (or **Ctrl+D**, Edit menu) and enter the number, e.g. 5. Copies are added at the end of the order, are marked “(copy of G5)” in the list, take over the manual angle and can be rotated and moved like any other item. Remove a copy with **Delete** or by unchecking it. Copies are written to the saved project as new groups; the original project is not changed.
 
+**Fill the board with copies** (board icon on the toolbar, **Ctrl+Shift+D**, Edit menu): adds as many copies of the selected items as still fit on the board with the layout passing the check. With several items selected, the copies alternate (A, B, A, B…). Works best with the *Automatic* number of columns; with a fixed number of columns only rows are added.
+
 Item number **1** is placed in the grid corner given by *Fill order* (see [grid](grid.md)).
 
 [← Preparing](prepare.md) · [Next: grid →](grid.md)

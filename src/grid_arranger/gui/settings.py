@@ -5,6 +5,7 @@ aplikace — přežije přesun i výměnu ZIPu. Nic z toho se nezapisuje do `.lb
 
 * ``ui/language`` — ``auto`` | ``cs`` | ``en``
 * ``boards/<laser>/…`` — výchozí deska pro laser podle ``DeviceName`` z projektu
+* ``profiles/<název>/…`` — profily rozložení (spec. v1.24): sloupce, mezery, plnění, natočení, umístění
 * ``lasers/<laser>/…`` — katalog laserů (spec. v1.23): název jako v LightBurnu a roh počátku;
   deska laseru je v ``boards/<laser>``. Lasery z otevřených projektů se přidávají samy.
 * ``layout/rotation`` — natočení výrobků: ``any`` (výchozí, rozhodnutí vlastníka) | ``90`` | ``none``
@@ -17,6 +18,7 @@ aplikace — přežije přesun i výměnu ZIPu. Nic z toho se nezapisuje do `.lb
 
 from __future__ import annotations
 
+import json
 from dataclasses import dataclass
 
 from PySide6.QtCore import QByteArray, QSettings
@@ -133,6 +135,33 @@ class UserSettings:
 
     def remove_board_for(self, device: str) -> None:
         self._s.remove(_key(device))
+        self._s.sync()
+
+    # --- profily rozložení (spec. v1.24) ---------------------------------------------------------
+    def profiles(self) -> list[str]:
+        self._s.beginGroup("profiles")
+        keys = self._s.childGroups()
+        self._s.endGroup()
+        names = [str(self._s.value(f"profiles/{k}/name", "") or "") for k in keys]
+        return sorted((n for n in names if n and self.profile(n) is not None), key=str.casefold)
+
+    def profile(self, name: str) -> dict | None:
+        raw = self._s.value(f"profiles/{_safe(name)}/data")
+        try:
+            data = json.loads(str(raw)) if raw else None
+        except ValueError:
+            return None  # poškozený záznam
+        return data if isinstance(data, dict) else None
+
+    def set_profile(self, name: str, data: dict) -> None:
+        if not name.strip():
+            raise ValueError(name)
+        self._s.setValue(f"profiles/{_safe(name)}/name", name)
+        self._s.setValue(f"profiles/{_safe(name)}/data", json.dumps(data, sort_keys=True))
+        self._s.sync()
+
+    def remove_profile(self, name: str) -> None:
+        self._s.remove(f"profiles/{_safe(name)}")
         self._s.sync()
 
     # --- katalog laserů (spec. v1.23) ------------------------------------------------------------

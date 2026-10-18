@@ -44,6 +44,8 @@ ROTATION_MODES = ("none", "90", "any")
 GEOMETRY_TOL = 0.002  # mm — odchylka rozvinutí křivek; obdélník natočeného výrobku se o ni zvětší
 ORIENTATION_GAIN = 0.005  # jiná orientace jen při úspoře aspoň 0,5 % plochy mřížky (nebo když se jinak nevejde)
 FILL_MODES = ("origin", "reading")
+AUTO_COLUMNS = 0
+"""``ArrangeParams.columns = AUTO_COLUMNS``: tolik sloupců, kolik se vejde na šířku desky (spec. v1.24)."""
 DEFAULT_MARGIN_MM = 5.0
 
 
@@ -247,6 +249,8 @@ class Plan:
     """Rozmístěné kopie ``{id kopie: zdroj}`` v pořadí zápisu do výstupu."""
     target: TargetLaser | None = None
     """Cílový laser, liší-li se od projektu (hlavička výstupu a zrcadlení výrobků)."""
+    columns_auto: bool = False
+    """Počet sloupců zvolen automaticky podle šířky desky."""
 
     @property
     def orientation(self) -> Orientation:
@@ -284,6 +288,8 @@ ORIGIN_CORNERS = {(False, False): Corner.TOP_LEFT, (True, False): Corner.TOP_RIG
 
 
 def make_plan(project: LoadedProject, params: ArrangeParams, geometry: ItemGeometry | None = None) -> Plan:
+    if params.columns == AUTO_COLUMNS:
+        return _auto_columns_plan(project, params, geometry)
     if params.anchor not in ANCHORS:
         raise GridError("invalid_anchor", "Neznámý způsob umístění mřížky.", anchor=params.anchor)
     if params.fill not in FILL_MODES:
@@ -384,6 +390,40 @@ def make_plan(project: LoadedProject, params: ArrangeParams, geometry: ItemGeome
                 {cid: copies[cid] for cid in order if cid in copies}, target)
 
 
+def _auto_columns_plan(project: LoadedProject, params: ArrangeParams, geometry: ItemGeometry | None) -> Plan:
+    """Nejvíc sloupců, při kterých je mřížka nejvýš tak široká jako využitelná plocha desky.
+
+    Méně řádků = mřížka se rozloží po šířce desky (od počátku). Když se nevejde ani jeden sloupec,
+    použije se 1 (kontrola pak ohlásí přesah)."""
+    if params.material is None:
+        raise GridError("material_missing", "Pro automatický počet sloupců je nutné zadat desku.")
+    order = params.order if params.order is not None else tuple(it.id for it in project.items if it.supported)
+    if not order:
+        raise GridError("empty_selection", "Není vybrán žádný výrobek.")
+    target = effective_target(project, params.target)
+    area, issues = usable_area(material_to_core(project, params.material, target.orientation if target else None))
+    if area is None:
+        raise GridError(issues[0].code, "Deska nebo okraje jsou neplatné.", **issues[0].params)
+    geometry = geometry or ItemGeometry(project)
+    # horní odhad: nejmenší rozměr výrobku (i natočeného) — víc sloupců se na šířku vejít nemůže
+    sizes = []
+    for iid in order:
+        it = project.item(params.copies.get(iid, iid))
+        b = it.screen_bounds
+        if b is not None:
+            sizes.append(min(b.width, b.height))
+    smallest = max(min(sizes, default=1.0), 1e-6)
+    upper = max(1, min(len(order), int((area.width + params.gap_x) // (smallest + params.gap_x)) + 1))
+    plan = None
+    for c in range(upper, 0, -1):
+        plan = make_plan(project, replace(params, columns=c), geometry)
+        if plan.layout.grid_bounds.width <= area.width + 1e-6:
+            break
+    assert plan is not None
+    plan.columns_auto = True
+    return plan
+
+
 def _with_copies(project: LoadedProject, copies: dict[str, str]) -> LoadedProject:
     """Projekt doplněný o kopie výrobků (stejný uzel, rozměry i poloha jako zdroj, vlastní id)."""
     extra = []
@@ -424,7 +464,7 @@ def _protocol(plan: Plan, output: Path, out_bytes: bytes, problems: list[str]) -
             "rotation_mode": _rotation_mode(plan),
             "grid_corner_at_origin_lightburn_xy": plan.origin_corner_lightburn,
         },
-        "grid": {"columns": plan.layout.columns, "rows": plan.layout.rows,
+        "grid": {"columns": plan.layout.columns, "columns_auto": plan.columns_auto, "rows": plan.layout.rows,
                  "width_mm": plan.layout.grid_bounds.width, "height_mm": plan.layout.grid_bounds.height},
         "placements": [
             {"item": pl.item_id, "label": p.item(pl.item_id).label, "index": pl.index + 1,
@@ -582,4 +622,4 @@ def run(path: str | Path, params: ArrangeParams, write: bool = True, out_dir: Pa
     return execute(plan, out_dir)
 
 
-__all__ = ["ANCHORS", "FILL_MODES", "ArrangeParams", "TargetLaser", "JobResult", "MaterialInput", "Plan", "execute", "make_plan", "run"]
+__all__ = ["ANCHORS", "AUTO_COLUMNS", "FILL_MODES", "ArrangeParams", "TargetLaser", "JobResult", "MaterialInput", "Plan", "execute", "make_plan", "run"]

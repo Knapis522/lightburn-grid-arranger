@@ -1,6 +1,8 @@
 # Mřížka a umístění
 
-**Počet sloupců** — kolik výrobků bude v jednom řádku. Počet řádků se dopočítá.
+**Profil rozložení** — uložené nastavení pod názvem (např. „Klíčenky 3 mm“): počet sloupců (nebo *Automaticky*), mezery, pořadí plnění, natočení a umístění. Výběrem profilu v sekci **Profil rozložení** se hodnoty nastaví; **Uložit…** uloží aktuální nastavení jako profil (stejný název = přepsat), **Smazat** ho odstraní. Když hodnoty změníte, výběr se přepne na *bez profilu* — profil sám zůstane beze změny. Deska v profilu není, patří k laseru (Nastavení → Lasery).
+
+**Počet sloupců** — kolik výrobků bude v jednom řádku. Počet řádků se dopočítá. Se zaškrtnutým **Automaticky** použije aplikace tolik sloupců, kolik se vejde na šířku desky (využitelnou plochu po odečtení okrajů); pole pak ukazuje vypočtený počet. Hodí se s kopiemi a s *Vyplnit desku kopiemi*.
 
 **Mezera X / Y** — vzdálenost mezi řeznými obrysy sousedních výrobků (vodorovně / svisle) ve zvolených jednotkách. Mezera 0 je dovolená, ale aplikace upozorní na riziko při řezání. Desetinná čísla zadávejte s čárkou (česky) nebo tečkou (anglicky) podle jazyka aplikace.
 
