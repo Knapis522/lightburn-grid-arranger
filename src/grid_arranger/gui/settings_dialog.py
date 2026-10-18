@@ -49,7 +49,7 @@ class SettingsDialog(QDialog):
         self._build()
         self.retranslate()
         self.load()
-        self.resize(640, 400)
+        self.resize(720, 440)
 
     # ====================================================================== stavba
     def _build(self) -> None:
@@ -320,7 +320,10 @@ class LaserDialog(QDialog):
         self._taken = taken - ({profile.name} if profile else set())
         board = profile.board if profile and profile.board else BoardPreset(600.0, 400.0)
         form = QFormLayout(self)
+        form.setFieldGrowthPolicy(QFormLayout.FieldGrowthPolicy.ExpandingFieldsGrow)  # název přes celou šířku
         self.edit_name = QLineEdit(profile.name if profile else "")
+        # i delší názvy zařízení („Červený Ruida 6445S – dílna 2“) celé viditelné
+        self.edit_name.setMinimumWidth(self.edit_name.fontMetrics().horizontalAdvance("M" * 24))
         self.combo_origin = QComboBox()
         for o in ORIGINS:
             self.combo_origin.addItem(parent.origin_text(o), o)
@@ -340,6 +343,7 @@ class LaserDialog(QDialog):
         form.addRow(self.buttons)
         self.edit_name.textChanged.connect(self._validate)
         self.setWindowTitle(self.tr("Edit laser") if profile else self.tr("Add laser"))
+        self.setMinimumWidth(520)
         self._validate()
 
     def _validate(self) -> None:
