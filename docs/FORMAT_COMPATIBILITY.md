@@ -188,15 +188,32 @@ Výstup pro cílový laser mění v hlavičce jen `DeviceName`, `MirrorX`, `Mirr
 
 Výsledek: texty a motivy nejsou zrcadlově, mřížka v rohu u počátku (X 5 / Y 5), Preview v pořádku, i s natočeným výrobkem a kopiemi.
 
-## KAL-07 — vynechané objekty a přesun sdílené geometrie (spec. v1.27, čeká na ověření v LightBurnu)
+## KAL-07 — vynechané objekty a přesun sdílené geometrie (spec. v1.27, ověřeno vlastníkem 2026-10-19)
 
 Vynechaný nejvyšší tvar se z výstupu odebere celý (celé řádky). Sdílené seznamy `VertList`+`VertID` / `PrimList`+`PrimID` definuje LightBurn jen u prvního výskytu; ostatní tvary na ně odkazují. Definuje-li seznam vynechaný tvar, přesune se bajtově shodná definice do prvního ponechaného tvaru, který na ID odkazuje (hned za jeho `XForm`) — ve všech testovacích projektech vlastníka nastává (např. `test program`: 737 odkazů bez vlastního seznamu). `CutSetting` beze změny.
 
 Kalibrační výstupy (`lightburn-grid-arranger-data\kal07\`, vždy s přesunutou definicí):
 
-- [ ] `test_program__kal07_bez_G3.lbrn2` (jen vynechání)
-- [ ] `test_program__kal07_bez_G3_mrizka.lbrn2` (vynechání + mřížka, natočení, kopie)
-- [ ] `Test_klicenky__kal07_bez_G1.lbrn2`
-- [ ] `Test_tvary_A__kal02_tvary_prevedeno__kal07_bez_S5.lbrn2`, `…_bez_S6.lbrn2` (volné tvary po Convert to Path)
+- [x] `test_program__kal07_bez_G3.lbrn2` (jen vynechání)
+- [x] `test_program__kal07_bez_G3_mrizka.lbrn2` (vynechání + mřížka, natočení, kopie)
+- [x] `Test_klicenky__kal07_bez_G1.lbrn2`
+- [x] `Test_tvary_A__kal02_tvary_prevedeno__kal07_bez_S5.lbrn2`, `…_bez_S6.lbrn2` (volné tvary po Convert to Path)
 
-Stav: funkce ověřena vlastníkem v aplikaci 2026-10-18; otevření výstupů v LightBurnu čeká. U každého souboru: otevře se, chybí jen vynechaný objekt, ostatní tvary celé a ve správných vrstvách, Preview v pořádku.
+Výsledek (vlastník, 2026-10-19): všechny soubory se otevřou, chybí jen vynechaný objekt, ostatní tvary celé a ve správných vrstvách, Preview v pořádku; výstup uložený v LightBurnu přes Save As aplikace znovu načte.
+
+## KAL-06 — stránky (Pages) v LightBurnu (spec. v1.29, ověřeno vlastníkem 2026-10-19)
+
+Vzorky `lightburn-grid-arranger-data\kal06\` (LightBurn Pro 2.2.00-RC-7, červený Ruida 6445S): tři stránky, aktivní stránka 2, prázdná stránka, Duplicate, přidaná a smazaná stránka.
+
+- **Stránka 1** = nejvyšší tvary projektu; název v atributu hlavičky `Page0Name`.
+- **Další stránky** = nejvyšší `<Shape Type="Group" SubType="Page" Name="…">` s `XForm` `1 0 0 1 0 0` a tvary stránky v `Children`; prázdná stránka má `<Children/>`. Za tvary stránky 1, v pořadí stránek.
+- **Souřadnice** všech stránek jsou společné (stejná pracovní plocha).
+- **`CurrentPage`** = index aktivní stránky; soubory uložené s aktivní stránkou 1 a 2 se jinak liší jen náhledem (`Thumbnail`).
+- **Duplicate** vytvoří stránku s názvem `<název> (1)` a kopií tvarů.
+- **Smazání** poslední další stránky vrátí soubor do běžné podoby (`CurrentPage="0"`, žádná skupina stránky).
+- Vrstvy (`CutSetting`) jsou společné pro všechny stránky.
+
+Chování (vlastník): **Preview** i **Frame** pracují jen s aktivní stránkou; volba „spustit všechny stránky“ neexistuje; stránky lze v okně Pages přeřadit tažením. LightBurn si ukládá i automatickou zálohu `…_backup.lbrn2`.
+
+Dosavadní aplikace projekt se stránkami odmítne (`CurrentPage ≠ 0`) nebo skupinu stránky označí jako nerozložitelnou (neznámé atributy `SubType`, `Name`) — změní se s V20-01.
+

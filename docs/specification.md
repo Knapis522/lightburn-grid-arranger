@@ -1,6 +1,6 @@
 # Grid Arranger for LightBurn — technická specifikace
 
-**Verze dokumentu:** 1.28 (upozornění na neuložené rozložení; viz kap. 21.5)  
+**Verze dokumentu:** 1.29 (více desek jako stránky LightBurnu — návrh; viz kap. 23.1)  
 **Datum:** 17. 10. 2026  
 **Název produktu:** Grid Arranger for LightBurn; spustitelný soubor `GridArranger.exe`; Python balíček `grid_arranger`; repozitář `lightburn-grid-arranger`. Neoficiální nástroj, nikoli produkt LightBurn Software.  
 **Stav:** Interní pracovní podklad; nikoli hotový nebo otestovaný plugin  
@@ -798,13 +798,33 @@ Povinně projdou **veškeré testy MVP (regrese)** a T-11-01 až 20. Kopie výro
 
 ### 23.1 V20-01 — automatické rozdělení zakázky na více desek
 
-**Vstup:** definované výrobní instance (`quantity` z v1.1), parametrický materiál/okraje/mezery, omezení výsledných souborů a řazení. **Výstup:** seznam desek, každá jako samostatný ověřený `.lbrn2` projekt a společný manifest ve formátu JSON/CSV: `board_index`, `file_name`, `instance_ids`, počty podle variant, použitý profil, SHA-256 výstupu, status ověření.
+**Stav v1.29 (19. 10. 2026): návrh dohodnutý s vlastníkem, formát stránek ověřen v KAL-06; implementace nezahájena.** Rozhodnutí vlastníka (18. 10. 2026) nahrazuje původní pravidlo „nevolit implicitně více stránek“: výchozí výstup je **jeden projekt, co deska, to stránka LightBurnu**; samostatné soubory jsou volba. Důvod: KAL-06 prokázal, že Preview i Frame pracují jen s aktivní stránkou a LightBurn nemá volbu „spustit všechny stránky“ — desky se tedy pálí po jedné jako u samostatných souborů, ale nastavení vrstev je jedno společné a nemůže se mezi deskami rozejít.
 
-**Pravidla:** rozdělovat deterministicky na desky při zachování předem zvoleného pořadí instancí, bez otočení nebo změny velikosti. První realizace může používat jednoduché postupné plnění desek a pro každou desku nejlepší *validní* počet sloupců; nemusí jít o optimální nesting. Pokud jedna instance nevyhoví na žádné desce, vypsat chybu a zabránit označení celé sady za hotovou. Každá instance musí být na právě jedné desce. **Nevolit implicitně více stránek uvnitř jednoho LightBurn projektu**: použití jednotlivých nezávislých `.lbrn2` je ověřitelnější.
+**Kdy:** když se rozmisťované kusy nevejdou na jednu desku (místo dosavadní chyby přesahu). Aplikace ukáže „Potřeba N desek“ a zeptá se na způsob rozdělení; výchozí způsob a volba „neptat se“ jsou v Nastavení.
 
-**Ukládání:** export do nové složky transakčně (nejprve připravit a validovat všechny desky); při selhání nesmí vzniknout částečná série prezentovaná jako úspěšná. Když složka již obsahuje soubory, vytvořit nový jednoznačný podadresář; nikdy nepřepisovat staré výsledky.
+**Způsoby rozdělení** (deterministicky, každá instance právě na jedné desce, pořadí instancí zachováno):
+- *postupně* (výchozí) — deska 1 plná, pak deska 2…; nejméně desek,
+- *rovnoměrně* — stejný počet kusů na deskách (rozdíl nejvýš 1), např. 50 → 17/17/16,
+- *podle variant* — kusy jednoho zdrojového výrobku (originál + kopie) pohromadě, nová varianta začíná na nové desce, pokud se na aktuální už celá nevejde.
+Každá deska: stejné parametry mřížky (sloupce nebo automaticky, mezery, natočení, pořadí plnění, umístění) a stejná deska/okraje. Kus, který se nevejde ani na prázdnou desku → chyba, nic se neuloží.
 
-**Testy T-20-01 až 09:** 43 instancí / kapacita 20 → 3 desky pouze v testovacím fixture s takto ověřenou kapacitou; součet položek=43, každá přesně jednou, pořadí a počty správně; příliš velká položka, přerušení exportu, neopakování jména souboru, shoda manifestu s výstupy.
+**Další volby:** *Doplnit poslední desku kopiemi* (kopie výrobků poslední desky do jejího zaplnění, střídavě); upozornění při počtu desek nad limitem (výchozí 10; změna nebo vypnutí v Nastavení).
+
+**Náhled:** záložky desek nad náhledem jako stránky v LightBurnu (Deska 1, 2…); záložka s chybou je označená; hlášení uvádí desku. Uložit lze, jen když projdou všechny desky.
+
+**Vstup se stránkami (KAL-06, rozhodnutí 7 B):** projekt se stránkami se načte; uživatel zvolí stránku, kterou rozkládá (výchozí: aktivní stránka `CurrentPage`). Ostatní stránky zůstanou bajtově beze změny. Výrobky = nejvyšší skupiny zvolené stránky; překážky = ponechané objekty jen této stránky.
+
+**Formát stránek (KAL-06, LightBurn 2.2.00-RC-7):** stránka 1 = nejvyšší tvary projektu (název v `Page0Name`); každá další stránka = nejvyšší `<Shape Type="Group" SubType="Page" Name="…">` s `XForm` `1 0 0 1 0 0` a jejími tvary v `Children` (prázdná stránka `<Children/>`). Souřadnice na všech stránkách jsou společné. `CurrentPage` = index aktivní stránky (0 = první); na uloženém obsahu jinak nic nemění. Pořadí stránek = pořadí v dokumentu; LightBurn umí stránky přeřadit.
+
+**Zápis (výchozí, stránky):** deska 1 zůstává na rozkládané stránce; desky 2…N se vloží jako nové stránky hned za ni s názvem „<název stránky> – deska K“ (u první stránky před případné další stránky). Kusy desky K ≥ 2 se do nové stránky zapíší jako bajtové kopie výrobků (originál umístěný na desce K se ze zdrojové stránky odebere — stejně jako vynechání v1.27, včetně přesunu sdílené geometrie do prvního ponechaného odkazu v pořadí dokumentu). Hlavička: `CurrentPage` se nemění. Nastavení vrstev se nemění.
+
+**Zápis (volba, samostatné soubory):** `…__grid_NNN_deska1.lbrn2` … v nové podsložce; transakčně (nejdřív připravit a ověřit všechny desky, pak zveřejnit); nikdy nepřepisovat.
+
+**Kontrola:** nezávislý ověřovač pro každou desku (stránku): obsah = přesně plánované kusy, transformace jako u přesunu/kopie, ostatní stránky beze změny, nové stránky jen s povolenou strukturou (`Type="Group" SubType="Page" Name`, identický `XForm`). Protokol: deska → kusy, souhrnné počty podle variant (místo samostatného manifestu).
+
+**Brána KAL-08:** výstupy se 2–3 deskami (stránkami) z testovacích projektů otevřít v LightBurnu — stránky ve správném pořadí a s názvy, každá deska celá, Preview a Frame jen aktivní stránky, sdílená geometrie v pořádku. Do splnění nevydávat.
+
+**Testy T-20-01 až 09:** 43 instancí / kapacita 20 → 3 desky (postupně 20/20/3, rovnoměrně 15/14/14), součet = 43, každá přesně jednou, pořadí a počty správně; podle variant; příliš velká položka; vstup se stránkami (ostatní stránky beze změny); samostatné soubory (transakce, neopakování jmen); shoda protokolu s výstupem.
 
 ### 23.2 V20-02 — import výrobků z více projektů
 
@@ -1076,6 +1096,7 @@ Toto jsou **ověřovací úkoly**, nikoli potvrzené technické možnosti souča
 
 ## 28. Záznam změn specifikace
 
+- **v1.29 (19. 10. 2026):** V20-01 přepracováno podle rozhodnutí vlastníka: více desek jako stránky jednoho projektu (výchozí), samostatné soubory jako volba; způsoby rozdělení, záložky desek, vstup se stránkami; formát stránek z KAL-06; brána KAL-08 (kap. 23.1).
 - **v1.28 (19. 10. 2026):** Upozornění na neuložené rozložení při zavření, otevření jiného projektu a instalaci aktualizace; hvězdička v titulku (kap. 21.5).
 - **v1.27 (18. 10. 2026):** Na přání vlastníka vynechání objektů z výstupu (kap. 21.2): nezaškrtnuté objekty se ve výchozím stavu do výstupu nezapíší (volba Ponechat na místě v Nastavení → Uložení), Delete vynechá vybrané objekty, Obnovit vynechané objekty je vrátí; přesun sdílené geometrie z vynechaných tvarů, rozšířená nezávislá kontrola; ověření v LightBurnu = KAL-07.
 - **v1.26 (18. 10. 2026):** Na přání vlastníka zahájeno PUBLIC-01 / L10N-PUBLIC-01: katalogy rozhraní a offline příručka v `de/sk/pl/fr/es/it` (vedle `cs/en`), volba jazyka nabízí všech osm jazyků. Překlady jsou **strojový návrh** — stav viz kap. 36.5 (*Stav k v1.26*); jazyk se nesmí prohlásit za ověřený bez lidské revize.
