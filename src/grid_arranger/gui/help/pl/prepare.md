@@ -15,4 +15,8 @@ Projekt zapisany dla jednego lasera można przygotować dla innego, np. z lasera
 - Przy innym punkcie zerowym muszą być zaznaczone **wszystkie elementy**, a projekt nie może zawierać innych obiektów (na drugim laserze pozostałyby odbite lustrzanie). Dotyczy to tylko obiektów pozostawionych w wyniku — niezaznaczone i pominięte obiekty nie trafiają do wyniku (ustawienie domyślne), więc nie przeszkadzają.
 - **Ustawienia warstw (moc, prędkość) nie są przeliczane** — pozostają jak w oryginalnym projekcie. Otwórz wynik w LightBurn z docelowym laserem i sprawdź warstwy.
 
+## Projekt z kilkoma stronami
+
+Można otworzyć także projekt z kilkoma stronami (**Window → Pages** w LightBurn). W sekcji Projekt wybierz **Rozmieść stronę:**; pozostałe strony się nie zmieniają. Domyślnie wybrana jest strona aktywna przy zapisie projektu.
+
 [← Wprowadzenie](index.md) · [Dalej: elementy →](items.md)

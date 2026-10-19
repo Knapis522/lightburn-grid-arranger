@@ -28,6 +28,8 @@
 | GitHub / distribuce | GH-01, GH-02 | 34 | ruční | prochází | protokol níže |
 | Natočení (automatické) | spec. v1.13 kap. 7.6 | 7.6 | automatický | prochází | `tests/unit/test_rotation.py`, `tests/integration/test_rotation_plan.py`, `tests/gui/test_main_window.py` |
 | Ruční natočení a výběr v náhledu (automatické) | spec. v1.15 kap. 7.6 | 7.6 | automatický | prochází | `tests/integration/test_rotation_plan.py`, `tests/gui/test_main_window.py` |
+| Více desek (automatické) | V20-01 / spec. v1.30 kap. 23.1 | 23.1, 9.3 | automatický | prochází | `tests/integration/test_boards.py`, `tests/gui/test_main_window.py` |
+| Více desek v LightBurnu (KAL-08) | V20-01 | 23.1 | ruční | čeká | `kal08\…__kal08_….lbrn2` v datové složce |
 | Vynechané objekty (automatické) | OMIT-00 / spec. v1.27 kap. 21.2 | 21.2, 9.3 | automatický | prochází | `tests/integration/test_omit.py`, `tests/gui/test_main_window.py` |
 | Vynechané objekty v LightBurnu (KAL-07) | OMIT-00 | 21.2 | ruční | **ověřeno vlastníkem 2026-10-19** | `…__kal07_bez_…lbrn2` v datové složce |
 | Kopie výrobků (automatické) | V11-02 / spec. v1.16 kap. 22.2 | 22.2 | automatický | prochází | `tests/integration/test_copies.py`, `tests/gui/test_main_window.py` |

@@ -25,6 +25,7 @@ from PySide6.QtWidgets import (
     QListWidget,
     QPushButton,
     QRadioButton,
+    QSpinBox,
     QStackedWidget,
     QVBoxLayout,
     QWidget,
@@ -32,14 +33,14 @@ from PySide6.QtWidgets import (
 
 from ..version import display_version
 from .i18n import NATIVE_NAMES
-from .settings import (LANGUAGES, ORIGINS, PANEL_SIDES, PROTOCOL_MODES, THEMES, UNIT_KEYS, UNSELECTED_POLICIES, BoardPreset,
-                       LaserProfile)
+from .settings import (BOARD_MODES, BOARD_OUTPUTS, LANGUAGES, ORIGINS, PANEL_SIDES, PROTOCOL_MODES, THEMES, UNIT_KEYS,
+                       UNSELECTED_POLICIES, BoardPreset, LaserProfile)
 from .widgets import UNITS, LengthSpin
 
 if TYPE_CHECKING:
     from .main_window import MainWindow
 
-PAGES = ("general", "lasers", "saving", "updates")
+PAGES = ("general", "lasers", "boards", "saving", "updates")
 
 
 class SettingsDialog(QDialog):
@@ -101,6 +102,45 @@ class SettingsDialog(QDialog):
         lv.addLayout(row)
         self._lasers: list[LaserProfile] = []
         self.stack.addWidget(lasers)
+
+        # --- Desky: rozdělení zakázky na více desek (spec. v1.29)
+        boards = QWidget()
+        bv = QVBoxLayout(boards)
+        bform = QFormLayout()
+        bform.setFieldGrowthPolicy(QFormLayout.FieldGrowthPolicy.FieldsStayAtSizeHint)
+        self.combo_board_mode = QComboBox()
+        for k in BOARD_MODES:
+            self.combo_board_mode.addItem("", k)
+        self.combo_board_mode.currentIndexChanged.connect(self._sync_buttons)
+        self.lbl_board_mode = QLabel()
+        self.lbl_board_mode.setBuddy(self.combo_board_mode)
+        bform.addRow(self.lbl_board_mode, self.combo_board_mode)
+        self.chk_board_fill = QCheckBox()
+        self.chk_board_fill.toggled.connect(self._sync_buttons)
+        bform.addRow(self.chk_board_fill)
+        self.spin_board_limit = QSpinBox()
+        self.spin_board_limit.setRange(0, 999)
+        self.spin_board_limit.valueChanged.connect(self._sync_buttons)
+        self.lbl_board_limit = QLabel()
+        self.lbl_board_limit.setBuddy(self.spin_board_limit)
+        bform.addRow(self.lbl_board_limit, self.spin_board_limit)
+        bv.addLayout(bform)
+        self.box_board_output = QGroupBox()
+        ov = QVBoxLayout(self.box_board_output)
+        self.board_output_radios: dict[str, QRadioButton] = {}
+        self.board_output_group = QButtonGroup(self)
+        for k in BOARD_OUTPUTS:
+            r = QRadioButton()
+            self.board_output_group.addButton(r)
+            self.board_output_radios[k] = r
+            ov.addWidget(r)
+            r.toggled.connect(self._sync_buttons)
+        self.lbl_board_output_note = QLabel()
+        self.lbl_board_output_note.setWordWrap(True)
+        ov.addWidget(self.lbl_board_output_note)
+        bv.addWidget(self.box_board_output)
+        bv.addStretch(1)
+        self.stack.addWidget(boards)
 
         # --- Uložení: nezaškrtnuté objekty, protokol
         saving = QWidget()
@@ -182,7 +222,7 @@ class SettingsDialog(QDialog):
         if getattr(self, "_applied", False):
             # po Použít už nejde nic „zrušit“ — použité změny platí; tlačítko jen zavře okno
             self.buttons.button(QDialogButtonBox.StandardButton.Cancel).setText(self.tr("Close"))
-        for i, t in enumerate((self.tr("General"), self.tr("Lasers"), self.tr("Saving"), self.tr("Updates"))):
+        for i, t in enumerate((self.tr("General"), self.tr("Lasers"), self.tr("Boards"), self.tr("Saving"), self.tr("Updates"))):
             self.pages.item(i).setText(t)
         self.lbl_lasers_note.setText(self.tr(
             "Lasers you prepare projects for. Lasers from opened projects are added automatically. The name must "
@@ -202,6 +242,18 @@ class SettingsDialog(QDialog):
         self.combo_panel.setToolTip(self.tr("Side of the window with the Project, Items, Grid, Placement and Board sections."))
         self.lbl_units_note.setText(self.tr("Units change only how values are shown and entered; the calculation "
                                             "and the saved project always use millimetres."))
+        self.lbl_board_mode.setText(self.tr("If the pieces do not fit:"))
+        self._texts(self.combo_board_mode, [self.tr("Split into boards one after another"), self.tr("Split into boards evenly"),
+                                            self.tr("Split into boards by item"), self.tr("Do not split (error)")])
+        self.combo_board_mode.setToolTip(self.tr("Default for the choice in the Board section."))
+        self.chk_board_fill.setText(self.tr("Fill the last board with copies (by default)"))
+        self.lbl_board_limit.setText(self.tr("Warn above this number of boards (0 = never):"))
+        self.box_board_output.setTitle(self.tr("Save several boards"))
+        self.board_output_radios["pages"].setText(self.tr("As pages of one project (one page per board)"))
+        self.board_output_radios["files"].setText(self.tr("As separate files (one file per board)"))
+        self.lbl_board_output_note.setText(self.tr(
+            "LightBurn's Preview and Frame work with the active page only, so each board is cut on its own. "
+            "Layer settings are shared by all pages."))
         self.box_unselected.setTitle(self.tr("Objects that are not ticked"))
         self.unselected_radios["omit"].setText(self.tr("Leave out of the output"))
         self.unselected_radios["keep"].setText(self.tr("Keep in place (the grid avoids them)"))
@@ -235,7 +287,8 @@ class SettingsDialog(QDialog):
         s = self.win.settings
         return {"language": s.language(), "theme": s.theme(), "units": s.units(), "panel_side": s.panel_side(),
                 "protocol": s.protocol_mode(), "update_auto": s.update_auto(), "update_pre": s.update_prerelease(),
-                "lasers": tuple(s.lasers()), "unselected": s.unselected_policy()}
+                "lasers": tuple(s.lasers()), "unselected": s.unselected_policy(), "board_mode": s.board_mode(),
+                "board_fill": s.board_fill(), "board_limit": s.board_limit(), "board_output": s.board_output()}
 
     def load(self) -> None:
         v = self.current()
@@ -244,6 +297,10 @@ class SettingsDialog(QDialog):
             combo.setCurrentIndex(combo.findData(v[key]))
         self.protocol_radios[v["protocol"]].setChecked(True)
         self.unselected_radios[v["unselected"]].setChecked(True)
+        self.combo_board_mode.setCurrentIndex(self.combo_board_mode.findData(v["board_mode"]))
+        self.chk_board_fill.setChecked(v["board_fill"])
+        self.spin_board_limit.setValue(v["board_limit"])
+        self.board_output_radios[v["board_output"]].setChecked(True)
         self.chk_update_auto.setChecked(v["update_auto"])
         self.chk_update_pre.setChecked(v["update_pre"])
         self._lasers = list(v["lasers"])
@@ -256,7 +313,10 @@ class SettingsDialog(QDialog):
                 "units": self.combo_units.currentData(), "panel_side": self.combo_panel.currentData(),
                 "protocol": protocol, "update_auto": self.chk_update_auto.isChecked(),
                 "update_pre": self.chk_update_pre.isChecked(), "lasers": tuple(self._lasers),
-                "unselected": next((k for k, r in self.unselected_radios.items() if r.isChecked()), UNSELECTED_POLICIES[0])}
+                "unselected": next((k for k, r in self.unselected_radios.items() if r.isChecked()), UNSELECTED_POLICIES[0]),
+                "board_mode": self.combo_board_mode.currentData(), "board_fill": self.chk_board_fill.isChecked(),
+                "board_limit": self.spin_board_limit.value(),
+                "board_output": next((k for k, r in self.board_output_radios.items() if r.isChecked()), BOARD_OUTPUTS[0])}
 
     def _sync_buttons(self, *_args) -> None:
         if not hasattr(self, "buttons"):

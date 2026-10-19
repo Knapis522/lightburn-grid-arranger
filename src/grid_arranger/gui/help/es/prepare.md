@@ -15,4 +15,8 @@ Un proyecto guardado para un láser se puede preparar para otro, p. ej. de un l�
 - Con otro origen deben estar seleccionados **todos los elementos** y el proyecto no debe contener otros objetos (quedarían reflejados en el otro láser). Esto solo afecta a los objetos que se conservan en la salida — los objetos sin marcar y excluidos no están en la salida (opción predeterminada), así que no estorban.
 - **Los ajustes de las capas (potencia, velocidad) no se convierten** — se mantienen como en el proyecto original. Abra la salida en LightBurn con el láser de destino y compruebe las capas.
 
+## Proyecto con varias páginas
+
+También se puede abrir un proyecto con varias páginas (**Window → Pages** en LightBurn). En la sección Proyecto elija **Página a distribuir:**; las demás páginas no cambian. De forma predeterminada se elige la página que estaba activa al guardar el proyecto.
+
 [← Introducción](index.md) · [Siguiente: elementos →](items.md)

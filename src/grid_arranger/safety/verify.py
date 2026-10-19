@@ -28,6 +28,7 @@ import re
 from dataclasses import dataclass
 
 from ..adapters.lightburn import geometry as geo
+from ..adapters.lightburn.pages import PAGE_XFORM, page_groups, page_shapes
 from ..adapters.lightburn.xmltree import Node, parse
 from ..domain.errors import GridError
 
@@ -42,9 +43,9 @@ class _X:
     role: str  # "group" | "text_backup" | "other"
 
 
-def _collect(root: Node) -> list[_X]:
+def _collect(root: Node, page: int = 0) -> list[_X]:
     out: list[_X] = []
-    tops = {id(s): i for i, s in enumerate(root.findall("Shape"), start=1)}
+    tops = {id(s): i for i, s in enumerate(page_shapes(root, page), start=1)}
     for n in root.iter():
         if n.tag != "XForm":
             continue
@@ -228,73 +229,98 @@ def _cut(data: bytes, spans: list[tuple[int, int]]) -> bytes:
     return bytes(out)
 
 
-def _strip_omitted(source: bytes, output: bytes, omitted: set[int]) -> tuple[list[str], bytes, bytes, set[tuple[str, str]], dict[int, int]]:
-    """Ověří vynechání a vrátí (problémy, originál bez vynechaných, výstup bez přesunutých definic,
-    přesunutá ID, mapování pořadí originál → pořadí bez vynechaných)."""
-    r_src, r_out = parse(source), parse(output)
-    src_tops = r_src.findall("Shape")
-    if any(i < 1 or i > len(src_tops) for i in omitted):
-        return ["omitted_unknown"], source, output, set(), {}
-    kept = [i for i in range(1, len(src_tops) + 1) if i not in omitted]
-    renumber = {i: k for k, i in enumerate(kept, start=1)}
-    defs: dict[tuple[str, str], bytes] = {}
-    for i in sorted(omitted):
-        for n in src_tops[i - 1].iter():
+def _definitions(data: bytes, nodes: list[Node]) -> dict[tuple[str, str], bytes]:
+    """Definice sdílených seznamů ``(tag, id) → bajty elementu`` v podstromech ``nodes``."""
+    out: dict[tuple[str, str], bytes] = {}
+    for top in nodes:
+        for n in top.iter():
             if n.tag == "Shape":
                 for tag, attr in _LISTS:
                     c = n.find(tag)
                     if attr in n.attrs and c is not None:
-                        defs.setdefault((tag, n.attrs[attr]), source[c.start:_element_span(source, c)[1]].rstrip())
-    source2 = _cut(source, [_element_span(source, src_tops[i - 1]) for i in omitted])
-    r_src2 = parse(source2)
-    tops2, out_tops = r_src2.findall("Shape"), r_out.findall("Shape")
-    if len(out_tops) < len(tops2):
-        return ["omit_count_mismatch"], source2, output, set(), renumber
+                        out.setdefault((tag, n.attrs[attr]), data[c.start:_element_span(data, c)[1]].rstrip())
+    return out
+
+
+def _strip_relocated(source: bytes, output: bytes, omitted_nodes: list[Node]) -> tuple[list[str], bytes, set[tuple[str, str]]]:
+    """Definice sdílené geometrie z vynechaných tvarů musí ve výstupu být právě jednou, bajtově shodné,
+    v **prvním** tvaru (v pořadí dokumentu), který na dané ID odkazuje. Vrátí výstup bez nich."""
+    defs = _definitions(source, omitted_nodes)
+    if not defs:
+        return [], output, set()
+    r_out = parse(output)
     problems: list[str] = []
     cut: list[tuple[int, int]] = []
     relocated: set[tuple[str, str]] = set()
-    seen: set[tuple[str, str]] = set()
-    for k, (ts, to) in enumerate(zip(tops2, out_tops[:len(tops2)]), start=1):
-        ss = [n for n in ts.iter() if n.tag == "Shape"]
-        so = [n for n in to.iter() if n.tag == "Shape"]
-        if len(ss) != len(so):
-            problems.append(f"structure_changed: shape #{k}")
-            continue
-        for a, b in zip(ss, so):
+    index: dict[tuple[str, str], list[Node]] = {}
+    for n in r_out.iter():
+        if n.tag == "Shape":
             for tag, attr in _LISTS:
-                sc, oc = a.find(tag), b.find(tag)
-                key = (tag, a.attrs.get(attr, ""))
-                if sc is not None:
-                    seen.add(key)
-                    if oc is None:
-                        problems.append(f"geometry_list_removed: shape #{k}")
-                    continue
-                first_ref = attr in a.attrs and key in defs and key not in seen
-                if attr in a.attrs:
-                    seen.add(key)
-                if oc is None:
-                    if first_ref:
-                        problems.append(f"geometry_definition_missing: shape #{k} {tag} {key[1]}")
-                    continue
-                if not first_ref or attr not in b.attrs or b.attrs.get(attr) != key[1]:
-                    problems.append(f"unexpected_geometry_list: shape #{k}")
-                    continue
-                span = _element_span(output, oc)
-                if output[oc.start:span[1]].rstrip() != defs[key]:
-                    problems.append(f"relocated_geometry_differs: shape #{k}")
-                relocated.add(key)
-                cut.append(span)
-    return problems, source2, _cut(output, cut), relocated, renumber
+                if attr in n.attrs:
+                    index.setdefault((tag, n.attrs[attr]), []).append(n)
+    for (tag, ident), blob in defs.items():
+        refs = index.get((tag, ident), [])
+        if not refs:
+            continue  # nikdo na ID neodkazuje: definice se nepřenáší
+        if not any(n.find(tag) is not None for n in refs):
+            problems.append(f"geometry_definition_missing: {tag} {ident}")
+            continue
+        c = refs[0].find(tag)
+        if c is None:
+            continue  # ID dál definuje ponechaný tvar originálu; ověří bajtové porovnání
+        span = _element_span(output, c)
+        if output[c.start:span[1]].rstrip() != blob:
+            continue  # vlastní definice ponechaného tvaru
+        relocated.add((tag, ident))
+        cut.append(span)
+    return problems, _cut(output, cut), relocated
+
+
+def _strip_new_pages(source: bytes, output: bytes, page: int, new_pages, defined) -> tuple[list[str], bytes]:
+    """Nové stránky (desky 2…) hned za rozkládanou stránkou: přesně povolený obal a jen kopie výrobků."""
+    r_src, r_out = parse(source), parse(output)
+    src_groups, out_groups = page_groups(r_src), page_groups(r_out)
+    if len(out_groups) != len(src_groups) + len(new_pages):
+        return ["page_count_mismatch"], output
+    new_nodes = out_groups[page:page + len(new_pages)]
+    src_shapes = page_shapes(r_src, page)
+    problems: list[str] = []
+    k = 0
+    for (name, pieces), g in zip(new_pages, new_nodes):
+        if list(g.attrs.items()) != [("Type", "Group"), ("SubType", "Page"), ("Name", name)]:
+            problems.append(f"page_attributes: {name}")
+        x = g.find("XForm")
+        ch = g.find("Children")
+        if x is None or x.text != PAGE_XFORM or [c.tag for c in g.children] != ["XForm", "Children"] or ch is None:
+            problems.append(f"page_structure: {name}")
+            continue
+        kids = ch.findall("Shape")
+        if len(kids) != len(pieces) or len(ch.children) != len(kids):
+            problems.append(f"page_piece_count: {name}")
+            continue
+        for (src_idx, t), node in zip(pieces, kids):
+            k += 1
+            if not 1 <= src_idx <= len(src_shapes):
+                problems.append(f"page_piece_source: {name}")
+                continue
+            problems += _check_copy(source, src_shapes[src_idx - 1], output, node, t, k, defined)
+    cut = []
+    for g in new_nodes:
+        cut.append(_element_span(output, g))
+    return problems, _cut(output, cut)
 
 
 def verify_output(source: bytes, output: bytes, moves_file: dict[int, tuple[float, ...]],
                   copies: list[tuple[int, tuple[float, ...]]] = (), header: dict[str, str] | None = None,
-                  omitted: set[int] | frozenset[int] = frozenset()) -> list[str]:
+                  omitted: set[int] | frozenset[int] = frozenset(), page: int = 0,
+                  new_pages: list[tuple[str, list[tuple[int, tuple[float, ...]]]]] = ()) -> list[str]:
     """Vrátí seznam nalezených problémů (prázdný = v pořádku).
 
-    ``moves_file`` mapuje pořadí nejvyšší skupiny (1-based) na posun ``(dx, dy)`` nebo afinní
-    transformaci ``(a, b, c, d, e, f)`` v souřadnicích souboru. ``copies`` = kopie v pořadí, v jakém
-    jsou ve výstupu: (pořadí zdrojové nejvyšší skupiny, transformace kopie).
+    Pořadí tvarů (1-based) se počítá na rozkládané stránce ``page``. ``moves_file`` mapuje pořadí
+    nejvyšší skupiny na posun ``(dx, dy)`` nebo afinní transformaci ``(a, b, c, d, e, f)`` v souřadnicích
+    souboru. ``copies`` = kopie na stránce v pořadí výstupu: (pořadí zdrojové skupiny, transformace).
+    ``omitted`` = vynechané tvary stránky. ``new_pages`` = nové stránky hned za ``page``:
+    ``[(název, [(pořadí zdrojové skupiny, transformace), …]), …]`` (v1.29).
     """
     problems: list[str] = []
     try:
@@ -304,27 +330,42 @@ def verify_output(source: bytes, output: bytes, moves_file: dict[int, tuple[floa
     if header:
         found, output = _check_header(source, output, header)
         problems += found
-        r_out = parse(output)
+    try:
+        src_shapes = page_shapes(r_src, page)
+    except IndexError:
+        return problems + ["unknown_page"]
+    if any(i < 1 or i > len(src_shapes) for i in omitted):
+        return problems + ["omitted_unknown"]
+    if any(i in omitted for i in moves_file) or any(i in omitted for i, _ in copies):
+        problems.append("omitted_item_moved_or_copied")
     relocated: set[tuple[str, str]] = set()
-    if omitted:
-        try:
-            found, source, output, relocated, renumber = _strip_omitted(source, output, set(omitted))
-            r_src, r_out = parse(source), parse(output)
-        except (GridError, ValueError) as e:
-            return problems + [f"omit_unreadable: {e}"]
-        problems += found
-        if any(i in omitted for i in moves_file) or any(i in omitted for i, _ in copies):
-            problems.append("omitted_item_moved_or_copied")
-        moves_file = {renumber[i]: m for i, m in moves_file.items() if i in renumber}
-        copies = [(renumber[i], t) for i, t in copies if i in renumber]
+    try:
+        if omitted:
+            found, output, relocated = _strip_relocated(source, output, [src_shapes[i - 1] for i in sorted(omitted)])
+            problems += found
+        omitted_defs = set(_definitions(source, [src_shapes[i - 1] for i in omitted]))
+        all_defs = {(t, n.attrs[a]) for n in r_src.iter() if n.tag == "Shape" for t, a in _LISTS
+                    if a in n.attrs and n.find(t) is not None}
+        kept_defs = all_defs - omitted_defs | relocated | {k for k in all_defs & omitted_defs
+                                                             if _defined_outside(r_src, src_shapes, omitted, k)}
+        defined = ({i for t, i in kept_defs if t == "VertList"}, {i for t, i in kept_defs if t == "PrimList"})
+        if new_pages:
+            found, output = _strip_new_pages(source, output, page, list(new_pages), defined)
+            problems += found
+        if omitted:
+            kept = [i for i in range(1, len(src_shapes) + 1) if i not in omitted]
+            renumber = {i: k for k, i in enumerate(kept, start=1)}
+            source = _cut(source, [_element_span(source, src_shapes[i - 1]) for i in omitted])
+            moves_file = {renumber[i]: m for i, m in moves_file.items() if i in renumber}
+            copies = [(renumber[i], t) for i, t in copies if i in renumber]
+        r_src, r_out = parse(source), parse(output)
+    except (GridError, ValueError, IndexError) as e:
+        return problems + [f"output_unreadable: {e}"]
+
     if copies:
-        src_tops, out_tops = r_src.findall("Shape"), r_out.findall("Shape")
+        src_tops, out_tops = page_shapes(r_src, page), page_shapes(r_out, page)
         if len(out_tops) != len(src_tops) + len(copies):
-            return ["copy_count_mismatch"]
-        defined = ({n.attrs["VertID"] for n in r_src.iter() if n.tag == "Shape" and "VertID" in n.attrs and n.find("VertList") is not None}
-                   | {i for t, i in relocated if t == "VertList"},
-                   {n.attrs["PrimID"] for n in r_src.iter() if n.tag == "Shape" and "PrimID" in n.attrs and n.find("PrimList") is not None}
-                   | {i for t, i in relocated if t == "PrimList"})
+            return problems + ["copy_count_mismatch"]
         extra = out_tops[len(src_tops):]
         try:
             for k, ((src_idx, t), cp) in enumerate(zip(copies, extra), start=1):
@@ -342,7 +383,7 @@ def verify_output(source: bytes, output: bytes, moves_file: dict[int, tuple[floa
     if _structure(r_src) != _structure(r_out):
         problems.append("structure_changed")
 
-    xs_src, xs_out = _collect(r_src), _collect(r_out)
+    xs_src, xs_out = _collect(r_src, page), _collect(r_out, page)
     if len(xs_src) != len(xs_out):
         return problems + ["xform_count_changed"]
     if _masked(source, xs_src) != _masked(output, xs_out):
@@ -371,3 +412,12 @@ def verify_output(source: bytes, output: bytes, moves_file: dict[int, tuple[floa
         if abs(vb[4] - expected[4]) > TOLERANCE or abs(vb[5] - expected[5]) > TOLERANCE:
             problems.append(f"wrong_translation: shape #{a.top_index} role={a.role}")
     return problems
+
+
+def _defined_outside(root: Node, shapes: list[Node], omitted, key: tuple[str, str]) -> bool:
+    """Je ID definované i mimo vynechané tvary rozkládané stránky?"""
+    tag, ident = key
+    attr = dict(_LISTS)[tag]
+    inside = {id(n) for i in omitted for n in shapes[i - 1].iter()}
+    return any(n.tag == "Shape" and n.attrs.get(attr) == ident and n.find(tag) is not None and id(n) not in inside
+               for n in root.iter())

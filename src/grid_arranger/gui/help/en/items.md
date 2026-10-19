@@ -7,6 +7,7 @@ After opening a project (the **Open project** toolbar icon, **File → Open proj
 - **Grey** items ("cannot be moved") were refused — hover over them to see why. They are never moved.
 - ⚠ marks a warning (for example a text that cannot be measured) — the item can be used, but check it in Preview.
 - **Leaving objects out:** select items in the list (grey ones too) and press **Delete** (or **Edit → Leave out of the output**, or right-click). They move to the bottom of the list, crossed out, and are not in the saved project — handy when you only need part of a large project. **Edit → Restore left-out objects** brings the selected ones back. Selected copies are simply removed. The original project never changes.
+- **Renaming:** F2, double-click or right-click → *Rename item…* gives an item your own name (e.g. „Keyring Peter“). The name is used only in the application — in the list, the protocol and the names of new pages — and is not written into the LightBurn project. The application remembers the names for the given file.
 
 Order: **grab an item in the preview with the mouse and drag it onto the place of another item** — a green frame shows where it will land; **the two items swap places**, all others stay where they are and the list is renumbered. Releasing outside the items cancels the drag. Or select an item in the list and use **Up / Down**. A newly checked item is added at the end. **Default order** restores the order from the file. **Select all / Select none** change the selection at once.
 

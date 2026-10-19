@@ -15,4 +15,8 @@ Projekt uložený pre jeden laser môžete pripraviť pre iný, napr. z lasera s
 - Pri inom počiatku musia byť vybrané **všetky výrobky** a projekt nesmie obsahovať iné objekty (na druhom laseri by zostali zrkadlovo). Týka sa to len objektov ponechaných vo výstupe — nezaškrtnuté a vynechané objekty vo výstupe nebudú (predvolené nastavenie), takže prevodu neprekážajú.
 - **Nastavenie vrstiev (výkon, rýchlosť) sa neprevádza** — zostáva z pôvodného projektu. Výstup otvorte v LightBurne s cieľovým laserom a vrstvy skontrolujte.
 
+## Projekt s viacerými stranami
+
+Otvoriť možno aj projekt s viacerými stranami (**Window → Pages** v LightBurne). V sekcii Projekt zvoľte **Rozložiť stranu:**; ostatné strany zostanú bez zmeny. Predvolená je strana, ktorá bola aktívna pri uložení projektu.
+
 [← Úvod](index.md) · [Ďalej: výber a poradie →](items.md)

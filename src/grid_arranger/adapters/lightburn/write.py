@@ -33,6 +33,7 @@ from pathlib import Path
 
 from ...domain.errors import GridError
 from . import geometry as geo
+from .pages import PAGE_XFORM, page_groups, page_shapes
 from .read import LoadedProject
 from .xmltree import Node
 
@@ -222,24 +223,54 @@ def copy_block(project: LoadedProject, item_id: str, move: tuple[float, ...]) ->
 
 
 def copies_insert_at(project: LoadedProject) -> int:
-    """Kopie se vkládají za poslední nejvyšší ``Shape`` (pořadí původních výrobků se nemění)."""
-    tops = project.root.findall("Shape")
+    """Kopie se vkládají za poslední nejvyšší ``Shape`` rozkládané stránky (pořadí výrobků se nemění)."""
+    tops = project.shapes()
     if not tops:
         raise GridError("empty_project", "Projekt nemá žádné tvary.")
     last = tops[-1]
     return _line_span(project.data, last.start, element_end(project.data, last))[1]
 
 
-def apply_with_copies(project: LoadedProject, ops: list[PatchOp], copies: list[tuple[str, tuple[float, ...]]]) -> bytes:
-    """Přepisy původních výrobků + vložené kopie ``[(zdrojový výrobek, transformace), …]``."""
+def pages_insert_at(project: LoadedProject) -> int:
+    """Nové stránky (desky 2…) hned za rozkládanou stránkou (u první stránky před ostatní stránky)."""
+    groups = page_groups(project.root)
+    if project.page == 0:
+        if groups:
+            return _line_span(project.data, groups[0].start, element_end(project.data, groups[0]))[0]
+        return copies_insert_at(project)
+    g = groups[project.page - 1]
+    return _line_span(project.data, g.start, element_end(project.data, g))[1]
+
+
+def page_block(project: LoadedProject, name: str, pieces: list[tuple[str, tuple[float, ...]]]) -> bytes:
+    """Nová stránka LightBurnu (formát KAL-06) s kopiemi výrobků ``[(zdrojový výrobek, transformace), …]``."""
+    data = project.data
+    nl = b"\r\n" if b"\r\n" in data else b"\n"
+    ind = b"    "
+    head = (ind + b'<Shape Type="Group" SubType="Page" Name="' + _xml_attr(name) + b'">' + nl
+            + ind + b"    <XForm>" + PAGE_XFORM.encode("ascii") + b"</XForm>" + nl)
+    if not pieces:
+        return head + ind + b"    <Children/>" + nl + ind + b"</Shape>" + nl
+    body = b"".join(copy_block(project, src, move) for src, move in pieces)
+    return head + ind + b"    <Children>" + nl + body + ind + b"    </Children>" + nl + ind + b"</Shape>" + nl
+
+
+def apply_with_copies(project: LoadedProject, ops: list[PatchOp], copies: list[tuple[str, tuple[float, ...]]],
+                      pages: list[tuple[str, list[tuple[str, tuple[float, ...]]]]] = ()) -> bytes:
+    """Přepisy původních výrobků + vložené kopie ``[(zdrojový výrobek, transformace), …]`` na rozkládané
+    stránce + nové stránky ``[(název, kopie), …]`` hned za ní (v1.29)."""
     out = apply_patches(project.data, ops)
-    if not copies:
-        return out
-    at = copies_insert_at(project)
-    shift = sum(len(op.new) - len(op.old) for op in ops if op.start < at)
-    block = b"".join(copy_block(project, src, move) for src, move in copies)
-    pos = at + shift
-    return out[:pos] + block + out[pos:]
+    inserts: list[tuple[int, bytes]] = []
+    if copies:
+        inserts.append((copies_insert_at(project), b"".join(copy_block(project, src, move) for src, move in copies)))
+    if pages:
+        inserts.append((pages_insert_at(project), b"".join(page_block(project, n, p) for n, p in pages)))
+    # od konce, aby se pozice nepohnuly; při shodné pozici kopie před stránkami
+    for at, block in sorted(inserts, key=lambda x: x[0], reverse=True):
+        shift = sum(len(op.new) - len(op.old) for op in ops if op.start < at)
+        pos = at + shift
+        out = out[:pos] + block + out[pos:]
+    return out
 
 
 # --- vynechané objekty -------------------------------------------------------------------------
@@ -247,19 +278,21 @@ def apply_with_copies(project: LoadedProject, ops: list[PatchOp], copies: list[t
 SHARED_LISTS = (("VertList", "VertID"), ("PrimList", "PrimID"))
 
 
-def omit_shapes(data: bytes, omitted: set[int] | frozenset[int]) -> bytes:
-    """Odebere nejvyšší tvary s pořadím ``omitted`` (1-based, pořadí v ``data``) a přesune sdílenou geometrii.
+def omit_shapes(data: bytes, omitted: set[int] | frozenset[int], page: int = 0) -> bytes:
+    """Odebere nejvyšší tvary stránky ``page`` s pořadím ``omitted`` (1-based) a přesune sdílenou geometrii
+    do prvního ponechaného tvaru (v pořadí dokumentu, i na jiných stránkách), který na ni odkazuje.
 
-    Musí zůstat aspoň jeden nejvyšší tvar. Odkaz na ID, které nikde nezůstane definované, je chyba."""
+    Ve výstupu musí zůstat aspoň jeden tvar (na kterékoli stránce)."""
     if not omitted:
         return data
     from .xmltree import parse
 
     root = parse(data)
-    tops = root.findall("Shape")
+    tops = page_shapes(root, page)
     if any(i < 1 or i > len(tops) for i in omitted):
         raise GridError("unknown_item", "Vynechaný objekt v projektu není.")
-    if len(omitted) >= len(tops):
+    gone = {id(n) for i in omitted for n in tops[i - 1].iter()}
+    if not any(n.tag == "Shape" and id(n) not in gone and n.attrs.get("SubType") != "Page" for n in root.iter()):
         raise GridError("nothing_left", "Ve výstupu by nezůstal žádný objekt.")
     nl = b"\r\n" if b"\r\n" in data else b"\n"
 
@@ -275,35 +308,33 @@ def omit_shapes(data: bytes, omitted: set[int] | frozenset[int]) -> bytes:
 
     edits: list[tuple[int, int, bytes]] = []
     kept_defined: set[tuple[str, str]] = set()
-    for i, top in enumerate(tops, start=1):
-        if i in omitted:
+    # všechny ponechané tvary dokumentu v pořadí (i jiné a nové stránky)
+    for n in root.iter():
+        if n.tag != "Shape" or id(n) in gone:
             continue
-        for n in top.iter():
-            if n.tag != "Shape":
+        need: list[Node] = []
+        for tag, attr in SHARED_LISTS:
+            if attr not in n.attrs:
                 continue
-            need: list[Node] = []
-            for tag, attr in SHARED_LISTS:
-                if attr not in n.attrs:
-                    continue
-                key = (tag, n.attrs[attr])
-                if n.find(tag) is not None:
-                    kept_defined.add(key)
-                elif key not in kept_defined and key in defs:
-                    need.append(defs[key])
-                    kept_defined.add(key)
-            if not need:
-                continue
-            after = n.find("XForm")
-            own_v = n.find("VertList")
-            if [d.tag for d in need] == ["PrimList"] and own_v is not None:
-                after = own_v
-            if after is None:
-                raise GridError("shared_geometry", "Sdílenou geometrii nelze přesunout (tvar bez XForm).")
-            a, b = _line_span(data, after.start, element_end(data, after))
-            whole_line = a != after.start or b != element_end(data, after)
-            ind = data[a:after.start] if whole_line else b""
-            block = b"".join((ind + data[d.start:element_end(data, d)] + (nl if whole_line else b"")) for d in need)
-            edits.append((b, b, block))
+            key = (tag, n.attrs[attr])
+            if n.find(tag) is not None:
+                kept_defined.add(key)
+            elif key not in kept_defined and key in defs:
+                need.append(defs[key])
+                kept_defined.add(key)
+        if not need:
+            continue
+        after = n.find("XForm")
+        own_v = n.find("VertList")
+        if [d.tag for d in need] == ["PrimList"] and own_v is not None:
+            after = own_v
+        if after is None:
+            raise GridError("shared_geometry", "Sdílenou geometrii nelze přesunout (tvar bez XForm).")
+        a, b = _line_span(data, after.start, element_end(data, after))
+        whole_line = a != after.start or b != element_end(data, after)
+        ind = data[a:after.start] if whole_line else b""
+        block = b"".join((ind + data[d.start:element_end(data, d)] + (nl if whole_line else b"")) for d in need)
+        edits.append((b, b, block))
     for i in sorted(omitted):
         a, b = _line_span(data, tops[i - 1].start, element_end(data, tops[i - 1]))
         edits.append((a, b, b""))

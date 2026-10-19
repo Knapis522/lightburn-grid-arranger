@@ -1,6 +1,6 @@
 # Grid Arranger for LightBurn — technická specifikace
 
-**Verze dokumentu:** 1.29 (více desek jako stránky LightBurnu — návrh; viz kap. 23.1)  
+**Verze dokumentu:** 1.30 (více desek implementováno, přejmenování výrobků; viz kap. 23.1, 21.3)  
 **Datum:** 17. 10. 2026  
 **Název produktu:** Grid Arranger for LightBurn; spustitelný soubor `GridArranger.exe`; Python balíček `grid_arranger`; repozitář `lightburn-grid-arranger`. Neoficiální nástroj, nikoli produkt LightBurn Software.  
 **Stav:** Interní pracovní podklad; nikoli hotový nebo otestovaný plugin  
@@ -702,6 +702,8 @@ Tato kapitola je **normativní**: při konfliktu s obecným popisem starších e
 
 **Přijímací důkaz:** T-MVP-08 až 10: přesun poslední položky na první místo, opakované změny, zrušení a obnovení pořadí.
 
+**Přejmenování výrobků (v1.30, přání vlastníka 19. 10. 2026):** F2 / dvojklik / kontextová nabídka *Přejmenovat výrobek…* dá výrobku (zdroji kopií) vlastní název. Název se používá jen v aplikaci (seznam, protokol, názvy nových stránek při rozdělení podle výrobků), do `.lbrn2` se nezapisuje (skupiny v LightBurnu název nemají). Aplikace si názvy pamatuje podle SHA-256 souboru; prázdný název = popisek z projektu.
+
 ### 21.4 MVP-04 — materiál, bezpečnostní okraje a kolize
 
 **Materiál:** uživatel zadá `board_left_mm`, `board_top_mm`, `board_width_mm`, `board_height_mm`, dále nezáporné okraje `margin_left/right/top/bottom_mm`. Počátek mřížky může být nezávislý; výsledná mřížka musí být uvnitř použitelného obdélníku:
@@ -798,7 +800,7 @@ Povinně projdou **veškeré testy MVP (regrese)** a T-11-01 až 20. Kopie výro
 
 ### 23.1 V20-01 — automatické rozdělení zakázky na více desek
 
-**Stav v1.29 (19. 10. 2026): návrh dohodnutý s vlastníkem, formát stránek ověřen v KAL-06; implementace nezahájena.** Rozhodnutí vlastníka (18. 10. 2026) nahrazuje původní pravidlo „nevolit implicitně více stránek“: výchozí výstup je **jeden projekt, co deska, to stránka LightBurnu**; samostatné soubory jsou volba. Důvod: KAL-06 prokázal, že Preview i Frame pracují jen s aktivní stránkou a LightBurn nemá volbu „spustit všechny stránky“ — desky se tedy pálí po jedné jako u samostatných souborů, ale nastavení vrstev je jedno společné a nemůže se mezi deskami rozejít.
+**Stav v1.30 (19. 10. 2026): implementováno (automatické testy), čeká KAL-08.** Volba způsobu rozdělení je místo dotazu v panelu (sekce Deska, *Když se nevejde*; výchozí hodnota v Nastavení → Desky) — dotaz by vyskakoval uprostřed psaní čísel. Režim *podle výrobků* s doplněním doplní poslední desku každého výrobku jeho kopiemi (přání vlastníka 19. 10. 2026). Rozhodnutí vlastníka (18. 10. 2026) nahrazuje původní pravidlo „nevolit implicitně více stránek“: výchozí výstup je **jeden projekt, co deska, to stránka LightBurnu**; samostatné soubory jsou volba. Důvod: KAL-06 prokázal, že Preview i Frame pracují jen s aktivní stránkou a LightBurn nemá volbu „spustit všechny stránky“ — desky se tedy pálí po jedné jako u samostatných souborů, ale nastavení vrstev je jedno společné a nemůže se mezi deskami rozejít.
 
 **Kdy:** když se rozmisťované kusy nevejdou na jednu desku (místo dosavadní chyby přesahu). Aplikace ukáže „Potřeba N desek“ a zeptá se na způsob rozdělení; výchozí způsob a volba „neptat se“ jsou v Nastavení.
 
@@ -1096,6 +1098,7 @@ Toto jsou **ověřovací úkoly**, nikoli potvrzené technické možnosti souča
 
 ## 28. Záznam změn specifikace
 
+- **v1.30 (19. 10. 2026):** V20-01 implementováno (stránky i samostatné soubory, tři způsoby rozdělení, doplnění poslední desky / desky výrobku, záložky, vstup se stránkami, limit desek); volba v panelu místo dotazu; přejmenování výrobků (kap. 21.3); brána KAL-08.
 - **v1.29 (19. 10. 2026):** V20-01 přepracováno podle rozhodnutí vlastníka: více desek jako stránky jednoho projektu (výchozí), samostatné soubory jako volba; způsoby rozdělení, záložky desek, vstup se stránkami; formát stránek z KAL-06; brána KAL-08 (kap. 23.1).
 - **v1.28 (19. 10. 2026):** Upozornění na neuložené rozložení při zavření, otevření jiného projektu a instalaci aktualizace; hvězdička v titulku (kap. 21.5).
 - **v1.27 (18. 10. 2026):** Na přání vlastníka vynechání objektů z výstupu (kap. 21.2): nezaškrtnuté objekty se ve výchozím stavu do výstupu nezapíší (volba Ponechat na místě v Nastavení → Uložení), Delete vynechá vybrané objekty, Obnovit vynechané objekty je vrátí; přesun sdílené geometrie z vynechaných tvarů, rozšířená nezávislá kontrola; ověření v LightBurnu = KAL-07.

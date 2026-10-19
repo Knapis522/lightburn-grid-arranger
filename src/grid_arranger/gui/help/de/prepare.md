@@ -15,4 +15,8 @@ Ein für einen Laser gespeichertes Projekt lässt sich für einen anderen vorber
 - Bei einem anderen Nullpunkt müssen **alle Objekte** ausgewählt sein, und das Projekt darf keine anderen Objekte enthalten (sie blieben auf dem anderen Laser gespiegelt). Das betrifft nur Objekte, die in der Ausgabe bleiben — nicht angehakte und weggelassene Objekte sind nicht in der Ausgabe (Standard) und stören daher nicht.
 - **Ebeneneinstellungen (Leistung, Geschwindigkeit) werden nicht umgerechnet** — sie bleiben wie im ursprünglichen Projekt. Öffnen Sie die Ausgabe in LightBurn mit dem Ziellaser und prüfen Sie die Ebenen.
 
+## Projekt mit mehreren Seiten
+
+Auch ein Projekt mit mehreren Seiten (**Window → Pages** in LightBurn) lässt sich öffnen. Wählen Sie im Abschnitt Projekt **Seite anordnen:**; die anderen Seiten bleiben unverändert. Standardmäßig ist die Seite gewählt, die beim Speichern des Projekts aktiv war.
+
 [← Einführung](index.md) · [Weiter: Objekte →](items.md)

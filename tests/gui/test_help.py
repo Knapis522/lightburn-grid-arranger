@@ -59,9 +59,9 @@ def test_t_help04_language_switch_keeps_topic(qapp):
 
 def test_t_help03_search_filters_topics(qapp):
     h = HelpWindow("cs")
-    h.search.setText("Frame")
+    h.search.setText("Frame")  # Frame v LightBurnu: uložení a více desek
     names = [h.toc.item(i).data(256) for i in range(h.toc.count())]
-    assert names == ["save"]
+    assert names == ["board", "save"]
     h.search.setText("")
     assert h.toc.count() == len(TOPICS)
 

@@ -15,4 +15,8 @@ Un projet enregistré pour un laser peut être préparé pour un autre, p. ex. d
 - Avec une autre origine, **tous les éléments** doivent être sélectionnés et le projet ne doit pas contenir d'autres objets (ils resteraient en miroir sur l'autre laser). Cela ne concerne que les objets conservés dans la sortie — les objets non cochés et exclus ne figurent pas dans la sortie (par défaut) et ne gênent donc pas.
 - **Les réglages des calques (puissance, vitesse) ne sont pas convertis** — ils restent ceux du projet d'origine. Ouvrez la sortie dans LightBurn avec le laser cible et vérifiez les calques.
 
+## Projet avec plusieurs pages
+
+Un projet avec plusieurs pages (**Window → Pages** dans LightBurn) peut aussi être ouvert. Dans la section Projet, choisissez **Page à disposer :** ; les autres pages restent inchangées. Par défaut, c'est la page active lors de l'enregistrement du projet qui est choisie.
+
 [← Introduction](index.md) · [Suite : éléments →](items.md)

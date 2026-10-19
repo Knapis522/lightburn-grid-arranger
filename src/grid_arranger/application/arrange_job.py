@@ -30,8 +30,8 @@ from pathlib import Path
 
 from ..adapters.lightburn.coords import Orientation
 from ..adapters.lightburn.read import LoadedProject, load_project
-from ..adapters.lightburn.write import (apply_with_copies, header_patches, next_output_path, omit_shapes, plan_patches,
-                                        write_new_file)
+from ..adapters.lightburn.write import (apply_with_copies, header_patches, name_tag, next_output_path, omit_shapes,
+                                        plan_patches, write_new_file)
 from ..core import arrange_to_grid, validate_layout
 from ..core.rotation import min_area_angle, rotated_bounds
 from ..core.collision import ValidationReport, usable_area
@@ -106,6 +106,19 @@ class ArrangeParams:
     omit: frozenset[str] = frozenset()
     """Objekty (výrobky ``G…`` i volné tvary ``S…``), které se do výstupu nezapíší a mřížka s nimi
     nepočítá (spec. v1.27). Nesmí být v ``order`` ani zdrojem rozmisťované kopie."""
+    boards: str = "none"
+    """Když se kusy nevejdou na jednu desku: ``none`` (chyba), ``sequential`` (postupně), ``even``
+    (rovnoměrně), ``product`` (podle výrobků) — spec. v1.29 kap. 23.1."""
+    fill_last: bool = False
+    """Doplnit poslední desku (u ``product`` poslední desku každého výrobku) kopiemi."""
+    board_name: str = "{page} – board {n}"
+    """Název nové stránky pro desku ``n`` (``{page}`` = rozkládaná stránka, ``{item}`` = výrobek)."""
+    labels: dict[str, str] = field(default_factory=dict)
+    """Názvy výrobků zadané uživatelem (protokol, názvy stránek); do projektu se nezapisují."""
+    obstacles: bool = True
+    """False = deska bez překážek (nová stránka, desky 2…)."""
+    ignore: frozenset[str] = frozenset()
+    """Objekty, které nejsou překážkou (výrobek se přesune na jinou desku)."""
 
 
 def top_index(project: LoadedProject, object_id: str) -> int:
@@ -119,8 +132,11 @@ def top_index(project: LoadedProject, object_id: str) -> int:
     raise GridError("unknown_item", "Neznámý objekt.", item_id=object_id)
 
 
-def _obstacles(project: LoadedProject, order, omit: frozenset[str]):
-    return [ob for ob in project.obstacles_for(set(order)) if ob.id not in omit]
+def _obstacles(project: LoadedProject, order, omit: frozenset[str], params: ArrangeParams | None = None):
+    if params is not None and not params.obstacles:
+        return []
+    skip = omit | (params.ignore if params is not None else frozenset())
+    return [ob for ob in project.obstacles_for(set(order)) if ob.id not in skip]
 
 
 class ItemGeometry:
@@ -285,6 +301,8 @@ class JobResult:
     output: Path | None = None
     protocol: Path | None = None
     problems: list[str] = field(default_factory=list)
+    outputs: list[Path] = field(default_factory=list)
+    """Všechny zapsané projekty (u samostatných souborů desek více)."""
 
 
 def material_to_core(project: LoadedProject, m: MaterialInput, o: Orientation | None = None) -> MaterialSpec:
@@ -345,7 +363,8 @@ def make_plan(project: LoadedProject, params: ArrangeParams, geometry: ItemGeome
     mirrored = o != src_o
     if mirrored:
         # zrcadlený převod: nevybrané výrobky ani volné objekty by zůstaly zrcadlově → jen celý projekt
-        rest = [ob.id for ob in _obstacles(project, order, omit)]
+        rest = [ob.id for ob in _obstacles(project, order, omit, params)] if params.obstacles else []
+        rest += [p.name or str(p.index + 1) for p in project.pages if p.index != project.page and p.shapes]
         if rest:
             raise GridError("convert_needs_whole_project", "Pro převod na laser s jiným počátkem musí být vybrány "
                             "všechny objekty projektu.", objects=rest)
@@ -392,7 +411,7 @@ def make_plan(project: LoadedProject, params: ArrangeParams, geometry: ItemGeome
 
     req = GridRequest(tuple(order), params.columns, params.gap_x, params.gap_y, sx, sy, fill_from=corner)
     layout = arrange_to_grid(core_items, req)
-    report = validate_layout(layout, req.gap_x, req.gap_y, material, _obstacles(project, order, omit))
+    report = validate_layout(layout, req.gap_x, req.gap_y, material, _obstacles(project, order, omit, params))
     moves: dict[str, tuple[float, ...]] = {}
     pivots: dict[str, tuple[float, float]] = {}
     for p in layout.placements:
@@ -472,41 +491,291 @@ def _rotation_mode(plan: Plan) -> str:
     return plan.rotation_mode
 
 
-def _protocol(plan: Plan, output: Path, out_bytes: bytes, problems: list[str]) -> dict:
+# ==================================================================================== více desek
+BOARD_MODES = ("none", "sequential", "even", "product")
+MAX_BOARDS = 200
+MAX_FILL = 2000
+
+
+@dataclass(slots=True)
+class Job:
+    """Rozložení na jednu nebo více desek (spec. v1.29 kap. 23.1). ``boards[0]`` = rozkládaná stránka,
+    další desky = nové stránky hned za ní (nebo samostatné soubory)."""
+
+    project: LoadedProject
+    boards: list[Plan]
+    params: ArrangeParams
+    copies: dict[str, str] = field(default_factory=dict)
+    """Všechny kopie (uživatelské i automatické doplnění) ``{id: zdroj}``."""
+    filled: dict[str, str] = field(default_factory=dict)
+    """Automatické kopie z doplnění desek."""
+    names: list[str] = field(default_factory=list)
+    """Názvy nových stránek pro desky 2…"""
+
+    @property
+    def can_save(self) -> bool:
+        return all(b.report.can_save for b in self.boards)
+
+    @property
+    def plan(self) -> Plan:
+        return self.boards[0]
+
+    def board_of(self, piece: str) -> int:
+        for k, b in enumerate(self.boards):
+            if piece in b.moves_file or any(pl.item_id == piece for pl in b.layout.placements):
+                return k
+        raise KeyError(piece)
+
+
+def _resolved_order(project: LoadedProject, params: ArrangeParams) -> tuple[str, ...]:
+    return params.order if params.order is not None else tuple(it.id for it in project.items if it.supported)
+
+
+def make_job(project: LoadedProject, params: ArrangeParams, geometry: ItemGeometry | None = None) -> Job:
+    """Rozložení podle ``params.boards``: jedna deska, nebo rozdělení na více desek, když se nevejdou."""
+    if params.boards not in BOARD_MODES:
+        raise GridError("invalid_board_mode", "Neznámý způsob rozdělení na desky.", mode=params.boards)
+    order = _resolved_order(project, params)
+    geometry = geometry if geometry is not None else ItemGeometry(project)
+    copies = {c: s for c, s in params.copies.items() if c in order}
+    sources = {copies.get(p, p) for p in order}
+    placed = frozenset(p for p in order if p not in copies)  # originály, které se rozmisťují
+    base = replace(params, order=order, copies=dict(copies))
+    single = make_plan(project, base, geometry)
+    multi = params.boards != "none" and params.material is not None
+    if not multi or (single.report.can_save and not params.fill_last):
+        return Job(project, [single], params, dict(copies))
+    job = _Planner(project, base, geometry, placed).run()
+    job.copies.update(copies)
+    return job
+
+
+class _Planner:
+    def __init__(self, project: LoadedProject, params: ArrangeParams, geometry: ItemGeometry, placed: frozenset[str]):
+        self.project, self.params, self.geometry, self.placed = project, params, geometry, placed
+        self.copies = dict(params.copies)
+        self.filled: dict[str, str] = {}
+        self._n = 0
+
+    def src(self, piece: str) -> str:
+        return self.copies.get(piece, piece)
+
+    def plan(self, pieces: tuple[str, ...], board: int) -> Plan:
+        p = replace(self.params, order=pieces, copies={c: s for c, s in self.copies.items() if c in pieces},
+                    obstacles=board == 0, ignore=self.placed if board == 0 else frozenset(),
+                    angles={k: v for k, v in self.params.angles.items() if k in pieces})
+        return make_plan(self.project, p, self.geometry)
+
+    def pack(self, pieces: tuple[str, ...], board: int, hint: int = 0) -> tuple[Plan, int]:
+        """Nejvíc kusů ze začátku ``pieces``, které se vejdou na desku (aspoň 1 — jinak chybný plán s 1 kusem).
+
+        ``hint`` = kapacita předchozí desky: stejné kusy se nejspíš vejdou stejně (2 plány místo hledání)."""
+        best: tuple[Plan, int] | None = None
+        lo, hi = 1, len(pieces) - 1
+        if 0 < hint < len(pieces):
+            at = self.plan(pieces[:hint], board)
+            if at.report.can_save:
+                nxt = self.plan(pieces[:hint + 1], board)
+                if not nxt.report.can_save:
+                    return at, hint
+                best, lo = (nxt, hint + 1), hint + 2
+            else:
+                hi = hint - 1
+        full = self.plan(pieces, board) if best is None or lo <= len(pieces) else None
+        if full is not None and full.report.can_save:
+            return full, len(pieces)
+        while lo <= hi:
+            mid = (lo + hi) // 2
+            pl = self.plan(pieces[:mid], board)
+            if pl.report.can_save:
+                best, lo = (pl, mid), mid + 1
+            else:
+                hi = mid - 1
+        if best is None:
+            return self.plan(pieces[:1], board), 1
+        return best
+
+    def sequential(self, pieces: tuple[str, ...], first_board: int) -> list[Plan]:
+        boards: list[Plan] = []
+        i, hint = 0, 0
+        while i < len(pieces):
+            if first_board + len(boards) >= MAX_BOARDS:
+                raise GridError("too_many_boards", "Příliš mnoho desek.", count=MAX_BOARDS)
+            board = first_board + len(boards)
+            pl, k = self.pack(pieces[i:], board, hint if board > 0 else 0)
+            boards.append(pl)
+            if not pl.report.can_save:
+                break  # kus se nevejde ani na prázdnou desku
+            i += k
+            if board > 0 or not self.params.obstacles or hint == 0:
+                hint = k
+            self.capacity = max(getattr(self, "capacity", 0), k)
+        return boards
+
+    def even(self, pieces: tuple[str, ...]) -> list[Plan]:
+        seq = self.sequential(pieces, 0)
+        if not all(b.report.can_save for b in seq) or len(seq) <= 1:
+            return seq
+        n = len(pieces)
+        for count in range(len(seq), len(seq) + 4):
+            sizes = [n // count + (1 if k < n % count else 0) for k in range(count)]
+            plans, i, ok = [], 0, True
+            for k, size in enumerate(sizes):
+                pl = self.plan(pieces[i:i + size], k)
+                if not pl.report.can_save:
+                    ok = False
+                    break
+                plans.append(pl)
+                i += size
+            if ok:
+                return plans
+        return seq
+
+    def new_copy(self, src: str) -> str:
+        while True:
+            self._n += 1
+            cid = f"{src}+d{self._n}"
+            if cid not in self.copies:
+                self.copies[cid] = src
+                self.filled[cid] = src
+                return cid
+
+    def fill(self, plan: Plan, board: int, sources: list[str]) -> Plan:
+        """Doplní desku kopiemi ``sources`` (střídavě), dokud se vejdou."""
+        base = tuple(pl.item_id for pl in sorted(plan.layout.placements, key=lambda p: p.index))
+        made: list[str] = []
+        plans: dict[int, Plan] = {0: plan}
+
+        def ok(k: int) -> bool:
+            while len(made) < k:
+                made.append(self.new_copy(sources[len(made) % len(sources)]))
+            plans[k] = self.plan(base + tuple(made[:k]), board)
+            return plans[k].report.can_save
+
+        lo, hi = 0, None  # lo = ověřeně vejde, hi = ověřeně nevejde
+        guess = getattr(self, "capacity", 0) - len(base)
+        if guess >= 1:  # odhad podle plné desky
+            if ok(guess):
+                lo = guess
+                if not ok(guess + 1):
+                    hi = guess + 1
+                else:
+                    lo = guess + 1
+            else:
+                hi = guess
+        while hi is None:
+            k = lo * 2 if lo else 1
+            if k > MAX_FILL:
+                hi = MAX_FILL + 1
+            elif ok(k):
+                lo = k
+            else:
+                hi = k
+        while hi - lo > 1:
+            mid = (lo + hi) // 2
+            if ok(mid):
+                lo = mid
+            else:
+                hi = mid
+        best = plans[lo]
+        self.capacity = max(getattr(self, "capacity", 0), len(best.layout.placements))
+        for cid in made[lo:]:
+            self.copies.pop(cid, None)
+            self.filled.pop(cid, None)
+        return best
+
+    def run(self) -> Job:
+        pieces = self.params.order
+        mode = self.params.boards
+        names: list[str] = []
+        if mode == "product":
+            groups: dict[str, list[str]] = {}
+            for p in pieces:
+                groups.setdefault(self.src(p), []).append(p)
+            boards: list[Plan] = []
+            owners: list[str] = []
+            for src, group in groups.items():
+                part = self.sequential(tuple(group), len(boards))
+                if self.params.fill_last and part and part[-1].report.can_save:
+                    part[-1] = self.fill(part[-1], len(boards) + len(part) - 1, [src])
+                boards += part
+                owners += [src] * len(part)
+                if part and not part[-1].report.can_save:
+                    break
+        else:
+            boards = self.even(pieces) if mode == "even" else self.sequential(pieces, 0)
+            owners = []
+            if self.params.fill_last and boards and boards[-1].report.can_save:
+                last = boards[-1]
+                srcs = list(dict.fromkeys(self.src(pl.item_id) for pl in sorted(last.layout.placements, key=lambda p: p.index)))
+                boards[-1] = self.fill(last, len(boards) - 1, srcs)
+        page = self.project.pages[self.project.page].name if self.project.pages else ""
+        for k in range(2, len(boards) + 1):
+            item = ""
+            if owners:
+                src = owners[k - 1]
+                item = self.params.labels.get(src) or _label(self.project, src) or src
+            name = self.params.board_name.format(page=page or "1", n=k, item=item)
+            if owners and "{item}" not in self.params.board_name and item:
+                name += f" – {item}"
+            names.append(name)
+        return Job(self.project, boards, self.params, dict(self.copies), dict(self.filled), names)
+
+
+# ==================================================================================== protokol
+def _protocol(job: Job, outputs: list[Path], out_bytes: list[bytes], problems: list[str]) -> dict:
+    plan = job.plan
     p, info = plan.project, plan.project.info
     o = info.orientation
+
+    def placements(b: Plan, k: int) -> list[dict]:
+        return [
+            {"item": pl.item_id, "label": job.params.labels.get(job.copies.get(pl.item_id, pl.item_id))
+             or p.item(pl.item_id if pl.item_id in {it.id for it in p.items} else job.copies.get(pl.item_id, pl.item_id)).label,
+             "board": k, "index": pl.index + 1,
+             "copy_of": job.copies.get(pl.item_id),
+             "row": pl.row + 1, "column_from_fill_corner": pl.column + 1,
+             "move_lightburn_xy_mm": _move_xy(b.moves_file[pl.item_id]),
+             "rotation_deg_screen_clockwise": b.rotations.get(pl.item_id, 0.0),
+             "rotation_manual": pl.item_id in b.manual,
+             "transform_lightburn": list(b.moves_file[pl.item_id]) if len(b.moves_file[pl.item_id]) == 6 else None,
+             "size_mm": [pl.target_bounds.width, pl.target_bounds.height]}
+            for pl in b.layout.placements
+        ]
+
+    pieces: dict[str, int] = {}
+    for b in job.boards:
+        for pl in b.layout.placements:
+            src = job.copies.get(pl.item_id, pl.item_id)
+            pieces[src] = pieces.get(src, 0) + 1
     return {
         "tool": "Grid Arranger for LightBurn",
         "app_version": __version__,
         "created_utc": datetime.now(timezone.utc).isoformat(timespec="seconds"),
-        "source": {"path": str(info.path), "sha256": info.sha256, "bytes": info.size},
-        "output": {"path": str(output), "sha256": hashlib.sha256(out_bytes).hexdigest(), "bytes": len(out_bytes)},
+        "source": {"path": str(info.path), "sha256": info.sha256, "bytes": info.size, "page": p.page + 1},
+        "output": [{"path": str(path), "sha256": hashlib.sha256(data).hexdigest(), "bytes": len(data)}
+                   for path, data in zip(outputs, out_bytes)] if len(outputs) > 1 else
+                  {"path": str(outputs[0]), "sha256": hashlib.sha256(out_bytes[0]).hexdigest(), "bytes": len(out_bytes[0])},
         "lightburn": {"app_version": info.app_version, "format_version": info.format_version,
                       "device": info.device_name, "origin": o.origin, "origin_verified": o.verified},
         "target_laser": ({"device": plan.target.device_name, "origin": plan.target.orientation.origin}
                          if plan.target else None),
         "parameters": {
             "columns": plan.request.columns, "gap_x_mm": plan.request.gap_x, "gap_y_mm": plan.request.gap_y,
-            "anchor": plan.anchor, "fill": plan.fill, "order": list(plan.request.ordered_item_ids),
+            "anchor": plan.anchor, "fill": plan.fill, "order": [pid for b in job.boards for pid in b.request.ordered_item_ids],
             "rotation_mode": _rotation_mode(plan),
             "grid_corner_at_origin_lightburn_xy": plan.origin_corner_lightburn,
+            "boards_mode": job.params.boards, "fill_last_board": job.params.fill_last,
         },
-        "pieces_per_item": _pieces(plan),
+        "pieces_per_item": pieces,
         "omitted": [{"id": oid, "label": _label(p, oid)} for oid in sorted(plan.omitted, key=lambda i: top_index(p, i))],
+        "boards": [{"board": k + 1, "page": (p.pages[p.page].name if k == 0 and p.pages else job.names[k - 1] if k else ""),
+                    "pieces": len(b.layout.placements), "columns": b.layout.columns, "rows": b.layout.rows}
+                   for k, b in enumerate(job.boards)],
         "grid": {"columns": plan.layout.columns, "columns_auto": plan.columns_auto, "rows": plan.layout.rows,
                  "width_mm": plan.layout.grid_bounds.width, "height_mm": plan.layout.grid_bounds.height},
-        "placements": [
-            {"item": pl.item_id, "label": p.item(pl.item_id).label, "index": pl.index + 1,
-             "copy_of": plan.copies.get(pl.item_id),
-             "row": pl.row + 1, "column_from_fill_corner": pl.column + 1,
-             "move_lightburn_xy_mm": _move_xy(plan.moves_file[pl.item_id]),
-             "rotation_deg_screen_clockwise": plan.rotations.get(pl.item_id, 0.0),
-             "rotation_manual": pl.item_id in plan.manual,
-             "transform_lightburn": list(plan.moves_file[pl.item_id]) if len(plan.moves_file[pl.item_id]) == 6 else None,
-             "size_mm": [pl.target_bounds.width, pl.target_bounds.height]}
-            for pl in plan.layout.placements
-        ],
-        "warnings": [{"code": i.code, "items": list(i.item_ids)} for i in plan.report.warnings],
+        "placements": [x for k, b in enumerate(job.boards) for x in placements(b, k + 1)],
+        "warnings": [{"code": i.code, "items": list(i.item_ids)} for b in job.boards for i in b.report.warnings],
         "verification": {"problems": problems, "passed": not problems},
         "reminder": "Open the output in LightBurn via File > Open and check layers, Preview and position before cutting.",
     }
@@ -546,47 +815,160 @@ def check_output_path(target: Path, source: Path, protocol: str | Path = PROTOCO
     return target
 
 
-def execute(plan: Plan, out_dir: Path | None = None, output: Path | None = None,
-            protocol: str | Path = PROTOCOL_BESIDE) -> JobResult:
-    """Zapíše nový projekt jen při platné validaci a úspěšné nezávislé kontrole.
+def board_file_paths(target: Path, count: int, word: str = "board") -> list[Path]:
+    """Samostatné soubory desek: ``<název>__<word>1.lbrn2`` … (v1.29)."""
+    tag = name_tag(word) or "board"
+    return [target.with_name(f"{target.stem}__{tag}{k}.lbrn2") for k in range(1, count + 1)]
 
-    ``output`` = cesta zvolená uživatelem (jinak ``puvodni__grid_NNN.lbrn2`` vedle originálu / v ``out_dir``).
-    ``protocol`` = ``"beside"`` (vedle výstupu), ``"none"`` (nezapisovat) nebo složka pro protokoly.
-    """
-    if not plan.report.can_save:
-        raise GridError("validation_failed", "Rozložení neprošlo kontrolou; nic nebylo uloženo.",
-                        codes=sorted({i.code for i in plan.report.errors}))
-    project = plan.project
-    src_path = project.info.path
 
-    originals = {k: v for k, v in plan.moves_file.items() if k not in plan.copies}
-    copy_moves = [(src, plan.moves_file[cid]) for cid, src in plan.copies.items()]
+# ==================================================================================== zápis
+@dataclass(slots=True)
+class _Output:
+    """Instrukce pro jeden výstupní soubor (nezávisle ověřitelné)."""
+
+    moves: dict[str, tuple[float, ...]]
+    copies: list[tuple[str, tuple[float, ...]]]
+    omitted: frozenset[str]
+    pages: list[tuple[str, list[tuple[str, tuple[float, ...]]]]]
+    expect: list[tuple[int, int, str, Rect, float, str]]
+    """Kontrola znovu načteného výstupu: (stránka, pořadí výrobku na ní, kus, cílový obdélník, úhel, zdroj)."""
+
+
+def _board_pieces(job: Job, k: int) -> list[tuple[str, str, tuple[float, ...], Rect, float]]:
+    """(kus, zdroj, transformace, cílový obdélník, úhel) desky ``k`` v pořadí mřížky."""
+    b = job.boards[k]
+    return [(pl.item_id, job.copies.get(pl.item_id, pl.item_id), b.moves_file[pl.item_id], pl.target_bounds,
+             b.rotations.get(pl.item_id, 0.0)) for pl in sorted(b.layout.placements, key=lambda p: p.index)]
+
+
+def _outputs(job: Job, separate: bool) -> list[_Output]:
+    """Co zapsat do každého výstupního souboru.
+
+    Kus, jehož zdroj je rozmisťovaný originál, se na desce 1 zapíše jako přesun originálu (první kus
+    zdroje na desce) a ostatní kusy jako kopie. Originál bez kusu na desce 1 se z rozkládané stránky
+    odebere (je na jiné desce). Desky 2… jsou nové stránky s kopiemi. U samostatných souborů má
+    soubor desky K ≥ 2 jen své kusy: první kus každého zdroje je přesun, vše ostatní na stránce se vynechá."""
+    project = job.project
+    page = project.page
+    n_shapes = len(project.shapes())
+    pieces = [_board_pieces(job, k) for k in range(len(job.boards))]
+    placed = {pid for b in pieces for pid, src, *_ in b if pid == src}  # rozmisťované originály
+    outs: list[_Output] = []
+    for k in (range(len(job.boards)) if separate else [0]):
+        alone = separate and k > 0
+        moves: dict[str, tuple[float, ...]] = {}
+        copies: list[tuple[str, tuple[float, ...]]] = []
+        roles: list[bool] = []
+        for pid, src, t, _rect, _ang in pieces[k]:
+            if (alone or src in placed) and src not in moves:
+                moves[src] = t
+                roles.append(True)
+            else:
+                copies.append((src, t))
+                roles.append(False)
+        if alone:
+            omitted = frozenset(it.id for it in project.items if it.id not in moves) | \
+                frozenset(ls.id for ls in project.loose)
+        else:
+            omitted = frozenset(job.plan.omitted) | frozenset(s for s in placed if s not in moves)
+        new_pages = [] if separate else [(job.names[kk - 1], [(src, t) for _, src, t, _, _ in pieces[kk]])
+                                         for kk in range(1, len(job.boards))]
+        gone = {top_index(project, o) for o in omitted}
+        new_index = {i: n for n, i in enumerate((i for i in range(1, n_shapes + 1) if i not in gone), start=1)}
+        n_kept = len(new_index)
+        expect: list[tuple[int, int, str, Rect, float, str]] = []
+        n_copy = 0
+        for is_move, (pid, src, _t, rect, ang) in zip(roles, pieces[k]):
+            if is_move:
+                expect.append((page, new_index[top_index(project, src)], pid, rect, ang, src))
+            else:
+                n_copy += 1
+                expect.append((page, n_kept + n_copy, pid, rect, ang, src))
+        for kk in range(1, len(new_pages) + 1):
+            for n, (pid, src, _t, rect, ang) in enumerate(pieces[kk], start=1):
+                expect.append((page + kk, n, pid, rect, ang, src))
+        outs.append(_Output(moves, copies, omitted, new_pages, expect))
+    return outs
+
+
+def _render(job: Job, out: _Output) -> tuple[bytes, list[str]]:
+    project = job.project
+    plan = job.plan
     header = _target_header(plan)
-    ops = sorted(plan_patches(project, originals) + header_patches(project, header), key=lambda op: op.start)
-    omitted = omitted_indices(plan)
-    out_bytes = omit_shapes(apply_with_copies(project, ops, copy_moves), omitted)
-
-    tops = {it.id: it.source_order for it in project.items if it.id not in plan.copies}
-    problems = verify_output(project.data, out_bytes, {tops[k]: v for k, v in originals.items()},
-                             [(tops[src], move) for src, move in copy_moves], header=header, omitted=omitted)
+    ops = sorted(plan_patches(project, out.moves) + header_patches(project, header), key=lambda op: op.start)
+    data = apply_with_copies(project, ops, out.copies, out.pages)
+    omitted = frozenset(top_index(project, o) for o in out.omitted)
+    data = omit_shapes(data, omitted, project.page)
+    idx = {it.id: it.source_order for it in project.items}
+    problems = verify_output(project.data, data, {idx[k]: v for k, v in out.moves.items()},
+                             [(idx[src], t) for src, t in out.copies], header=header, omitted=omitted,
+                             page=project.page, new_pages=[(n, [(idx[src], t) for src, t in p]) for n, p in out.pages])
     if not problems:
-        problems += _check_reloaded_bounds(plan, out_bytes)
+        problems += _check_reloaded(job, out, data)
+    return data, problems
+
+
+def execute_job(job: Job, out_dir: Path | None = None, output: Path | None = None,
+                protocol: str | Path = PROTOCOL_BESIDE, separate: bool = False, file_word: str = "board") -> JobResult:
+    """Zapíše výstup jen při platné validaci všech desek a úspěšné nezávislé kontrole.
+
+    Výchozí: jeden projekt, desky 2… jako nové stránky. ``separate`` = každá deska jako samostatný
+    soubor ``<název>__<file_word>K.lbrn2`` (nejdřív se připraví a ověří všechny, pak zapíší)."""
+    for k, b in enumerate(job.boards, start=1):
+        if not b.report.can_save:
+            raise GridError("validation_failed", "Rozložení neprošlo kontrolou; nic nebylo uloženo.",
+                            codes=sorted({i.code for i in b.report.errors}), board=k)
+    project = job.project
+    src_path = project.info.path
+    separate = separate and len(job.boards) > 1
+    rendered = [_render(job, o) for o in _outputs(job, separate)]
+    problems = [p for _, probs in rendered for p in probs]
     if problems:
         raise GridError("verification_failed", "Kontrola výstupu selhala; nic nebylo uloženo.", problems=problems)
-
     if hashlib.sha256(src_path.read_bytes()).hexdigest() != project.info.sha256:
         raise GridError("source_changed", "Původní soubor se od načtení změnil; načtěte jej znovu.")
 
-    target = check_output_path(output, src_path, protocol) if output is not None else next_output_path(src_path, out_dir)
+    target = check_output_path(output, src_path, protocol) if output is not None else \
+        next_output_path(src_path, out_dir, _tag_for(job))
+    targets = board_file_paths(target, len(rendered), file_word) if separate else [target]
+    for t in targets:
+        if t.exists() or t.resolve() == src_path.resolve():
+            raise GridError("output_exists", "Výstupní soubor už existuje.", path=str(t))
     proto_path = _protocol_path(target, protocol)
-    write_new_file(target, out_bytes, forbidden=src_path)
+    if proto_path is not None and proto_path.exists():
+        raise GridError("output_exists", "Výstupní soubor už existuje.", path=str(proto_path))
+    written: list[Path] = []
+    try:
+        for t, (data, _p) in zip(targets, rendered):
+            write_new_file(t, data, forbidden=src_path)
+            written.append(t)
+    except GridError:
+        for w in written:  # transakce: žádná neúplná série
+            try:
+                w.unlink()
+            except OSError:
+                pass
+        raise
     if proto_path is not None:
         with open(proto_path, "x", encoding="utf-8") as fh:
-            json.dump(_protocol(plan, target, out_bytes, problems), fh, ensure_ascii=False, indent=2)
-
+            json.dump(_protocol(job, targets, [d for d, _ in rendered], problems), fh, ensure_ascii=False, indent=2)
     if hashlib.sha256(src_path.read_bytes()).hexdigest() != project.info.sha256:
         raise GridError("source_changed", "Původní soubor se během zápisu změnil.")
-    return JobResult(plan, target, proto_path, problems)
+    res = JobResult(job.plan, targets[0], proto_path, problems)
+    res.outputs = targets
+    return res
+
+
+def _tag_for(job: Job) -> str:
+    return ""
+
+
+def execute(plan: Plan, out_dir: Path | None = None, output: Path | None = None,
+            protocol: str | Path = PROTOCOL_BESIDE) -> JobResult:
+    """Jedna deska (zpětná kompatibilita): viz ``execute_job``."""
+    params = ArrangeParams(plan.request.columns, plan.request.gap_x, plan.request.gap_y, None)
+    original = replace(plan.project, items=[it for it in plan.project.items if it.id not in plan.copies])
+    return execute_job(Job(original, [plan], params, dict(plan.copies)), out_dir, output, protocol)
 
 
 def _label(project: LoadedProject, object_id: str) -> str:
@@ -614,67 +996,92 @@ def _target_header(plan: Plan) -> dict[str, str]:
     return {"DeviceName": plan.target.device_name, "MirrorX": str(o.mirror_x), "MirrorY": str(o.mirror_y)}
 
 
-def _check_reloaded_bounds(plan: Plan, out_bytes: bytes) -> list[str]:
+def _check_reloaded(job: Job, out: _Output, data: bytes) -> list[str]:
+    """Znovu načtený výstup: orientace, laser a obrysy všech kusů na cílových místech (i na nových stránkách)."""
     import tempfile
 
     from ..adapters.lightburn import read as rd
 
+    plan = job.plan
+    problems: list[str] = []
     with tempfile.TemporaryDirectory() as d:
         tmp = Path(d) / "check.lbrn2"
-        tmp.write_bytes(out_bytes)
-        reloaded = rd.load_project(tmp)
-    problems = []
-    if reloaded.info.orientation != plan.orientation:
-        problems.append("target_orientation_mismatch")
-    if plan.target is not None and reloaded.info.device_name != plan.target.device_name:
-        problems.append("target_device_mismatch")
-    geo_out = None
-    n_top = len(plan.project.root.findall("Shape"))
-    omitted = omitted_indices(plan)
-    kept = [i for i in range(1, n_top + 1) if i not in omitted]
-    new_index = {i: k for k, i in enumerate(kept, start=1)}
-    reload_id = {it.id: f"G{new_index[it.source_order]}" for it in plan.project.items
-                 if it.id not in plan.copies and it.source_order in new_index}
-    reload_id.update({cid: f"G{len(kept) + k}" for k, cid in enumerate(plan.copies, start=1)})
-    expected_items = len([it for it in plan.project.items if it.id not in plan.copies and it.id not in plan.omitted])
-    if len(reloaded.items) != expected_items + len(plan.copies):
-        return ["copy_count_mismatch"]
-    if len(reloaded.root.findall("Shape")) != len(kept) + len(plan.copies):
-        return ["omitted_count_mismatch"]
-    for pl in plan.layout.placements:
-        exp = pl.target_bounds
-        rid = reload_id.get(pl.item_id, pl.item_id)
-        if pl.item_id in plan.rotations:
-            # natočený výrobek: skutečné křivky znovu načteného výstupu musí ležet v cílovém obdélníku
-            if geo_out is None:
-                geo_out = ItemGeometry(reloaded)
-            pts = geo_out.hull(rid)
-            q = round(plan.rotations[pl.item_id] / 90.0)
-            if abs(plan.rotations[pl.item_id] - 90.0 * q) < 1e-9:
-                got = reloaded.item(rid).screen_bounds
+        tmp.write_bytes(data)
+        pages: dict[int, LoadedProject] = {}
+
+        def load(page: int) -> LoadedProject:
+            if page not in pages:
+                pages[page] = rd.load_project(tmp, page)
+            return pages[page]
+
+        first = load(plan.project.page)
+        if first.info.orientation != plan.orientation:
+            problems.append("target_orientation_mismatch")
+        if plan.target is not None and first.info.device_name != plan.target.device_name:
+            problems.append("target_device_mismatch")
+        expected_shapes = len(plan.project.shapes()) - len(out.omitted) + len(out.copies)
+        if len(first.shapes()) != expected_shapes:
+            return problems + ["copy_count_mismatch"]
+        if len(first.pages) != len(plan.project.pages) + len(out.pages):
+            return problems + ["page_count_mismatch"]
+        geos: dict[int, ItemGeometry] = {}
+        refs: dict[tuple, tuple[Rect, Rect]] = {}  # (stránka, zdroj, úhel) → (cíl, načtený obrys) ověřeného kusu
+        for page, n, pid, exp, angle, src in out.expect:
+            proj = load(page)
+            rid = f"G{n}"
+            try:
+                it = proj.item(rid)
+            except GridError:
+                problems.append(f"outline_not_at_target: {pid}")
+                continue
+            q = round(angle / 90.0)
+            right_angle = abs(angle - 90.0 * q) < 1e-9
+            key = (page, src, round(angle, 9))
+            if angle and not right_angle and key in refs and it.screen_bounds is not None:
+                # stejný zdroj a úhel = jen posunutá kopie již ověřeného kusu: obrys o stejný posun
+                ref_exp, ref_got = refs[key]
+                dx, dy = exp.left - ref_exp.left, exp.top - ref_exp.top
+                got = it.screen_bounds
+                if max(abs(got.left - ref_got.left - dx), abs(got.top - ref_got.top - dy),
+                       abs(got.right - ref_got.right - dx), abs(got.bottom - ref_got.bottom - dy)) > 1e-3:
+                    problems.append(f"outline_not_at_target: {pid}")
+                continue
+            if angle and not right_angle and it.screen_bounds is not None:
+                refs[key] = (exp, it.screen_bounds)
+            if angle and not right_angle:
+                if page not in geos:
+                    geos[page] = ItemGeometry(proj)
+                geo_out = geos[page]
+                pts = geo_out.hull(rid)
+                got = Rect(min(x for x, _ in pts) - GEOMETRY_TOL, min(y for _, y in pts) - GEOMETRY_TOL,
+                           max(x for x, _ in pts) + GEOMETRY_TOL, max(y for _, y in pts) + GEOMETRY_TOL)
+                tol = 0.02
             else:
-                got = Rect(min(x for x, _ in pts), min(y for _, y in pts), max(x for x, _ in pts), max(y for _, y in pts))
-                got = Rect(got.left - GEOMETRY_TOL, got.top - GEOMETRY_TOL, got.right + GEOMETRY_TOL, got.bottom + GEOMETRY_TOL)
-            tol = 1e-3 if abs(plan.rotations[pl.item_id] - 90.0 * q) < 1e-9 else 0.02
-        else:
-            got = reloaded.item(rid).screen_bounds
-            tol = 1e-3
-        if got is None or max(abs(got.left - exp.left), abs(got.top - exp.top),
-                              abs(got.right - exp.right), abs(got.bottom - exp.bottom)) > tol:
-            problems.append(f"outline_not_at_target: {pl.item_id}")
-    for it in plan.project.items:
-        if it.id not in plan.moves_file and it.supported and it.id not in plan.copies and it.id not in plan.omitted:
-            if reloaded.item(reload_id[it.id]).file_bbox != it.file_bbox:
+                got, tol = it.screen_bounds, 1e-3
+            if got is None or max(abs(got.left - exp.left), abs(got.top - exp.top),
+                                  abs(got.right - exp.right), abs(got.bottom - exp.bottom)) > tol:
+                problems.append(f"outline_not_at_target: {pid}")
+        # nepřesouvané a nevynechané výrobky zůstaly na místě
+        moved = set(out.moves) | set(out.omitted)
+        kept = [i for i in range(1, len(job.project.shapes()) + 1)
+                if i not in {top_index(job.project, o) for o in out.omitted}]
+        new_index = {i: n for n, i in enumerate(kept, start=1)}
+        for it in job.project.items:
+            if it.id in moved or not it.supported:
+                continue
+            got = first.item(f"G{new_index[it.source_order]}")
+            if got.file_bbox != it.file_bbox:
                 problems.append(f"unselected_moved: {it.id}")
     return problems
 
 
 def run(path: str | Path, params: ArrangeParams, write: bool = True, out_dir: Path | None = None) -> JobResult:
     project = load_project(path)
-    plan = make_plan(project, params)
+    job = make_job(project, params)
     if not write:
-        return JobResult(plan)
-    return execute(plan, out_dir)
+        return JobResult(job.plan)
+    return execute_job(job, out_dir)
 
 
-__all__ = ["ANCHORS", "AUTO_COLUMNS", "FILL_MODES", "ArrangeParams", "TargetLaser", "JobResult", "MaterialInput", "Plan", "execute", "make_plan", "run"]
+__all__ = ["ANCHORS", "AUTO_COLUMNS", "BOARD_MODES", "FILL_MODES", "ArrangeParams", "Job", "TargetLaser", "JobResult",
+           "MaterialInput", "Plan", "execute", "execute_job", "make_job", "make_plan", "run"]

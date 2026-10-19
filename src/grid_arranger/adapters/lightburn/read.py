@@ -27,6 +27,7 @@ from ...core.tolerance import EPSILON
 from . import geometry as geo
 from . import shapes
 from .coords import Orientation
+from .pages import PAGE_ATTRS, PAGE_XFORM, is_page, page_groups, page_name, page_shapes
 from .xmltree import Node, parse
 
 MAX_FILE_BYTES = 64 * 1024 * 1024
@@ -87,6 +88,15 @@ class LooseShape:
     kind: str
 
 
+@dataclass(frozen=True, slots=True)
+class PageInfo:
+    index: int
+    """0 = první stránka (nejvyšší tvary), 1… = skupiny stránek v pořadí dokumentu."""
+    name: str
+    shapes: int
+    """Počet nejvyšších tvarů na stránce."""
+
+
 @dataclass(slots=True)
 class LoadedProject:
     info: ProjectInfo
@@ -94,6 +104,16 @@ class LoadedProject:
     root: Node
     items: list[SourceItem]
     loose: list[LooseShape]
+    pages: list[PageInfo] = field(default_factory=list)
+    """Stránky projektu (vždy aspoň jedna)."""
+    page: int = 0
+    """Rozkládaná stránka; ``items`` a ``loose`` jsou jen z ní (id podle pořadí na stránce)."""
+    current_page: int = 0
+    """Aktivní stránka uložená v projektu (``CurrentPage``)."""
+
+    def shapes(self) -> list[Node]:
+        """Nejvyšší tvary rozkládané stránky."""
+        return page_shapes(self.root, self.page)
 
     def item(self, item_id: str) -> SourceItem:
         for it in self.items:
@@ -298,8 +318,10 @@ def _analyse_item(node: Node, idx: int, ctx: _Ctx, layers: dict[str, str]) -> So
     )
 
 
-def load_project(path: str | Path) -> LoadedProject:
-    """Načte a ověří projekt. Projekt jako celek odmítne výjimkou ``GridError``."""
+def load_project(path: str | Path, page: int | None = None) -> LoadedProject:
+    """Načte a ověří projekt. Projekt jako celek odmítne výjimkou ``GridError``.
+
+    ``page`` = rozkládaná stránka (0 = první); None = aktivní stránka uložená v projektu."""
     path = Path(path)
     data = read_bytes_checked(path)
     root = parse(data)
@@ -313,8 +335,21 @@ def load_project(path: str | Path) -> LoadedProject:
     unknown_attrs = set(a) - KNOWN_ROOT_ATTRS
     if unknown_attrs:
         raise GridError("unknown_project_attribute", "Projekt obsahuje neznámé vlastnosti.", attrs=sorted(unknown_attrs))
-    if a.get("CurrentPage", "0") != "0":
-        raise GridError("multi_page_unsupported", "Projekty s více stránkami nejsou podporovány.")
+    groups = page_groups(root)
+    for g in groups:  # stránky jen ve tvaru ověřeném v KAL-06
+        x = g.find("XForm")
+        if (set(g.attrs) != set(PAGE_ATTRS) or x is None or x.text.strip() != PAGE_XFORM
+                or any(c.tag not in ("XForm", "Children") for c in g.children)):
+            raise GridError("unknown_page_format", "Stránka projektu má neznámý tvar.", page=g.attrs.get("Name", ""))
+    try:
+        current = int(a.get("CurrentPage", "0"))
+    except ValueError:
+        current = 0
+    if not 0 <= current <= len(groups):
+        current = 0
+    page = current if page is None else page
+    if not 0 <= page <= len(groups):
+        raise GridError("unknown_page", "Stránka v projektu není.", page=page + 1)
     flags = {}
     for k in ("MirrorX", "MirrorY"):
         if a.get(k) not in ("True", "False"):
@@ -335,7 +370,7 @@ def load_project(path: str | Path) -> LoadedProject:
     ctx = _Ctx(root)
     items: list[SourceItem] = []
     loose: list[LooseShape] = []
-    for i, shape in enumerate(root.findall("Shape"), start=1):
+    for i, shape in enumerate(page_shapes(root, page), start=1):
         if shape.attrs.get("Type") == "Group":
             items.append(_analyse_item(shape, i, ctx, layers))
         else:
@@ -361,4 +396,6 @@ def load_project(path: str | Path) -> LoadedProject:
         orientation=orientation,
         layer_names=layers,
     )
-    return LoadedProject(info=info, data=data, root=root, items=items, loose=loose)
+    pages = [PageInfo(k, page_name(root, k), len(page_shapes(root, k))) for k in range(len(groups) + 1)]
+    return LoadedProject(info=info, data=data, root=root, items=items, loose=loose, pages=pages, page=page,
+                         current_page=current)

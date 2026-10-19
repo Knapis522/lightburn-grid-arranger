@@ -15,4 +15,19 @@ Los errores (✖) bloquean el guardado y nombran los elementos afectados. Los av
 
 La comprobación trabaja con los contornos del proyecto, no con el sobrerrecorrido real al grabar, la compensación del ancho de corte ni el movimiento del cabezal — por eso la **Preview en LightBurn es obligatoria**.
 
+## Varias planchas
+
+Cuando las piezas no caben en una plancha, la aplicación las reparte en varias planchas. Elija cómo en la sección Plancha, en **Si no cabe**:
+
+- *Repartir en planchas una tras otra* (predeterminado) — plancha 1 llena, luego plancha 2 …; el menor número de planchas.
+- *Repartir en planchas por igual* — el mismo número de piezas en cada plancha (p. ej. 50 → 17/17/16).
+- *Repartir en planchas por elemento* — cada plancha contiene solo piezas de un elemento (el original y sus copias).
+- *No repartir (error)* — como antes: si la distribución no cabe, queda bloqueada.
+
+**Completar la última plancha con copias** añade copias hasta llenar la última plancha (con *por elemento*, la última plancha de cada elemento se completa con copias de ese elemento).
+
+Sobre la vista previa, unas pestañas muestran las planchas, como las páginas en LightBurn; una pestaña con error se marca con ✖ y los mensajes indican la plancha. Solo se puede guardar cuando todas las planchas superan la comprobación. Todas las planchas tienen los mismos ajustes de cuadrícula y la misma plancha; los objetos que se dejan en su sitio (Configuración → Guardado) están solo en la plancha 1.
+
+**Guardado:** la plancha 1 se queda en la página distribuida y las planchas 2 … se añaden como páginas nuevas justo después («Página 1 – plancha 2» …). En LightBurn, cambie de página (**Window → Pages**) y corte una plancha tras otra — Preview y Frame trabajan solo con la página activa. Como alternativa, **Configuración → Planchas → Como archivos separados** guarda un archivo por plancha (`…__plancha1.lbrn2` …). Los valores predeterminados (modo de reparto, completar, aviso por encima de un número de planchas) están en **Configuración → Planchas**.
+
 [← Cuadrícula](grid.md) · [Siguiente: guardado →](save.md)

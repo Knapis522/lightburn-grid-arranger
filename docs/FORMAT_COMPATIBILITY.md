@@ -217,3 +217,16 @@ Chování (vlastník): **Preview** i **Frame** pracují jen s aktivní stránkou
 
 Dosavadní aplikace projekt se stránkami odmítne (`CurrentPage ≠ 0`) nebo skupinu stránky označí jako nerozložitelnou (neznámé atributy `SubType`, `Name`) — změní se s V20-01.
 
+## KAL-08 — výstup s více deskami (spec. v1.30, čeká na ověření v LightBurnu)
+
+Desky 2… se zapíší jako nové `<Shape Type="Group" SubType="Page" Name="…">` (formát KAL-06) hned za rozkládanou stránkou; kusy v nich jsou bajtové kopie výrobků (sdílená geometrie odkazem jako u kopií v1.16). Originál umístěný až na další desce se z rozkládané stránky odebere (jako vynechání v1.27, definice sdílené geometrie se přesune do prvního odkazujícího tvaru v pořadí dokumentu — i do jiné stránky). `CurrentPage` se nemění.
+
+Kalibrační výstupy (`lightburn-grid-arranger-data\kal08\`):
+
+- [ ] `test_program__kal08_stranky.lbrn2` — 3 desky (5 + 4 + 3), kopie, natočení: stránky „Stránka 1 – deska 2/3“
+- [ ] `test_program__kal08_soubory__deska1…3.lbrn2` — totéž jako samostatné soubory
+- [ ] `Test_klicenky__kal08_podle_vyrobku.lbrn2` — 8 desek podle výrobků, každá doplněná kopiemi (24 kusů), názvy stránek s výrobkem
+- [ ] `Kal06_tri_stranky__kal08_stranka2.lbrn2` — rozložená stránka 2 („Druha“) na 2 desky: nová stránka „Druha – deska 2“ hned za ní, stránky 1 a 3 beze změny
+
+U každého: soubor se otevře, stránky v pořadí a s názvy, na každé stránce celé tvary ve správných vrstvách, Preview a Frame jen aktivní stránky, poloha u počátku.
+

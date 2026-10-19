@@ -4,6 +4,7 @@
 - Overené s: LightBurn 2.2.00, projekty `.lbrn2`, lasery s počiatkom v ktoromkoľvek rohu (vľavo a vpravo hore na skutočných laseroch, vľavo a vpravo dole s testovacím zariadením v LightBurne).
 - Aplikácia pracuje **offline** a neovláda laser. Jediné spojenie s internetom je kontrola aktualizácií na GitHube (bez akýchkoľvek údajov o projektoch); dá sa vypnúť v **Nastavenia → Aktualizácie**.
 - **Nastavenia** (položka v ponukovej lište, ikona ozubeného kolesa, Ctrl+,) sa otvoria ako samostatné okno so stránkami *Všeobecné*, *Lasery* (katalóg laserov — pozri [Projekt pre iný laser](prepare.md)), *Ukladanie* (nezaškrtnuté objekty, protokol uloženia) a *Aktualizácie*. Zmeny sa prejavia tlačidlom **OK** alebo **Použiť**; **Zrušiť** okno zavrie bez zmeny (po *Použiť* sa tlačidlo volá **Zavrieť**).
+- **Nastavenia → Dosky:** predvolený spôsob rozdelenia na viac dosiek, doplnenie poslednej dosky, upozornenie nad určitý počet dosiek a uloženie ako strany alebo samostatné súbory — pozri [Viac dosiek](board.md).
 - **Jazyk:** **Nastavenia → Všeobecné → Jazyk** — Automaticky (podľa Windows), Čeština, English, Deutsch, Slovenčina, Polski, Français, Español, Italiano. Každý jazyk je uvedený vlastným názvom.
 - **Panel rozloženia:** **Nastavenia → Všeobecné → Panel rozloženia** — sekcie Projekt, Výrobky, Mriežka, Umiestnenie a Doska vľavo alebo vpravo od náhľadu.
 - Vzhľad aplikácie: **Nastavenia → Všeobecné → Vzhľad** (automaticky podľa Windows; svetlý = celá aplikácia svetlá; tmavý = tmavé ovládanie, náhľad dosky zostáva svetlý).

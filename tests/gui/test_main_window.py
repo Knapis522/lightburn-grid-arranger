@@ -70,6 +70,7 @@ def test_t_mvp06_empty_selection_blocks_save(make_window, tmp_path):
 def test_t_mvp11_overrun_blocks_save_and_names_item(make_window, tmp_path):
     w = make_window("en")
     w.open_project(write(tmp_path, four()))
+    w.combo_boards.setCurrentIndex(w.combo_boards.findData("none"))  # bez rozdělení na desky
     w.spin_bw.setValue(150)
     assert not w.act_save.isEnabled()
     assert any("extends beyond the usable board area" in t for t in w.issues())
@@ -636,7 +637,7 @@ def test_settings_dialog_is_modal_and_applies_on_ok_or_apply(make_window, tmp_pa
     w.act_settings.trigger()  # ikona na liště / Ctrl+,
     assert len(shown) == 2 and w.act_settings.shortcut().toString() == "Ctrl+,"
     dlg = shown[0]
-    assert isinstance(dlg, SettingsDialog) and dlg.isModal() and dlg.pages.count() == 4
+    assert isinstance(dlg, SettingsDialog) and dlg.isModal() and dlg.pages.count() == 5
     assert dlg.values() == dlg.current()
     apply_btn = dlg.buttons.button(QDialogButtonBox.StandardButton.Apply)
     assert not apply_btn.isEnabled()
@@ -1154,3 +1155,74 @@ def test_saving_clears_unsaved_state_and_blocked_layout_offers_only_discard(make
     assert w.is_dirty() and not w.act_save.isEnabled()
     w._unsaved_answers = ["cancel"]
     assert not w.confirm_leave_project() and w._dialogs[-1] == ("unsaved", False)
+
+
+def test_boards_split_tabs_and_save_as_pages(make_window, tmp_path):
+    from grid_arranger.adapters.lightburn.read import load_project
+
+    w = make_window("en")
+    w.open_project(write(tmp_path, project([card(0, 400 + 70 * i, text=f"K{i + 1}") for i in range(9)], mirror_x=False)))
+    w.chk_auto_cols.setChecked(True)
+    for spin, v in ((w.spin_bw, 230), (w.spin_bh, 150)):
+        spin.set_mm(v)
+    assert [len(b.layout.placements) for b in w.job.boards] == [4, 4, 1]
+    assert w.tabs_boards.isVisible() or w.tabs_boards.count() == 3
+    assert any("split into 3 boards (4 + 4 + 1 pieces)" in t for t in w.issues())
+    w.tabs_boards.setCurrentIndex(2)
+    assert w.board_index == 2 and w.plan is w.job.boards[2] and w.lbl_summary.text().startswith("Board 3 of 3:")
+    out = w.save_new_project(confirm=False)
+    assert [len(load_project(out, k).items) for k in range(3)] == [4, 4, 1]
+    assert load_project(out, 1).pages[1].name == "Stránka 1 – board 2"
+    w.combo_boards.setCurrentIndex(w.combo_boards.findData("even"))
+    assert [len(b.layout.placements) for b in w.job.boards] == [3, 3, 3]
+    w.chk_board_fill.setChecked(True)
+    w.combo_boards.setCurrentIndex(w.combo_boards.findData("sequential"))
+    assert [len(b.layout.placements) for b in w.job.boards] == [4, 4, 4]
+    assert any("Added 3 copies" in t for t in w.issues())
+    w.undo()
+    assert not w.chk_board_fill.isChecked() or w.combo_boards.currentData() == "even"
+
+
+def test_boards_as_separate_files_setting(make_window, tmp_path, settings):
+    from grid_arranger.adapters.lightburn.read import load_project
+
+    settings.set_board_output("files")
+    w = make_window("en")
+    w.open_project(write(tmp_path, project([card(0, 400 + 70 * i, text=f"K{i + 1}") for i in range(6)], mirror_x=False)))
+    w.chk_auto_cols.setChecked(True)
+    w.spin_bw.set_mm(230)
+    w.spin_bh.set_mm(150)
+    w.save_new_project(confirm=False)
+    files = sorted(tmp_path.glob("karty__grid_001__board*.lbrn2"))
+    assert [f.name for f in files] == ["karty__grid_001__board1.lbrn2", "karty__grid_001__board2.lbrn2"]
+    assert [len(load_project(f).items) for f in files] == [4, 2]
+
+
+def test_page_choice_for_project_with_pages(make_window, tmp_path):
+    from tests.integration.test_boards import PageG
+
+    w = make_window("en")
+    data = project([card(0, 0, text="A"), PageG("Druha", [card(0, 0, text="B"), card(0, 100, text="C")])], mirror_x=False)
+    w.open_project(write(tmp_path, data))
+    assert w.combo_page.count() == 2 and w.combo_page.isVisibleTo(w)
+    assert [it.label for it in w.project.items] == ["A"]
+    w.combo_page.setCurrentIndex(1)
+    w._on_page_chosen(1)
+    assert w.project.page == 1 and [it.label for it in w.project.items] == ["B", "C"]
+
+
+def test_rename_item_is_remembered_for_the_file(make_window, tmp_path, settings):
+    w = make_window("en")
+    src = write(tmp_path, project([card(10, 20, text="A"), card(300, 400, text="B")]))
+    w.open_project(src)
+    w._ask_text = lambda title, label, value: "Klíčenka"
+    assert w.rename_item("G2")
+    assert "Klíčenka" in _row(w, "G2").text()
+    w.add_copies(["G2"], 1)
+    assert "Klíčenka" in _row(w, "G2+1").text()
+    w2 = make_window("en")
+    w2.open_project(src)
+    assert w2.labels == {"G2": "Klíčenka"}
+    w2._ask_text = lambda title, label, value: ""
+    w2.rename_item("G2")
+    assert w2.labels == {} and settings.item_labels(w2.project.info.sha256) == {}

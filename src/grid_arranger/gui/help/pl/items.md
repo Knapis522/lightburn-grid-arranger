@@ -7,6 +7,7 @@ Po otwarciu projektu (ikona **Otwórz projekt** na pasku narzędzi, **Plik → O
 - **Szare** elementy („nie można przesunąć”) zostały odrzucone — najedź na nie myszą, aby zobaczyć powód. Nigdy nie są przesuwane.
 - ⚠ oznacza ostrzeżenie (np. tekst, którego nie można zmierzyć) — element można użyć, ale sprawdź go w Preview.
 - **Pomijanie obiektów:** zaznacz pozycje na liście (również szare) i naciśnij **Delete** (albo **Edycja → Pomiń w wyniku** lub prawy przycisk myszy). Trafiają przekreślone na koniec listy i nie ma ich w zapisanym projekcie — przydatne, gdy z dużego projektu potrzebujesz tylko części. **Edycja → Przywróć pominięte obiekty** przywraca zaznaczone. Zaznaczone kopie są po prostu usuwane. Oryginalny projekt nigdy się nie zmienia.
+- **Zmiana nazwy:** F2, dwuklik lub prawy przycisk → *Zmień nazwę elementu…* nadaje elementowi własną nazwę (np. „Brelok Piotr“). Nazwa działa tylko w aplikacji — na liście, w protokole i w nazwach nowych stron — i nie jest zapisywana w projekcie LightBurn. Aplikacja zapamiętuje nazwy dla danego pliku.
 
 Kolejność: **chwyć element w podglądzie myszą i przeciągnij go na miejsce innego elementu** — zielona ramka pokazuje, gdzie wyląduje; **oba elementy zamieniają się miejscami**, pozostałe zostają, a lista jest numerowana od nowa. Puszczenie poza elementami anuluje przeciąganie. Albo zaznacz element na liście i użyj **W górę / W dół**. Nowo zaznaczony element trafia na koniec. **Kolejność domyślna** przywraca kolejność z pliku. **Zaznacz wszystko / Odznacz wszystko** zmieniają zaznaczenie naraz.
 

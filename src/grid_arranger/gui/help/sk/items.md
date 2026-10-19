@@ -7,6 +7,7 @@ Po otvorení projektu (ikona **Otvoriť projekt** na paneli nástrojov, **Súbor
 - **Sivé** výrobky („nedá sa presunúť“) boli odmietnuté — po podržaní myši sa zobrazí dôvod. Nikdy sa nepresúvajú.
 - ⚠ označuje upozornenie (napr. text, ktorý nemožno zmerať) — výrobok možno použiť, ale skontrolujte ho v Preview.
 - **Vynechanie objektov:** vyberte položky v zozname (aj sivé) a stlačte **Delete** (alebo **Úpravy → Vynechať z výstupu**, prípadne pravým tlačidlom). Presunú sa prečiarknuté na koniec zoznamu a v uloženom projekte nebudú — hodí sa, keď z rozsiahleho projektu potrebujete len časť. **Úpravy → Obnoviť vynechané objekty** vybrané vráti. Vybrané kópie sa jednoducho odoberú. Pôvodný projekt sa nikdy nemení.
+- **Premenovanie:** F2, dvojklik alebo pravé tlačidlo → *Premenovať výrobok…* dá výrobku vlastný názov (napr. „Kľúčenka Peter“). Názov je len v aplikácii — v zozname, protokole a v názvoch nových strán — do projektu LightBurnu sa nezapisuje. Aplikácia si názvy pre daný súbor pamätá.
 
 Poradie: **výrobok v náhľade chyťte myšou a pretiahnite na miesto iného výrobku** — zelený rámik ukazuje, kam dopadne; **oba výrobky si vymenia miesta**, ostatné zostanú a zoznam sa prečísluje. Pustenie mimo výrobkov ťahanie zruší. Alebo výrobok vyberte v zozname a použite **Hore / Dole**. Novo zaškrtnutý výrobok sa pridá na koniec. **Predvolené poradie** obnoví poradie zo súboru. **Vybrať všetko / Zrušiť výber** zmenia výber naraz.
 

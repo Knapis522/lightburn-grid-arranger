@@ -24,6 +24,10 @@ TEMPLATES: dict[str, str] = {
     "unknown_orientation": QT_TRANSLATE_NOOP("Messages", "The project has an invalid mirror setting."),
     "unknown_project_attribute": QT_TRANSLATE_NOOP("Messages", "The project contains unknown properties ({attrs}) and cannot be processed safely."),
     "multi_page_unsupported": QT_TRANSLATE_NOOP("Messages", "Projects with several pages are not supported."),
+    "unknown_page_format": QT_TRANSLATE_NOOP("Messages", "A page of the project ({page}) has an unknown format and cannot be processed safely."),
+    "unknown_page": QT_TRANSLATE_NOOP("Messages", "The project has no page {page}."),
+    "invalid_board_mode": QT_TRANSLATE_NOOP("Messages", "Unknown way of splitting into boards."),
+    "too_many_boards": QT_TRANSLATE_NOOP("Messages", "The pieces would need more than {count} boards."),
     "convert_needs_whole_project": QT_TRANSLATE_NOOP("Messages", "To prepare the project for a laser with a different origin, all items must be selected and the project must not contain other objects ({objects}) — they would be mirrored on the other laser. Tick them, or leave them out of the output."),
     "bad_header_change": QT_TRANSLATE_NOOP("Messages", "The project header could not be changed for the target laser ({attr})."),
     # výrobek

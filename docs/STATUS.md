@@ -1,7 +1,7 @@
 # Stav projektu
 
 **Aktualizováno:** 2026-10-18
-**Verze specifikace:** 1.29 (`docs/specification.md`)
+**Verze specifikace:** 1.30 (`docs/specification.md`)
 **Verze aplikace:** rozpracovaná `0.1.0-alpha.6` (nevydaná). Poslední vydaná: `v0.1.0-alpha.5` (2026-10-18, GitHub Pre-release); předchozí `v0.1.0-alpha.4` (2026-10-18), `v0.1.0-alpha.3` (2026-10-17, `a804585`), `v0.1.0-alpha.2` (2026-10-17, `d8c0cc9`), `v0.1.0-alpha.1` (2026-10-16, `64a5d00`).
 
 > Tento soubor je hlavní předávací dokument. Při navázání práce: přečíst tento soubor → `ROADMAP.md` → relevantní kapitolu specifikace. Nepředpokládat, že funkce funguje jen proto, že existuje kód.
@@ -78,3 +78,4 @@
 - 2026-10-18 — spec. v1.27 (přání vlastníka): **vynechání objektů z výstupu** — nezaškrtnuté objekty se ve výchozím stavu nezapíší (Nastavení → Uložení → Ponechat na místě = dosavadní chování), Delete vynechá vybrané (i šedé skupiny), Úpravy → Obnovit vynechané objekty; sdílená geometrie z vynechaného tvaru se přesune do prvního ponechaného, nezávislá kontrola rozšířena. Ověřeno na všech testovacích projektech vlastníka (každý tvar vynechán zvlášť, kontrola bez problémů). 558 testů. Vynechávání ověřeno vlastníkem v aplikaci i v LightBurnu (KAL-07, 2026-10-19). Rozpracováno: více desek (V20-01, stránky LightBurnu) — čeká vzorky KAL-06.
 - 2026-10-19 — spec. v1.28 (připomínka vlastníka): **upozornění na neuložené rozložení** při zavření aplikace, otevření jiného projektu a instalaci aktualizace (Uložit / Neukládat / Zrušit), hvězdička v titulku. 561 testů.
 - 2026-10-19 — ruční testy vlastníka: KAL-07 (vynechané objekty v LightBurnu) a upozornění na neuložené rozložení v pořádku; **KAL-06** (formát stránek) zdokumentován — Preview/Frame jen aktivní stránky. Spec. v1.29: V20-01 jako stránky LightBurnu (návrh, implementace nezahájena).
+- 2026-10-19 — spec. v1.30: **více desek** (V20-01) — rozdělení postupně / rovnoměrně / podle výrobků, doplnění poslední desky (u výrobků jejich kopiemi), záložky desek nad náhledem, výstup jako nové stránky LightBurnu (výchozí) nebo samostatné soubory, projekt se stránkami (volba rozkládané stránky), upozornění nad počet desek; **přejmenování výrobků** (jen v aplikaci). 579 testů. **Čeká KAL-08** (výstupy `kal08\` otevřít v LightBurnu).

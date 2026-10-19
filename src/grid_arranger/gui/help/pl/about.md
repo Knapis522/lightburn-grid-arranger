@@ -4,6 +4,7 @@
 - Sprawdzono z: LightBurn 2.2.00, projektami `.lbrn2`, laserami z punktem zerowym w dowolnym rogu (lewy i prawy górny na prawdziwych laserach, lewy i prawy dolny z urządzeniami testowymi w LightBurn).
 - Aplikacja działa **offline** i nie steruje laserem. Jedynym połączeniem z internetem jest sprawdzanie aktualizacji na GitHub (bez żadnych danych o projektach); można je wyłączyć w **Ustawienia → Aktualizacje**.
 - **Ustawienia** (pozycja na pasku menu, ikona koła zębatego, Ctrl+,) otwierają osobne okno ze stronami *Ogólne*, *Lasery* (katalog laserów — zobacz [Projekt dla innego lasera](prepare.md)), *Zapisywanie* (niezaznaczone obiekty, protokół zapisu) i *Aktualizacje*. Zmiany obowiązują po **OK** lub **Zastosuj**; **Anuluj** zamyka okno bez zmian (po *Zastosuj* przycisk nazywa się **Zamknij**).
+- **Ustawienia → Płyty:** domyślny sposób podziału na kilka płyt, uzupełnianie ostatniej płyty, ostrzeżenie powyżej liczby płyt oraz zapis jako strony lub osobne pliki — zobacz [Kilka płyt](board.md).
 - **Język:** **Ustawienia → Ogólne → Język** — Automatycznie (według Windows), Čeština, English, Deutsch, Slovenčina, Polski, Français, Español, Italiano. Każdy język jest podany własną nazwą.
 - **Panel układu:** **Ustawienia → Ogólne → Panel układu** — sekcje Projekt, Elementy, Siatka, Umieszczenie i Płyta z lewej lub z prawej strony podglądu.
 - Wygląd: **Ustawienia → Ogólne → Wygląd** (automatycznie według Windows; jasny = cała aplikacja jasna; ciemny = ciemne elementy sterujące, podgląd płyty pozostaje jasny).

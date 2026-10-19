@@ -15,4 +15,8 @@ Un progetto salvato per un laser può essere preparato per un altro, ad es. da u
 - Con un'altra origine devono essere selezionati **tutti gli elementi** e il progetto non deve contenere altri oggetti (sull'altro laser resterebbero specchiati). Questo riguarda solo gli oggetti mantenuti nell'output — gli oggetti non spuntati ed esclusi non sono nell'output (impostazione predefinita), quindi non sono d'ostacolo.
 - **Le impostazioni dei livelli (potenza, velocità) non vengono convertite** — restano come nel progetto originale. Apri l'output in LightBurn con il laser di destinazione e controlla i livelli.
 
+## Progetto con più pagine
+
+Si può aprire anche un progetto con più pagine (**Window → Pages** in LightBurn). Nella sezione Progetto scegli **Pagina da disporre:**; le altre pagine restano invariate. Per impostazione predefinita viene scelta la pagina attiva al salvataggio del progetto.
+
 [← Introduzione](index.md) · [Avanti: elementi →](items.md)

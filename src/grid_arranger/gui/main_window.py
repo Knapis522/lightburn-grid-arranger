@@ -29,6 +29,7 @@ from PySide6.QtWidgets import (
     QScrollArea,
     QSpinBox,
     QSplitter,
+    QTabBar,
     QVBoxLayout,
     QWidget,
 )
@@ -38,7 +39,8 @@ from ..adapters.lightburn.read import LoadedProject, load_project
 from ..adapters.lightburn.render import ProjectRenderer
 from ..adapters.lightburn.write import name_tag, next_output_path
 from ..application.arrange_job import (
-    AUTO_COLUMNS, ROTATION_MODES, ArrangeParams, ItemGeometry, MaterialInput, Plan, TargetLaser, check_output_path, execute, make_plan,
+    AUTO_COLUMNS, ROTATION_MODES, ArrangeParams, ItemGeometry, Job, MaterialInput, Plan, TargetLaser, check_output_path, execute_job,
+    make_job, make_plan,
     material_to_core, normalize_angle, top_index,
 )
 from ..core.collision import usable_area
@@ -50,7 +52,7 @@ from .i18n import LocaleManager
 from .messages import issue_text, message
 from .history import History
 from .preview import PreviewView
-from .settings import BoardPreset, UserSettings
+from .settings import BOARD_MODES, BoardPreset, UserSettings
 from .theme import apply_theme
 from .toolbar import ReorderableToolBar, separator
 from .widgets import UNITS, LengthSpin, Section, Unit, section_stylesheet
@@ -79,6 +81,12 @@ class MainWindow(QMainWindow):
         self.project: LoadedProject | None = None
         self.order: tuple[str, ...] = ()
         self.plan: Plan | None = None
+        """Rozložení zobrazené desky (záložka nad náhledem)."""
+        self.job: Job | None = None
+        """Rozložení všech desek (spec. v1.29)."""
+        self.board_index = 0
+        self.labels: dict[str, str] = {}
+        """Názvy výrobků zadané uživatelem (jen v aplikaci)."""
         self.plan_error: GridError | None = None
         self._rebuilding = False
         self._geometry = None
@@ -164,6 +172,10 @@ class MainWindow(QMainWindow):
         self.act_restore = QAction(self)
         self.act_restore.triggered.connect(self.restore_selected)
         self.act_restore.setEnabled(False)
+        self.act_rename = QAction(self)  # název výrobku jen v aplikaci (spec. v1.29)
+        self.act_rename.setShortcut(QKeySequence("F2"))
+        self.act_rename.triggered.connect(lambda: self.rename_item())
+        self.act_rename.setEnabled(False)
         for a in (self.act_copy, self.act_paste, self.act_duplicate, self.act_remove_copies):
             a.setShortcutContext(Qt.ShortcutContext.WindowShortcut)
 
@@ -177,7 +189,7 @@ class MainWindow(QMainWindow):
         self.menu_edit.addSeparator()
         self.menu_edit.addActions([self.act_copy, self.act_paste, self.act_duplicate, self.act_fill_board])
         self.menu_edit.addSeparator()
-        self.menu_edit.addActions([self.act_remove_copies, self.act_restore])
+        self.menu_edit.addActions([self.act_remove_copies, self.act_restore, self.act_rename])
         self.menu_edit.addSeparator()
         mb.addAction(self.act_settings_menu)  # položka lišty menu otevře rovnou okno Nastavení
         self.menu_help = mb.addMenu("")
@@ -257,6 +269,19 @@ class MainWindow(QMainWindow):
         trow.addStretch(1)
         pv.addLayout(trow)
         self.target_name: str | None = None
+        # stránka LightBurnu, která se rozkládá (projekt se stránkami; spec. v1.29)
+        prow = QHBoxLayout()
+        self.lbl_page = QLabel()
+        self.combo_page = QComboBox()
+        self.combo_page.setSizeAdjustPolicy(QComboBox.SizeAdjustPolicy.AdjustToContents)
+        self.combo_page.activated.connect(self._on_page_chosen)
+        self.lbl_page.setBuddy(self.combo_page)
+        prow.addWidget(self.lbl_page)
+        prow.addWidget(self.combo_page)
+        prow.addStretch(1)
+        pv.addLayout(prow)
+        self.lbl_page.hide()
+        self.combo_page.hide()
 
         self.box_items, body = section("items")
         iv = QVBoxLayout(body)
@@ -264,7 +289,8 @@ class MainWindow(QMainWindow):
         self.list_items.setMinimumHeight(180)
         self.list_items.setSelectionMode(QAbstractItemView.SelectionMode.ExtendedSelection)
         self.list_items.setContextMenuPolicy(Qt.ContextMenuPolicy.ActionsContextMenu)
-        self.list_items.addActions([self.act_remove_copies, self.act_restore])
+        self.list_items.addActions([self.act_rename, self.act_remove_copies, self.act_restore])
+        self.list_items.itemDoubleClicked.connect(lambda li: self.rename_item(li.data(Qt.ItemDataRole.UserRole)))
         self.list_items.itemChanged.connect(self._on_item_changed)
         self.list_items.itemSelectionChanged.connect(self._on_list_selection)
         iv.addWidget(self.list_items)
@@ -392,6 +418,20 @@ class MainWindow(QMainWindow):
         self.btn_board_default = QPushButton()
         self.btn_board_default.clicked.connect(self.save_board_default)
         gb.addWidget(self.btn_board_default, 4, 0, 1, 4)
+        # více desek (spec. v1.29): co dělat, když se kusy nevejdou
+        self.lbl_boards = QLabel()
+        self.combo_boards = QComboBox()
+        for k in BOARD_MODES:
+            self.combo_boards.addItem("", k)
+        self.combo_boards.setCurrentIndex(self.combo_boards.findData(self.settings.board_mode()))
+        self.lbl_boards.setBuddy(self.combo_boards)
+        gb.addWidget(self.lbl_boards, 5, 0)
+        gb.addWidget(self.combo_boards, 5, 1, 1, 3)
+        self.chk_board_fill = QCheckBox()
+        self.chk_board_fill.setChecked(self.settings.board_fill())
+        gb.addWidget(self.chk_board_fill, 6, 0, 1, 4)
+        self.combo_boards.currentIndexChanged.connect(self._on_boards_changed)
+        self.chk_board_fill.toggled.connect(self.recompute)
         lv.addStretch(1)
 
         self.length_spins = (self.spin_gap_x, self.spin_gap_y, self.spin_start_x, self.spin_start_y,
@@ -413,6 +453,12 @@ class MainWindow(QMainWindow):
         # --- pravý panel
         right = QWidget()
         rv = QVBoxLayout(right)
+        self.tabs_boards = QTabBar()  # desky jako stránky v LightBurnu (spec. v1.29)
+        self.tabs_boards.setDrawBase(False)
+        self.tabs_boards.setExpanding(False)
+        self.tabs_boards.currentChanged.connect(self._on_board_tab)
+        self.tabs_boards.hide()
+        rv.addWidget(self.tabs_boards)
         self.preview = PreviewView()
         self.preview.itemDropped.connect(self._on_item_dropped)
         self.preview.itemClicked.connect(self._on_preview_clicked)
@@ -482,6 +528,7 @@ class MainWindow(QMainWindow):
         self.chk_auto_cols.setToolTip(self.tr("As many columns as fit on the board width"))
         self.act_remove_copies.setText(self.tr("&Leave out of the output"))
         self.act_restore.setText(self.tr("Res&tore left-out objects"))
+        self.act_rename.setText(self.tr("Re&name item…"))
         self.act_clear_selection.setText(self.tr("Clear &selection"))
         self.toolbar.setWindowTitle(self.tr("Toolbar"))
         for act in self._toolbar_icons:
@@ -549,6 +596,15 @@ class MainWindow(QMainWindow):
         for lbl, t in zip(self.lbls_board, labels):
             lbl.setText(t)
         self.btn_board_default.setText(self.tr("Save as default for this laser"))
+        self.lbl_boards.setText(self.tr("If it does not fit:"))
+        self._fill_combo(self.combo_boards, BOARD_MODES, [
+            self.tr("Split into boards one after another"), self.tr("Split into boards evenly"),
+            self.tr("Split into boards by item"), self.tr("Do not split (error)")])
+        self.combo_boards.setToolTip(self.tr("What to do when the pieces do not fit on one board. Extra boards are "
+                                             "saved as pages of the project (or as separate files — Settings → Boards)."))
+        self._sync_fill_text()
+        self.lbl_page.setText(self.tr("Arrange page:"))
+        self.combo_page.setToolTip(self.tr("The project has several pages; the other pages stay unchanged."))
         self.chk_art.setText(self.tr("Show artwork"))
         self._update_project_labels()
         self._rebuild_item_list()
@@ -691,7 +747,28 @@ class MainWindow(QMainWindow):
         )
 
     # ====================================================================== projekt
-    def open_project(self, path: str | Path | None = None) -> bool:
+    def _fill_page_combo(self) -> None:
+        pages = self.project.pages if self.project is not None else []
+        many = len(pages) > 1
+        self.lbl_page.setVisible(many)
+        self.combo_page.setVisible(many)
+        self.combo_page.blockSignals(True)
+        self.combo_page.clear()
+        for pg in pages:
+            name = pg.name or self.tr("Page {n}").format(n=pg.index + 1)
+            self.combo_page.addItem(f"{pg.index + 1}. {name}", pg.index)
+        if self.project is not None:
+            self.combo_page.setCurrentIndex(self.project.page)
+        self.combo_page.blockSignals(False)
+
+    def _on_page_chosen(self, index: int) -> None:
+        page = self.combo_page.itemData(index)
+        if self.project is None or page is None or page == self.project.page:
+            return
+        if not self.open_project(self.project.info.path, page):
+            self._fill_page_combo()  # zrušeno: zpět na rozkládanou stránku
+
+    def open_project(self, path: str | Path | None = None, page: int | None = None) -> bool:
         if not self.confirm_leave_project():
             return False
         if path is None:
@@ -701,11 +778,13 @@ class MainWindow(QMainWindow):
             if not path:
                 return False
         try:
-            project = load_project(path)
+            project = load_project(path, page)
         except GridError as e:
             self._error(message(e.code, **e.params))
             return False
         self.project = project
+        self.labels = self.settings.item_labels(project.info.sha256)
+        self.board_index = 0
         self.settings.remember_laser(project.info.device_name, project.info.orientation.origin)
         self.target_name = None
         self.last_saved = None
@@ -725,6 +804,7 @@ class MainWindow(QMainWindow):
         if preset is not None:
             self._set_board(preset)
         self._update_project_labels()
+        self._fill_page_combo()
         self._rebuild_item_list()
         self.recompute()
         self._mark_clean()
@@ -745,7 +825,7 @@ class MainWindow(QMainWindow):
         """Před zavřením / otevřením jiného projektu: neuložené změny uložit, zahodit, nebo akci zrušit."""
         if not self.is_dirty():
             return True
-        can_save = self.plan is not None and self.plan.report.can_save
+        can_save = self.job is not None and self.job.can_save
         answer = self._ask_unsaved(can_save)
         if answer == "save":
             return self.save_new_project(ask_after=False) is not None
@@ -914,11 +994,12 @@ class MainWindow(QMainWindow):
             b = it.file_bbox
             size = self.tr("{w} × {h} {unit}").format(w=self._len(b[2] - b[0], short=True), h=self._len(b[3] - b[1], short=True),
                                                     unit=self.unit.suffix)
-            label = f"{it.label}  " + self.tr("(copy of {src})").format(src=self.copies[it.id]) if it.id in self.copies else it.label
+            name = self.labels.get(self.copies.get(it.id, it.id), it.label)
+            label = f"{name}  " + self.tr("(copy of {src})").format(src=self.copies[it.id]) if it.id in self.copies else name
             text = f"{num}{it.id}  {label}  —  {size}"
             if it.id not in self.copies and self.quantity(it.id) > 1:
                 text += f"  ×{self.quantity(it.id)}"
-            angle = self.plan.rotations.get(it.id) if self.plan is not None else None
+            angle = self._rotations().get(it.id)
             manual = it.id in self.manual_angles
             if manual and not self.manual_angles[it.id]:
                 text += "  " + self.tr("(no rotation)")
@@ -936,7 +1017,7 @@ class MainWindow(QMainWindow):
     def _row_text(self, iid: str) -> str:
         """Text řádku pro volný objekt nebo vynechaný objekt."""
         if iid in self.omitted:
-            label = next((it.label for it in self.project.items if it.id == iid), "")
+            label = self.labels.get(iid) or next((it.label for it in self.project.items if it.id == iid), "")
             return f"{iid}  {label}  —  " + self.tr("left out")
         kind = next((ls.kind for ls in self.project.loose if ls.id == iid), "?")
         return f"{iid}  " + self.tr("loose object ({kind})").format(kind=kind)
@@ -974,13 +1055,86 @@ class MainWindow(QMainWindow):
     def _effective_angle(self, iid: str) -> float:
         if iid in self.manual_angles:
             return self.manual_angles[iid]
-        return self.plan.rotations.get(iid, 0.0) if self.plan is not None else 0.0
+        return self._rotations().get(iid, 0.0)
 
     def _on_list_selection(self) -> None:
         if self._rebuilding:
             return
         self.preview.set_selection(self.selected_ids() & set(self.order))
         self._sync_no_rotate_button()
+
+    # --- více desek a názvy výrobků (spec. v1.29) -------------------------------------------------
+    def _rotations(self) -> dict[str, float]:
+        if self.job is None:
+            return self.plan.rotations if self.plan is not None else {}
+        out: dict[str, float] = {}
+        for b in self.job.boards:
+            out.update(b.rotations)
+        return out
+
+    def _sync_fill_text(self) -> None:
+        by_item = self.combo_boards.currentData() == "product"
+        self.chk_board_fill.setText(self.tr("Fill each item's last board with its copies") if by_item
+                                    else self.tr("Fill the last board with copies"))
+        self.chk_board_fill.setEnabled(self.combo_boards.currentData() != "none")
+
+    def _on_boards_changed(self) -> None:
+        self._sync_fill_text()
+        self.recompute()
+
+    def _sync_board_tabs(self) -> None:
+        n = len(self.job.boards) if self.job is not None else 1
+        tabs = self.tabs_boards
+        tabs.blockSignals(True)
+        while tabs.count() > n:
+            tabs.removeTab(tabs.count() - 1)
+        while tabs.count() < n:
+            tabs.addTab("")
+        for k in range(n):
+            text = self.tr("Board {n}").format(n=k + 1)
+            if self.job is not None and k > 0 and self.job.params.boards == "product":
+                text = self.job.names[k - 1].split(" – ")[-1] if self.job.names else text
+                text = self.tr("Board {n}").format(n=k + 1) + f" – {text}"
+            bad = self.job is not None and not self.job.boards[k].report.can_save
+            tabs.setTabText(k, ("✖ " if bad else "") + text)
+        tabs.setCurrentIndex(self.board_index)
+        tabs.setVisible(n > 1)
+        tabs.blockSignals(False)
+
+    def _on_board_tab(self, index: int) -> None:
+        if self.job is None or not 0 <= index < len(self.job.boards):
+            return
+        self.board_index = index
+        self.plan = self.job.boards[index]
+        self._sync_corner_fields()
+        self._draw()
+        self._refresh_issue_texts()
+
+    def rename_item(self, iid: str | None = None) -> bool:
+        """Název výrobku jen v aplikaci (seznam, protokol, názvy stránek); u kopie se přejmenuje originál."""
+        if self.project is None:
+            return False
+        if iid is None:
+            iid = self.current_id()
+        if iid is None:
+            return False
+        src = self.copies.get(iid, iid)
+        it = next((x for x in self.project.items if x.id == src), None)
+        if it is None:
+            return False
+        name = self._ask_text(self.tr("Rename item"), self.tr("Name of {id} (empty = from the project):").format(id=src),
+                              self.labels.get(src, it.label))
+        if name is None:
+            return False
+        name = name.strip()
+        if name and name != it.label:
+            self.labels[src] = name
+        else:
+            self.labels.pop(src, None)
+        self.settings.set_item_labels(self.project.info.sha256, self.labels)
+        self._rebuild_item_list(keep=iid)
+        self.recompute()
+        return True
 
     # --- krok zpět / vpřed ----------------------------------------------------------------------
     def _snapshot(self) -> tuple:
@@ -993,6 +1147,7 @@ class MainWindow(QMainWindow):
             tuple(round(w.mm(), 6) for w in (self.spin_bw, self.spin_bh, self.spin_bx, self.spin_by,
                                               self.spin_ml, self.spin_mr, self.spin_mt, self.spin_mb)),
             self.target_name, self.chk_auto_cols.isChecked(), tuple(sorted(self.omitted)),
+            self.combo_boards.currentData(), self.chk_board_fill.isChecked(),
         )
 
     def _record_history(self) -> None:
@@ -1008,9 +1163,17 @@ class MainWindow(QMainWindow):
     def _restore(self, state: tuple | None) -> None:
         if state is None:
             return
-        order, copies, angles, cols, gx, gy, fill, rotation, anchor, start, board, target, auto_cols, omitted = state
+        order, copies, angles, cols, gx, gy, fill, rotation, anchor, start, board, target, auto_cols, omitted, \
+            boards, board_fill = state
         self._restoring = True
         try:
+            for w in (self.combo_boards, self.chk_board_fill):
+                w.blockSignals(True)
+            self.combo_boards.setCurrentIndex(max(0, self.combo_boards.findData(boards)))
+            self.chk_board_fill.setChecked(board_fill)
+            for w in (self.combo_boards, self.chk_board_fill):
+                w.blockSignals(False)
+            self._sync_fill_text()
             self.order, self.copies, self.manual_angles = tuple(order), dict(copies), dict(angles)
             self.omitted = set(omitted)
             self.target_name = target
@@ -1355,6 +1518,8 @@ class MainWindow(QMainWindow):
         self.act_copy.setEnabled(ok)
         self.act_duplicate.setEnabled(self.project is not None)
         self.act_paste.setEnabled(self.project is not None and bool(self._clipboard))
+        self.act_rename.setEnabled(self.project is not None and self.current_id() is not None
+                                   and self.current_id() not in {ls.id for ls in self.project.loose})
         if self.project is not None:
             copies, originals = self._omittable(self.selected_ids())
             self.act_remove_copies.setEnabled(bool(copies or originals))
@@ -1602,6 +1767,10 @@ class MainWindow(QMainWindow):
             copies={k: v for k, v in self.copies.items() if k in self.order},
             target=self._target(),
             omit=self.effective_omit(),
+            boards=self.combo_boards.currentData() or "none",
+            fill_last=self.chk_board_fill.isChecked(),
+            board_name=self.tr("{page} – board {n}"),
+            labels=dict(self.labels),
         )
 
     def recompute(self) -> None:
@@ -1611,10 +1780,14 @@ class MainWindow(QMainWindow):
             self._refresh_issue_texts()
             return
         p = self.params()
+        self.job = None
         try:
-            self.plan = make_plan(self.project, p, self._geometry)
+            self.job = make_job(self.project, p, self._geometry)
+            self.board_index = min(self.board_index, len(self.job.boards) - 1)
+            self.plan = self.job.boards[self.board_index]
         except GridError as e:
             self.plan_error = e
+        self._sync_board_tabs()
         self._sync_corner_fields()
         self._sync_auto_columns()
         self._sync_profile_combo()
@@ -1639,11 +1812,15 @@ class MainWindow(QMainWindow):
         sel = set(self.order)
         show = self.chk_art.isChecked()
         omit = self.effective_omit()
+        if self.job is not None:  # kusy rozmisťované na jiných deskách nejsou překážkou
+            sel |= {self.job.copies.get(pl.item_id, pl.item_id) for b in self.job.boards for pl in b.layout.placements}
         obstacles = [(ob.id, ob.bounds, self.renderer.strokes(ob.id) if show else [])
-                     for ob in proj.obstacles_for(sel) if ob.bounds is not None and ob.id not in omit]
+                     for ob in proj.obstacles_for(sel) if ob.bounds is not None and ob.id not in omit] \
+            if self.board_index == 0 else []
         problems: set[str] = set()
         if self.plan is not None:
-            items = [(pl.item_id, pl.index + 1, pl.target_bounds, self.renderer.strokes(self.copies.get(pl.item_id, pl.item_id)) if show else [], pl.dx, pl.dy,
+            src_of = self.job.copies if self.job is not None else self.copies
+            items = [(pl.item_id, pl.index + 1, pl.target_bounds, self.renderer.strokes(src_of.get(pl.item_id, pl.item_id)) if show else [], pl.dx, pl.dy,
                       self.plan.rotations.get(pl.item_id, 0.0), self.plan.pivots.get(pl.item_id, (0.0, 0.0)))
                      for pl in self.plan.layout.placements]
             for i in self.plan.report.errors:
@@ -1679,19 +1856,43 @@ class MainWindow(QMainWindow):
         elif self.plan is not None:
             lay = self.plan.layout
             cx, cy = self.plan.origin_corner_lightburn
-            self.lbl_summary.setText(
-                self.tr("Grid {c} × {r}: {w} × {h} {unit}. Corner at the origin side: X {x}, Y {y}.").format(
-                    c=lay.columns, r=lay.rows, w=self._len(lay.grid_bounds.width), h=self._len(lay.grid_bounds.height),
-                    x=self._len(cx), y=self._len(cy), unit=self.unit.suffix))
-            for i in self.plan.report.errors:
-                self.list_issues.addItem("✖ " + issue_text(i.code, i.item_ids, i.params))
-            for i in self.plan.report.warnings:
-                self.list_issues.addItem("⚠ " + issue_text(i.code, i.item_ids, i.params))
+            boards = self.job.boards if self.job is not None else [self.plan]
+            multi = len(boards) > 1
+            text = self.tr("Grid {c} × {r}: {w} × {h} {unit}. Corner at the origin side: X {x}, Y {y}.").format(
+                c=lay.columns, r=lay.rows, w=self._len(lay.grid_bounds.width), h=self._len(lay.grid_bounds.height),
+                x=self._len(cx), y=self._len(cy), unit=self.unit.suffix)
+            if multi:
+                text = self.tr("Board {n} of {count}:").format(n=self.board_index + 1, count=len(boards)) + " " + text
+            self.lbl_summary.setText(text)
+            if multi:
+                pieces = " + ".join(str(len(b.layout.placements)) for b in boards)
+                where = (self.tr("Boards 2 and on are saved as separate files.") if self.settings.board_output() == "files"
+                         else self.tr("Boards 2 and on are saved as new pages of the project."))
+                self.list_issues.addItem("ℹ " + self.tr("The pieces are split into {count} boards ({pieces} pieces).").format(
+                    count=len(boards), pieces=pieces) + " " + where)
+                limit = self.settings.board_limit()
+                if limit and len(boards) > limit:
+                    self.list_issues.addItem("⚠ " + self.tr(
+                        "The layout needs {count} boards — more than {limit}. Check the number of pieces.").format(
+                        count=len(boards), limit=limit))
+            if self.job is not None and self.job.filled:
+                self.list_issues.addItem("ℹ " + self.tr("Added %n copy(ies) to fill the board.", "", len(self.job.filled)))
+            for k, b in enumerate(boards, start=1):
+                pre = self.tr("Board {n}:").format(n=k) + " " if multi else ""
+                for i in b.report.errors:
+                    self.list_issues.addItem("✖ " + pre + issue_text(i.code, i.item_ids, i.params))
+            seen: set[tuple] = set()
+            for b in boards:
+                for i in b.report.warnings:
+                    key = (i.code, tuple(i.item_ids))
+                    if key not in seen:
+                        seen.add(key)
+                        self.list_issues.addItem("⚠ " + issue_text(i.code, i.item_ids, i.params))
             for iid in self.order:
                 for w in self._lookup(iid).warnings:
                     self.list_issues.addItem(f"⚠ {iid}: " + message(w.code, **w.params))
-            can_save = self.plan.report.can_save
-            if can_save and not self.plan.report.errors:
+            can_save = self.job.can_save if self.job is not None else self.plan.report.can_save
+            if can_save and not any(b.report.errors for b in boards):
                 self.list_issues.insertItem(0, "✔ " + self.tr("The layout passed all checks."))
         self.act_save.setEnabled(can_save)
         self._fit_issue_list()
@@ -1717,7 +1918,7 @@ class MainWindow(QMainWindow):
 
     # ====================================================================== uložení
     def save_new_project(self, confirm: bool = True, ask_after: bool = True) -> Path | None:
-        if self.plan is None or not self.plan.report.can_save:
+        if self.plan is None or self.job is None or not self.job.can_save:
             return None
         src = self.project.info.path
         target: Path | None = next_output_path(src, tag=self._target_tag())  # návrh: puvodni__grid_NNN.lbrn2 vedle originálu
@@ -1731,11 +1932,15 @@ class MainWindow(QMainWindow):
             except GridError as e:  # existující soubor nebo originál: nic nepřepsat, nabídnout znovu
                 self._error(message(e.code, **e.params) + "\n\n" + self.tr("Choose another name or folder."))
         try:
-            res = execute(self.plan, output=target, protocol=self._protocol_target())
+            res = execute_job(self.job, output=target, protocol=self._protocol_target(),
+                              separate=self.settings.board_output() == "files", file_word=self.tr("board"))
         except GridError as e:
             self._error(message(e.code, **e.params))
             return None
-        text = self.tr("Saved:\n{out}").format(out=res.output)
+        text = self.tr("Saved:\n{out}").format(out="\n".join(str(o) for o in (res.outputs or [res.output])))
+        if len(self.job.boards) > 1 and len(res.outputs) <= 1:
+            text += "\n\n" + self.tr("Boards 2 to {count} are new pages of the project — switch pages in LightBurn "
+                                       "(Window → Pages) and cut them one at a time.").format(count=len(self.job.boards))
         if self.plan.omitted:
             text += "\n\n" + self.tr("Left out of the output: %n object(s).", "", len(self.plan.omitted))
         if res.protocol is not None:
@@ -1836,6 +2041,20 @@ class MainWindow(QMainWindow):
             self.set_panel_side(values["panel_side"])
         if values["protocol"] != s.protocol_mode():
             s.set_protocol_mode(values["protocol"])
+        boards_changed = False
+        if "board_mode" in values and values["board_mode"] != s.board_mode():
+            s.set_board_mode(values["board_mode"])
+            self.combo_boards.setCurrentIndex(self.combo_boards.findData(values["board_mode"]))  # výchozí i pro panel
+        if "board_fill" in values and values["board_fill"] != s.board_fill():
+            s.set_board_fill(values["board_fill"])
+            self.chk_board_fill.setChecked(values["board_fill"])
+        for key, getter, setter in (("board_limit", s.board_limit, s.set_board_limit),
+                                    ("board_output", s.board_output, s.set_board_output)):
+            if key in values and values[key] != getter():
+                setter(values[key])
+                boards_changed = True
+        if boards_changed and self.project is not None:
+            self._refresh_issue_texts()
         if "unselected" in values and values["unselected"] != s.unselected_policy():
             s.set_unselected_policy(values["unselected"])
             if self.project is not None:

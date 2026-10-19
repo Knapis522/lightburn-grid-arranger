@@ -28,7 +28,9 @@ APPLICATION = "GridArranger"
 LANGUAGES = ("auto", "cs", "en", "de", "sk", "pl", "fr", "es", "it")
 THEMES = ("auto", "light", "dark")
 PROTOCOL_MODES = ("none", "beside", "appdata")
-UNSELECTED_POLICIES = ("omit", "keep")  # nezaškrtnuté objekty: vynechat z výstupu / ponechat na místě (spec. v1.27)
+UNSELECTED_POLICIES = ("omit", "keep")
+BOARD_MODES = ("sequential", "even", "product", "none")  # když se nevejde (spec. v1.29)
+BOARD_OUTPUTS = ("pages", "files")  # desky jako stránky jednoho projektu / samostatné soubory  # nezaškrtnuté objekty: vynechat z výstupu / ponechat na místě (spec. v1.27)
 UNIT_KEYS = ("mm", "in")
 PANEL_SIDES = ("left", "right")
 ORIGINS = ("top_left", "top_right", "bottom_left", "bottom_right")
@@ -250,6 +252,65 @@ class UserSettings:
         if value not in PROTOCOL_MODES:
             raise ValueError(value)
         self._s.setValue("save/protocol", value)
+        self._s.sync()
+
+    # --- více desek (spec. v1.29) ---------------------------------------------------------------
+    def board_mode(self) -> str:
+        v = str(self._s.value("boards/mode", "sequential"))
+        return v if v in BOARD_MODES else "sequential"
+
+    def set_board_mode(self, value: str) -> None:
+        if value not in BOARD_MODES:
+            raise ValueError(value)
+        self._s.setValue("boards/mode", value)
+        self._s.sync()
+
+    def board_fill(self) -> bool:
+        return str(self._s.value("boards/fill", "false")).lower() == "true"
+
+    def set_board_fill(self, on: bool) -> None:
+        self._s.setValue("boards/fill", "true" if on else "false")
+        self._s.sync()
+
+    def board_limit(self) -> int:
+        """Upozornění nad tento počet desek; 0 = vypnuto."""
+        try:
+            return max(0, int(self._s.value("boards/limit", 10)))
+        except (TypeError, ValueError):
+            return 10
+
+    def set_board_limit(self, n: int) -> None:
+        self._s.setValue("boards/limit", max(0, int(n)))
+        self._s.sync()
+
+    def board_output(self) -> str:
+        v = str(self._s.value("boards/output", "pages"))
+        return v if v in BOARD_OUTPUTS else "pages"
+
+    def set_board_output(self, value: str) -> None:
+        if value not in BOARD_OUTPUTS:
+            raise ValueError(value)
+        self._s.setValue("boards/output", value)
+        self._s.sync()
+
+    # --- názvy výrobků (jen v aplikaci, podle obsahu souboru) ---------------------------------------
+    def item_labels(self, sha256: str) -> dict[str, str]:
+        import json
+
+        try:
+            data = json.loads(str(self._s.value(f"labels/{sha256}", "{}")))
+        except ValueError:
+            return {}
+        return {str(k): str(v) for k, v in data.items()} if isinstance(data, dict) else {}
+
+    def set_item_labels(self, sha256: str, labels: dict[str, str]) -> None:
+        import json
+
+        key = f"labels/{sha256}"
+        if labels:
+            self._s.setValue(key, json.dumps(labels, ensure_ascii=False))
+        else:
+            self._s.remove(key)
         self._s.sync()
 
     def unselected_policy(self) -> str:

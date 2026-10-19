@@ -15,4 +15,19 @@ Chyby (✖) uloženie blokujú a uvádzajú dotknuté výrobky. Upozornenia (⚠
 
 Kontrola pracuje s obrysmi v projekte, nie so skutočným prejazdom pri gravírovaní, kompenzáciou šírky rezu ani pohybom hlavy — preto je **Preview v LightBurne povinné**.
 
+## Viac dosiek
+
+Keď sa kusy nevojdú na jednu dosku, aplikácia ich rozdelí na viac dosiek. Ako, zvolíte v sekcii Doska v poli **Keď sa nevojde**:
+
+- *Rozdeliť na dosky postupne* (predvolené) — doska 1 plná, potom doska 2 …; najmenej dosiek.
+- *Rozdeliť na dosky rovnomerne* — na každej doske rovnaký počet kusov (napr. 50 → 17/17/16).
+- *Rozdeliť na dosky podľa výrobkov* — na každej doske len kusy jedného výrobku (originál a jeho kópie).
+- *Nerozdeľovať (chyba)* — ako doteraz: keď sa rozloženie nevojde, je zablokované.
+
+**Doplniť poslednú dosku kópiami** pridá kópie, kým nie je posledná doska plná (pri *podľa výrobkov* sa posledná doska každého výrobku doplní kópiami toho istého výrobku).
+
+Nad náhľadom sú záložky dosiek ako strany v LightBurne; záložka s chybou je označená ✖ a hlásenie uvádza dosku. Uložiť možno, len keď prejdú všetky dosky. Všetky dosky majú rovnaké nastavenie mriežky a rovnakú dosku; objekty ponechané na mieste (Nastavenia → Ukladanie) sú len na doske 1.
+
+**Uloženie:** doska 1 zostane na rozkladanej strane a dosky 2 … sa pridajú ako nové strany hneď za ňu („Strana 1 – doska 2“ …). V LightBurne prepínajte strany (**Window → Pages**) a páľte jednu dosku po druhej — Preview aj Frame pracujú len s aktívnou stranou. Prípadne **Nastavenia → Dosky → Ako samostatné súbory** uloží čo doska, to súbor (`…__doska1.lbrn2` …). Predvolené hodnoty (spôsob rozdelenia, doplnenie, upozornenie nad počet dosiek) sú v **Nastavenia → Dosky**.
+
 [← Mriežka](grid.md) · [Ďalej: uloženie →](save.md)

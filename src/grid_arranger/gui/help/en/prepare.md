@@ -15,4 +15,8 @@ A project saved for one laser can be prepared for another one, e.g. from a laser
 - With a different origin, **all items** must be selected and the project must not contain other objects (they would stay mirrored on the other laser). This only concerns objects kept in the output — unchecked and left-out objects are not in the output (the default), so they do not stand in the way.
 - **Layer settings (power, speed) are not converted** — they stay as in the original project. Open the output in LightBurn with the target laser and check the layers.
 
+## Project with several pages
+
+A project with several pages (**Window → Pages** in LightBurn) can be opened too. In the Project section choose **Arrange page:**; the other pages stay unchanged. By default the page that was active when the project was saved is chosen.
+
 [← Introduction](index.md) · [Next: items →](items.md)

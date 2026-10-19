@@ -15,4 +15,19 @@ Błędy (✖) blokują zapis i wskazują dotknięte elementy. Ostrzeżenia (⚠)
 
 Kontrola pracuje na konturach w projekcie, a nie na rzeczywistym overscanie przy grawerowaniu, kompensacji szerokości cięcia czy ruchu głowicy — dlatego **Preview w LightBurn jest obowiązkowe**.
 
+## Kilka płyt
+
+Gdy elementy nie mieszczą się na jednej płycie, aplikacja dzieli je na kilka płyt. Sposób wybierasz w sekcji Płyta w polu **Gdy się nie mieści**:
+
+- *Podziel na płyty po kolei* (domyślnie) — płyta 1 pełna, potem płyta 2 …; najmniej płyt.
+- *Podziel na płyty równomiernie* — na każdej płycie tyle samo sztuk (np. 50 → 17/17/16).
+- *Podziel na płyty według elementów* — na każdej płycie tylko sztuki jednego elementu (oryginał i jego kopie).
+- *Nie dziel (błąd)* — jak dotąd: gdy układ się nie mieści, jest zablokowany.
+
+**Uzupełnij ostatnią płytę kopiami** dodaje kopie, aż ostatnia płyta będzie pełna (przy *według elementów* ostatnia płyta każdego elementu jest uzupełniana kopiami tego elementu).
+
+Nad podglądem karty pokazują płyty, jak strony w LightBurn; karta z błędem jest oznaczona ✖, a komunikaty podają płytę. Zapis jest możliwy tylko wtedy, gdy wszystkie płyty przejdą kontrolę. Wszystkie płyty mają te same ustawienia siatki i tę samą płytę; obiekty zostawione na miejscu (Ustawienia → Zapisywanie) są tylko na płycie 1.
+
+**Zapis:** płyta 1 zostaje na rozmieszczanej stronie, a płyty 2 … są dodawane jako nowe strony zaraz za nią („Strona 1 – płyta 2“ …). W LightBurn przełączaj strony (**Window → Pages**) i wycinaj płyty po kolei — Preview i Frame działają tylko z aktywną stroną. Alternatywnie **Ustawienia → Płyty → Jako osobne pliki** zapisuje jeden plik na płytę (`…__plyta1.lbrn2` …). Wartości domyślne (sposób podziału, uzupełnianie, ostrzeżenie powyżej liczby płyt) są w **Ustawienia → Płyty**.
+
 [← Siatka](grid.md) · [Dalej: zapis →](save.md)

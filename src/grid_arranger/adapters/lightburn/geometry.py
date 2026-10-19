@@ -14,6 +14,7 @@ AABB je **přesný** podle extrémů Bézierových úseků (spec. kap. 5 bod 2);
 
 from __future__ import annotations
 
+import functools
 import math
 import re
 from dataclasses import dataclass
@@ -66,6 +67,16 @@ class Vertex:
 
 
 def parse_vertlist(text: str) -> list[Vertex]:
+    return list(_parse_vertlist_cached(text))
+
+
+@functools.lru_cache(maxsize=8192)
+def _parse_vertlist_cached(text: str) -> tuple[Vertex, ...]:
+    """Kopie výrobků a texty mají shodné seznamy vrcholů — každý se rozparsuje jen jednou."""
+    return tuple(_parse_vertlist(text))
+
+
+def _parse_vertlist(text: str) -> list[Vertex]:
     chunks = text.split("V")
     if chunks[0].strip():
         raise GeometryError("VertList nezačíná vrcholem")
