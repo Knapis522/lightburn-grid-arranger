@@ -28,6 +28,8 @@ Když se kusy nevejdou na jednu desku, aplikace je rozdělí na více desek. Jak
 
 Nad náhledem jsou záložky desek jako stránky v LightBurnu; záložka s chybou je označená ✖ a hlášení uvádí desku. Uložit lze, jen když projdou všechny desky. Všechny desky mají stejné nastavení mřížky a stejnou desku; objekty ponechané na místě (Nastavení → Uložení) jsou jen na desce 1.
 
+Při více deskách ukazuje seznam Výrobky kusy zobrazené desky (číslované na ní) a pod nimi nezaškrtnuté a vynechané objekty; automaticky doplněné kopie jsou šedé. **Ctrl+A** označí všechny výrobky — při více deskách jen na zobrazené desce.
+
 **Uložení:** deska 1 zůstane na rozkládané stránce a desky 2 … se přidají jako nové stránky hned za ni („Stránka 1 – deska 2“ …). V LightBurnu přepínejte stránky (**Window → Pages**) a pálte jednu desku po druhé — Preview i Frame pracují jen s aktivní stránkou. Případně **Nastavení → Desky → Jako samostatné soubory** uloží co deska, to soubor (`…__deska1.lbrn2` …). Výchozí hodnoty (způsob rozdělení, doplnění, upozornění nad počet desek) jsou v **Nastavení → Desky**.
 
 [← Mřížka](grid.md) · [Další: uložení →](save.md)

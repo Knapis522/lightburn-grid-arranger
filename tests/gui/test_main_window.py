@@ -1226,3 +1226,57 @@ def test_rename_item_is_remembered_for_the_file(make_window, tmp_path, settings)
     w2._ask_text = lambda title, label, value: ""
     w2.rename_item("G2")
     assert w2.labels == {} and settings.item_labels(w2.project.info.sha256) == {}
+
+
+def test_multi_board_list_shows_current_board_and_ctrl_a(make_window, tmp_path):
+    w = make_window("en")
+    w.open_project(write(tmp_path, project([card(0, 400 + 70 * i, text=f"K{i + 1}") for i in range(6)]
+                                           + [card(800, 800, text="X")], mirror_x=False)))
+    _row(w, "G7").setCheckState(Qt.CheckState.Unchecked)
+    w.chk_auto_cols.setChecked(True)
+    w.spin_bw.set_mm(230)
+    w.spin_bh.set_mm(150)
+    assert [len(b.layout.placements) for b in w.job.boards] == [4, 2]
+    ids = [w.list_items.item(i).data(Qt.ItemDataRole.UserRole) for i in range(w.list_items.count())]
+    assert ids[:4] == ["G1", "G2", "G3", "G4"] and "G5" not in ids and "G7" in ids  # nevybraný zůstává vidět
+    assert w.lbl_count.text().startswith("Board 1: 4 pieces")
+    w.act_select_all.trigger()
+    assert w.selected_ids() == {"G1", "G2", "G3", "G4"}
+    w.tabs_boards.setCurrentIndex(1)
+    ids = [w.list_items.item(i).data(Qt.ItemDataRole.UserRole) for i in range(w.list_items.count())]
+    assert ids[:2] == ["G5", "G6"] and _row(w, "G5").text().startswith("1. G5")
+    w.act_select_all.trigger()
+    assert w.selected_ids() == {"G5", "G6"}
+    w.chk_board_fill.setChecked(True)  # automatické kopie: v seznamu, ale nejdou zaškrtnout
+    filled = [i for i in w.job.filled if i in {pl.item_id for pl in w.plan.layout.placements}]
+    assert filled and not (_row(w, filled[0]).flags() & Qt.ItemFlag.ItemIsUserCheckable)
+    assert "(copy of G6)" in _row(w, filled[0]).text() or "(copy of G5)" in _row(w, filled[0]).text()
+
+
+def test_ctrl_a_single_board_selects_arranged_items(make_window, tmp_path):
+    w = make_window("en")
+    w.open_project(write(tmp_path, four()))
+    _row(w, "G2").setCheckState(Qt.CheckState.Unchecked)
+    w.act_select_all.trigger()
+    assert w.selected_ids() == {"G1", "G3", "G4"}
+
+
+def test_last_open_folder_is_remembered(make_window, tmp_path, settings, monkeypatch):
+    from PySide6.QtWidgets import QFileDialog
+
+    sub = tmp_path / "zakazky"
+    sub.mkdir()
+    src = write(sub, four())
+    assert settings.last_open_dir() == ""
+    w = make_window("en")
+    w.open_project(src)
+    assert settings.last_open_dir() == str(sub.resolve())
+    seen = []
+    monkeypatch.setattr(QFileDialog, "getOpenFileName", staticmethod(lambda *a, **k: (seen.append(a[2]), ("", ""))[1]))
+    w2 = make_window("en")  # nové okno = jako po restartu (stejná uložená nastavení)
+    w2.open_project()
+    assert seen == [str(sub.resolve())]
+    import shutil
+
+    shutil.rmtree(sub)  # složka zmizela → dialog začne bez ní
+    assert settings.last_open_dir() == ""

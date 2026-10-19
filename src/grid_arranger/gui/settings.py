@@ -362,6 +362,18 @@ class UserSettings:
         self._s.setValue("ui/panel_side", value)
         self._s.sync()
 
+    # --- poslední složka s projekty ----------------------------------------------------------------
+    def last_open_dir(self) -> str:
+        """Složka naposledy otevřeného projektu (dialog Otevřít v ní začne); prázdné, pokud už neexistuje."""
+        from pathlib import Path
+
+        v = str(self._s.value("files/last_open_dir", "") or "")
+        return v if v and Path(v).is_dir() else ""
+
+    def set_last_open_dir(self, folder: str) -> None:
+        self._s.setValue("files/last_open_dir", str(folder))
+        self._s.sync()
+
     # --- velikost a poloha okna (včetně maximalizace) a rozdělení panelů ---------------------------
     def window_geometry(self) -> bytes | None:
         v = self._s.value("ui/window_geometry")

@@ -812,7 +812,7 @@ Každá deska: stejné parametry mřížky (sloupce nebo automaticky, mezery, na
 
 **Další volby:** *Doplnit poslední desku kopiemi* (kopie výrobků poslední desky do jejího zaplnění, střídavě); upozornění při počtu desek nad limitem (výchozí 10; změna nebo vypnutí v Nastavení).
 
-**Náhled:** záložky desek nad náhledem jako stránky v LightBurnu (Deska 1, 2…); záložka s chybou je označená; hlášení uvádí desku. Uložit lze, jen když projdou všechny desky.
+**Náhled:** záložky desek nad náhledem jako stránky v LightBurnu (Deska 1, 2…); záložka s chybou je označená; hlášení uvádí desku. Uložit lze, jen když projdou všechny desky. Seznam Výrobky při více deskách ukazuje kusy zobrazené desky (číslované na ní, automatické kopie z doplnění šedě a bez zaškrtávátka) a pod nimi nerozmisťované objekty; **Ctrl+A** označí všechny rozmisťované výrobky, při více deskách jen na zobrazené desce (připomínka vlastníka 19. 10. 2026).
 
 **Vstup se stránkami (KAL-06, rozhodnutí 7 B):** projekt se stránkami se načte; uživatel zvolí stránku, kterou rozkládá (výchozí: aktivní stránka `CurrentPage`). Ostatní stránky zůstanou bajtově beze změny. Výrobky = nejvyšší skupiny zvolené stránky; překážky = ponechané objekty jen této stránky.
 

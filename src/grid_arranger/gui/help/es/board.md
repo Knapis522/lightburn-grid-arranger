@@ -28,6 +28,8 @@ Cuando las piezas no caben en una plancha, la aplicación las reparte en varias 
 
 Sobre la vista previa, unas pestañas muestran las planchas, como las páginas en LightBurn; una pestaña con error se marca con ✖ y los mensajes indican la plancha. Solo se puede guardar cuando todas las planchas superan la comprobación. Todas las planchas tienen los mismos ajustes de cuadrícula y la misma plancha; los objetos que se dejan en su sitio (Configuración → Guardado) están solo en la plancha 1.
 
+Con varias planchas, la lista Elementos muestra las piezas de la plancha mostrada (numeradas en ella) y debajo los objetos sin marcar y excluidos; las copias añadidas automáticamente aparecen en gris. **Ctrl+A** resalta todos los elementos — con varias planchas, solo los de la plancha mostrada.
+
 **Guardado:** la plancha 1 se queda en la página distribuida y las planchas 2 … se añaden como páginas nuevas justo después («Página 1 – plancha 2» …). En LightBurn, cambie de página (**Window → Pages**) y corte una plancha tras otra — Preview y Frame trabajan solo con la página activa. Como alternativa, **Configuración → Planchas → Como archivos separados** guarda un archivo por plancha (`…__plancha1.lbrn2` …). Los valores predeterminados (modo de reparto, completar, aviso por encima de un número de planchas) están en **Configuración → Planchas**.
 
 [← Cuadrícula](grid.md) · [Siguiente: guardado →](save.md)

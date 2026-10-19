@@ -28,6 +28,8 @@ Quand les pièces ne tiennent pas sur une plaque, l'application les répartit su
 
 Au-dessus de l'aperçu, des onglets montrent les plaques, comme les pages dans LightBurn ; un onglet en erreur est marqué ✖ et les messages indiquent la plaque. L'enregistrement n'est possible que si toutes les plaques passent la vérification. Toutes les plaques ont les mêmes réglages de grille et la même plaque ; les objets laissés en place (Paramètres → Enregistrement) ne sont que sur la plaque 1.
 
+Avec plusieurs plaques, la liste Éléments montre les pièces de la plaque affichée (numérotées sur celle-ci), puis les objets non cochés et exclus ; les copies ajoutées automatiquement sont grisées. **Ctrl+A** met en évidence tous les éléments — avec plusieurs plaques, seulement ceux de la plaque affichée.
+
 **Enregistrement :** la plaque 1 reste sur la page disposée et les plaques 2 … sont ajoutées comme nouvelles pages juste après elle (« Page 1 – plaque 2 » …). Dans LightBurn, changez de page (**Window → Pages**) et découpez une plaque après l'autre — Preview et Frame ne travaillent qu'avec la page active. Sinon, **Paramètres → Plaques → Comme fichiers séparés** enregistre un fichier par plaque (`…__plaque1.lbrn2` …). Les valeurs par défaut (mode de répartition, complément, avertissement au-delà d'un nombre de plaques) sont dans **Paramètres → Plaques**.
 
 [← Grille](grid.md) · [Suite : enregistrement →](save.md)

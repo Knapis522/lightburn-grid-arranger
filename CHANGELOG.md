@@ -14,6 +14,8 @@ Formát podle [Keep a Changelog](https://keepachangelog.com/), verze podle SemVe
 - **Více desek** (V20-01, spec. v1.29–1.30): když se kusy nevejdou na jednu desku, rozdělí se na více desek — *postupně*, *rovnoměrně* nebo *podle výrobků* (volba *Když se nevejde* v sekci Deska); *Doplnit poslední desku kopiemi* (u výrobků jejich vlastními kopiemi). Záložky desek nad náhledem, hlášení podle desek. Desky 2… se uloží jako **nové stránky projektu LightBurnu** hned za rozkládanou stránkou (Preview i Frame v LightBurnu pracují jen s aktivní stránkou), nebo jako samostatné soubory. Nová stránka Nastavení → Desky (výchozí způsob, doplnění, upozornění nad počet desek, stránky/soubory). Nezávislá kontrola ověřuje každou desku.
 - **Projekty se stránkami** lze otevřít; v sekci Projekt volba *Rozložit stránku* (ostatní stránky beze změny).
 - **Přejmenování výrobků** (F2, dvojklik, pravé tlačítko): vlastní název jen v aplikaci — v seznamu, protokolu a názvech stránek; pamatuje se pro daný soubor.
+- **Poslední složka s projekty:** dialog Otevřít projekt začne ve složce naposledy otevřeného projektu, i po restartu aplikace.
+- **Ctrl+A** označí všechny rozmisťované výrobky; při více deskách jen na zobrazené desce. Seznam Výrobky při více deskách ukazuje kusy zobrazené desky.
 
 ### Změněno
 - **Nezaškrtnuté objekty se ve výchozím stavu vynechávají** (dříve zůstávaly na místě jako překážky). Původní chování: Nastavení → Uložení → Ponechat na místě.

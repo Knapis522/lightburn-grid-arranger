@@ -230,6 +230,12 @@ class MainWindow(QMainWindow):
         self.act_clear_selection.setShortcutContext(Qt.ShortcutContext.WindowShortcut)
         self.act_clear_selection.triggered.connect(self.clear_selection)
         self.addAction(self.act_clear_selection)
+        self.act_select_all = QAction(self)  # Ctrl+A: označit všechny výrobky (na zobrazené desce)
+        self.act_select_all.setShortcut(QKeySequence(QKeySequence.StandardKey.SelectAll))
+        self.act_select_all.setShortcutContext(Qt.ShortcutContext.WindowShortcut)
+        self.act_select_all.triggered.connect(self.select_all_items)
+        self.addAction(self.act_select_all)
+        self.menu_edit.addAction(self.act_select_all)
         self.menu_edit.addAction(self.act_clear_selection)
 
         # --- levý panel: sbalitelné sekce (stav se pamatuje), kompaktní mřížka polí
@@ -530,6 +536,7 @@ class MainWindow(QMainWindow):
         self.act_restore.setText(self.tr("Res&tore left-out objects"))
         self.act_rename.setText(self.tr("Re&name item…"))
         self.act_clear_selection.setText(self.tr("Clear &selection"))
+        self.act_select_all.setText(self.tr("Highlight &all items"))
         self.toolbar.setWindowTitle(self.tr("Toolbar"))
         for act in self._toolbar_icons:
             tip = act.text().replace("&", "").rstrip("…")
@@ -773,7 +780,7 @@ class MainWindow(QMainWindow):
             return False
         if path is None:
             path, _ = QFileDialog.getOpenFileName(
-                self, self.tr("Open LightBurn project"), "",
+                self, self.tr("Open LightBurn project"), self.settings.last_open_dir(),
                 self.tr("LightBurn project (*.lbrn2);;All files (*)"))
             if not path:
                 return False
@@ -783,6 +790,7 @@ class MainWindow(QMainWindow):
             self._error(message(e.code, **e.params))
             return False
         self.project = project
+        self.settings.set_last_open_dir(str(Path(project.info.path).resolve().parent))  # pamatuje se i po restartu
         self.labels = self.settings.item_labels(project.info.sha256)
         self.board_index = 0
         self.settings.remember_laser(project.info.device_name, project.info.orientation.origin)
@@ -936,13 +944,21 @@ class MainWindow(QMainWindow):
             self._rebuilding = False
             return
         items = {it.id: it for it in self.project.items} | {cid: self._lookup(cid) for cid in self.copies}
-        rows = [items[i] for i in self.order]
+        board = self.board_pieces()
+        if board is not None:  # více desek: jen kusy zobrazené desky (+ nerozmisťované objekty níže)
+            rows = [self._lookup(i) for i in board]
+            self._numbers = {i: n for n, i in enumerate(board, start=1)}
+        else:
+            rows = [items[i] for i in self.order]
+            self._numbers = {i: n for n, i in enumerate(self.order, start=1)}
+        self._list_key = (self.board_index, tuple(board) if board is not None else None)
         rows += [it for it in self.project.items if it.supported and it.id not in self.order and it.id not in self.omitted]
         rows += [it for it in self.project.items if not it.supported and it.id not in self.omitted]
         keep = self.settings.unselected_policy() == "keep"
         omit = self.effective_omit()
         dim = self.palette().color(QPalette.ColorGroup.Disabled, QPalette.ColorRole.Text)
         out_note = self.tr("Not in the output (Settings → Saving).")
+        filled = self.job.filled if self.job is not None else {}
         for it in rows:
             selected = it.id in self.order
             li = QListWidgetItem(self._item_text(it))
@@ -954,7 +970,11 @@ class MainWindow(QMainWindow):
                 tips.append(out_note)
                 li.setForeground(dim)
             li.setToolTip("\n".join(tips))
-            if it.supported:
+            if it.id in filled:  # automatická kopie z doplnění desky: jen informace
+                li.setFlags(li.flags() & ~Qt.ItemFlag.ItemIsUserCheckable)
+                li.setForeground(dim)
+                li.setToolTip(self.tr("Added automatically to fill the board."))
+            elif it.supported:
                 li.setFlags(li.flags() | Qt.ItemFlag.ItemIsUserCheckable)
                 li.setCheckState(Qt.CheckState.Checked if selected else Qt.CheckState.Unchecked)
             else:
@@ -981,21 +1001,28 @@ class MainWindow(QMainWindow):
                 self.list_items.setCurrentItem(li)
             li.setSelected(iid in chosen)
         n_sup = sum(1 for it in self.project.items if it.supported)
-        self.lbl_count.setText(
-            self.tr("Selected %n item(s)", "", len(self.order)) + " / " + self.tr("supported: {s}, total: {t}").format(s=n_sup, t=len(self.project.items)))
+        text = self.tr("Selected %n item(s)", "", len(self.order)) + " / " + \
+            self.tr("supported: {s}, total: {t}").format(s=n_sup, t=len(self.project.items))
+        if board is not None:
+            text = self.tr("Board {n}: %n piece(s)", "", len(board)).replace("{n}", str(self.board_index + 1)) + " · " + text
+        self.lbl_count.setText(text)
         self.list_items.blockSignals(False)
         self._rebuilding = False
         self._on_list_selection()
 
     def _item_text(self, it) -> str:
-        selected = it.id in self.order
-        num = f"{self.order.index(it.id) + 1}. " if selected else ""
+        numbers = getattr(self, "_numbers", {})
+        filled = self.job.filled if self.job is not None else {}
+        num = f"{numbers[it.id]}. " if it.id in numbers and (it.id in self.order or it.id in filled) else ""
         if it.supported:
             b = it.file_bbox
             size = self.tr("{w} × {h} {unit}").format(w=self._len(b[2] - b[0], short=True), h=self._len(b[3] - b[1], short=True),
                                                     unit=self.unit.suffix)
-            name = self.labels.get(self.copies.get(it.id, it.id), it.label)
-            label = f"{name}  " + self.tr("(copy of {src})").format(src=self.copies[it.id]) if it.id in self.copies else name
+            name = self.labels.get(self.copies.get(it.id) or (self.job.filled.get(it.id) if self.job else None) or it.id, it.label)
+            if it.id in self.copies or it.id in filled:
+                label = f"{name}  " + self.tr("(copy of {src})").format(src=self.copies.get(it.id) or filled[it.id])
+            else:
+                label = name
             text = f"{num}{it.id}  {label}  —  {size}"
             if it.id not in self.copies and self.quantity(it.id) > 1:
                 text += f"  ×{self.quantity(it.id)}"
@@ -1040,10 +1067,24 @@ class MainWindow(QMainWindow):
         return li.data(Qt.ItemDataRole.UserRole) if li is not None else None
 
     def _lookup(self, iid: str):
-        """Výrobek podle id — u kopie zdrojový výrobek s id kopie."""
+        """Výrobek podle id — u kopie (i automatické z doplnění desky) zdrojový výrobek s id kopie."""
         if iid in self.copies:
             return replace(self.project.item(self.copies[iid]), id=iid)
+        if self.job is not None and iid in self.job.filled:
+            return replace(self.project.item(self.job.filled[iid]), id=iid)
         return self.project.item(iid)
+
+    def board_pieces(self) -> list[str] | None:
+        """Kusy zobrazené desky v pořadí mřížky — jen když je desek víc (jinak None)."""
+        if self.job is None or len(self.job.boards) <= 1 or self.plan is None:
+            return None
+        return [pl.item_id for pl in sorted(self.plan.layout.placements, key=lambda p: p.index)]
+
+    def select_all_items(self) -> None:
+        """Ctrl+A: označí všechny rozmisťované výrobky — při více deskách jen na zobrazené desce."""
+        board = self.board_pieces()
+        ids = set(board) if board is not None else set(self.order)
+        self._select_ids(ids)
 
     def selected_ids(self) -> set[str]:
         return {li.data(Qt.ItemDataRole.UserRole) for li in self.list_items.selectedItems()}
@@ -1106,6 +1147,7 @@ class MainWindow(QMainWindow):
             return
         self.board_index = index
         self.plan = self.job.boards[index]
+        self._rebuild_item_list()
         self._sync_corner_fields()
         self._draw()
         self._refresh_issue_texts()
@@ -1788,6 +1830,9 @@ class MainWindow(QMainWindow):
         except GridError as e:
             self.plan_error = e
         self._sync_board_tabs()
+        board = self.board_pieces()
+        if getattr(self, "_list_key", None) != (self.board_index, tuple(board) if board is not None else None):
+            self._rebuild_item_list()
         self._sync_corner_fields()
         self._sync_auto_columns()
         self._sync_profile_combo()

@@ -28,6 +28,8 @@ Gdy elementy nie mieszczą się na jednej płycie, aplikacja dzieli je na kilka 
 
 Nad podglądem karty pokazują płyty, jak strony w LightBurn; karta z błędem jest oznaczona ✖, a komunikaty podają płytę. Zapis jest możliwy tylko wtedy, gdy wszystkie płyty przejdą kontrolę. Wszystkie płyty mają te same ustawienia siatki i tę samą płytę; obiekty zostawione na miejscu (Ustawienia → Zapisywanie) są tylko na płycie 1.
 
+Przy kilku płytach lista Elementy pokazuje sztuki wyświetlanej płyty (numerowane na niej), a pod nimi niezaznaczone i pominięte obiekty; automatycznie dodane kopie są szare. **Ctrl+A** zaznacza wszystkie elementy — przy kilku płytach tylko na wyświetlanej płycie.
+
 **Zapis:** płyta 1 zostaje na rozmieszczanej stronie, a płyty 2 … są dodawane jako nowe strony zaraz za nią („Strona 1 – płyta 2“ …). W LightBurn przełączaj strony (**Window → Pages**) i wycinaj płyty po kolei — Preview i Frame działają tylko z aktywną stroną. Alternatywnie **Ustawienia → Płyty → Jako osobne pliki** zapisuje jeden plik na płytę (`…__plyta1.lbrn2` …). Wartości domyślne (sposób podziału, uzupełnianie, ostrzeżenie powyżej liczby płyt) są w **Ustawienia → Płyty**.
 
 [← Siatka](grid.md) · [Dalej: zapis →](save.md)

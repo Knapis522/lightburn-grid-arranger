@@ -28,6 +28,8 @@ Keď sa kusy nevojdú na jednu dosku, aplikácia ich rozdelí na viac dosiek. Ak
 
 Nad náhľadom sú záložky dosiek ako strany v LightBurne; záložka s chybou je označená ✖ a hlásenie uvádza dosku. Uložiť možno, len keď prejdú všetky dosky. Všetky dosky majú rovnaké nastavenie mriežky a rovnakú dosku; objekty ponechané na mieste (Nastavenia → Ukladanie) sú len na doske 1.
 
+Pri viacerých doskách zobrazuje zoznam Výrobky kusy zobrazenej dosky (číslované na nej) a pod nimi nezaškrtnuté a vynechané objekty; automaticky doplnené kópie sú sivé. **Ctrl+A** označí všetky výrobky — pri viacerých doskách len na zobrazenej doske.
+
 **Uloženie:** doska 1 zostane na rozkladanej strane a dosky 2 … sa pridajú ako nové strany hneď za ňu („Strana 1 – doska 2“ …). V LightBurne prepínajte strany (**Window → Pages**) a páľte jednu dosku po druhej — Preview aj Frame pracujú len s aktívnou stranou. Prípadne **Nastavenia → Dosky → Ako samostatné súbory** uloží čo doska, to súbor (`…__doska1.lbrn2` …). Predvolené hodnoty (spôsob rozdelenia, doplnenie, upozornenie nad počet dosiek) sú v **Nastavenia → Dosky**.
 
 [← Mriežka](grid.md) · [Ďalej: uloženie →](save.md)

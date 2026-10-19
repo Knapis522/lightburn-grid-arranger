@@ -28,6 +28,8 @@ Quando i pezzi non entrano in una lastra, l'applicazione li divide su più lastr
 
 Sopra l'anteprima le schede mostrano le lastre, come le pagine in LightBurn; una scheda con errore è contrassegnata da ✖ e i messaggi indicano la lastra. Si può salvare solo quando tutte le lastre superano il controllo. Tutte le lastre hanno le stesse impostazioni della griglia e la stessa lastra; gli oggetti lasciati al loro posto (Impostazioni → Salvataggio) sono solo sulla lastra 1.
 
+Con più lastre, l'elenco Elementi mostra i pezzi della lastra visualizzata (numerati su di essa) e sotto gli oggetti non spuntati ed esclusi; le copie aggiunte automaticamente sono grigie. **Ctrl+A** evidenzia tutti gli elementi — con più lastre solo quelli della lastra visualizzata.
+
 **Salvataggio:** la lastra 1 resta sulla pagina disposta e le lastre 2 … vengono aggiunte come nuove pagine subito dopo («Pagina 1 – lastra 2» …). In LightBurn cambia pagina (**Window → Pages**) e taglia una lastra alla volta — Preview e Frame lavorano solo con la pagina attiva. In alternativa **Impostazioni → Lastre → Come file separati** salva un file per lastra (`…__lastra1.lbrn2` …). I valori predefiniti (modo di divisione, completamento, avviso oltre un numero di lastre) sono in **Impostazioni → Lastre**.
 
 [← Griglia](grid.md) · [Avanti: salvataggio →](save.md)
