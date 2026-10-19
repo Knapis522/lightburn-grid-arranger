@@ -116,6 +116,7 @@ python -m grid_arranger arrange "..\lightburn-grid-arranger-data\projekt.lbrn2" 
 - Automatické testy: jen syntetická data (`tests/unit/helpers.py`, později `tests/fixtures/synthetic/`).
 - Reálné projekty: mimo Git v `..\lightburn-grid-arranger-data\`.
 - Diagnostické prototypy KAL-00: `tools/kal00/` (nejsou součástí aplikace).
+- Formuláře pro issues: `.github/ISSUE_TEMPLATE/` (chyba, oprava překladu, nápad; prázdné issue vypnuté). Štítky: `.github/labels.yml`. Štítky a úvodní issues milníků založí `tools\github_setup.ps1` (potřebuje GitHub CLI: `winget install GitHub.cli`, `gh auth login`; opakované spuštění štítky aktualizuje a existující issues přeskočí).
 
 ## Pravidla
 

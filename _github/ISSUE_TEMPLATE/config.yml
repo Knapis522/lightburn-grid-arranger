@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Security problem
+    url: https://github.com/Knapis522/lightburn-grid-arranger/security/advisories/new
+    about: Please report security problems privately, not as a public issue.
+  - name: Help (F1) in the application
+    url: https://github.com/Knapis522/lightburn-grid-arranger/tree/main/src/grid_arranger/gui/help/en
+    about: The offline help also covers troubleshooting and common warnings.

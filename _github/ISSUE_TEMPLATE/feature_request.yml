@@ -1,0 +1,32 @@
+name: Idea / feature request
+description: Suggest a new feature or a change to how the application works.
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thank you for the idea. You may write in English or Czech. Please check the [roadmap](https://github.com/Knapis522/lightburn-grid-arranger/blob/main/docs/ROADMAP.md) and existing issues first.
+        The application only moves and copies existing objects of a LightBurn project into an exact grid and always saves a new file — ideas that need to change cut settings, draw new geometry or control the laser are outside its scope.
+  - type: textarea
+    id: problem
+    attributes:
+      label: What do you want to achieve?
+      description: Describe the real job (material, number of pieces, laser) rather than the solution.
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: How could it work?
+  - type: textarea
+    id: now
+    attributes:
+      label: How do you do it today?
+      description: e.g. manually in LightBurn, with Array, …
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Before submitting
+      options:
+        - label: I did not attach any customer project or file I am not allowed to share.
+          required: true

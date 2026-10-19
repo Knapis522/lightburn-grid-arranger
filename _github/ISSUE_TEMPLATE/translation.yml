@@ -1,0 +1,67 @@
+name: Translation fix
+description: A wrong, unclear or cut-off text in the user interface or in the help (F1).
+labels: ["translation"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        The German, Slovak, Polish, French, Spanish and Italian translations were machine-made and still await a native-speaker review — every correction helps.
+        Please keep the laser terms consistent with the glossary in [`docs/TRANSLATING.md`](https://github.com/Knapis522/lightburn-grid-arranger/blob/main/docs/TRANSLATING.md). Larger corrections are welcome as a pull request (see the same file).
+  - type: dropdown
+    id: language
+    attributes:
+      label: Language
+      options:
+        - Čeština (cs)
+        - English (en)
+        - Deutsch (de)
+        - Slovenčina (sk)
+        - Polski (pl)
+        - Français (fr)
+        - Español (es)
+        - Italiano (it)
+    validations:
+      required: true
+  - type: dropdown
+    id: where
+    attributes:
+      label: Where
+      options:
+        - Main window
+        - Settings window
+        - Messages / warnings
+        - Help (F1)
+        - Installer
+    validations:
+      required: true
+  - type: textarea
+    id: current
+    attributes:
+      label: Current text
+      description: Copy the text exactly, or attach a screenshot.
+    validations:
+      required: true
+  - type: textarea
+    id: proposed
+    attributes:
+      label: Proposed text
+      description: Keep placeholders such as `{name}` and `%n` unchanged.
+    validations:
+      required: true
+  - type: textarea
+    id: why
+    attributes:
+      label: Why (optional)
+      description: e.g. wrong term, sounds unnatural, text is cut off, does not match the help.
+  - type: input
+    id: version
+    attributes:
+      label: Application version
+      placeholder: e.g. 0.1.0-alpha.6
+  - type: checkboxes
+    id: licence
+    attributes:
+      label: Licence
+      options:
+        - label: I agree that my proposed text may be used under the project's MIT licence.
+          required: true

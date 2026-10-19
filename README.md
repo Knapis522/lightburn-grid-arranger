@@ -73,6 +73,10 @@ tools\build_exe.bat                  # installer + ZIP in dist\v<version>\
 
 Customer projects are never stored in this repository; tests use synthetic projects only.
 
+## Reporting problems and ideas
+
+Use [Issues](https://github.com/Knapis522/lightburn-grid-arranger/issues/new/choose) — there are forms for a bug report, a translation fix and an idea. **Do not attach customer projects:** if a project is needed to reproduce a problem, reduce it to a minimal sample first. Security problems: see [SECURITY.md](SECURITY.md).
+
 ## Licence
 
 Source code: [MIT License](LICENSE). Bundled third-party components (Qt/PySide6 under LGPL-3.0, Python, …): [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).

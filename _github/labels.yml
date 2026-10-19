@@ -1,0 +1,22 @@
+# Issue labels used by this repository (reference; GitHub does not read this file automatically).
+- name: bug
+  color: d73a4a
+  description: Something does not work
+- name: enhancement
+  color: a2eeef
+  description: New feature or change
+- name: translation
+  color: 0e8a16
+  description: User interface or help text in one of the 8 languages
+- name: lightburn-format
+  color: 5319e7
+  description: Reading or writing .lbrn2 projects, LightBurn compatibility (KAL tests)
+- name: help wanted
+  color: 008672
+  description: Extra attention is needed — e.g. a native-speaker translation review
+- name: needs-sample
+  color: fbca04
+  description: A reduced sample project (without customer data) is needed to reproduce
+- name: milestone
+  color: 1d76db
+  description: Roadmap milestone (see docs/ROADMAP.md)

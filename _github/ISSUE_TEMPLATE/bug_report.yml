@@ -1,0 +1,96 @@
+name: Bug report
+description: Something does not work, the result in LightBurn is wrong, or the application shows an unexpected error.
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thank you for reporting a problem. You may write in English or Czech.
+
+        > [!WARNING]
+        > **Do not attach customer projects or any `.lbrn2` file you are not allowed to share.** This repository is public — everything you attach can be seen by anyone.
+        > If a project is needed to reproduce the problem, reduce it first: delete everything that is not needed, replace texts and logos with simple shapes, and check that the problem still happens.
+        >
+        > Security problems: please report them privately via **Security → Report a vulnerability**, not here.
+  - type: input
+    id: version
+    attributes:
+      label: Application version
+      description: Shown in **Help → About** and in the window title.
+      placeholder: e.g. 0.1.0-alpha.6
+    validations:
+      required: true
+  - type: input
+    id: lightburn
+    attributes:
+      label: LightBurn version
+      placeholder: e.g. 2.2.00
+    validations:
+      required: true
+  - type: input
+    id: laser
+    attributes:
+      label: Laser and origin
+      description: Laser type and where its origin is (top left, top right, bottom left, bottom right). Mirror X / Mirror Y from the project header if you know them.
+      placeholder: e.g. CO2 laser, origin top right
+  - type: input
+    id: windows
+    attributes:
+      label: Windows version
+      placeholder: e.g. Windows 11 23H2
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options:
+        - Opening a project
+        - Selecting items / order
+        - Grid, rotation, placement
+        - Several boards / pages
+        - Saving the new project
+        - Result looks wrong in LightBurn
+        - Settings / language / help
+        - Installation / updates
+        - Other
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      description: What you did, step by step, including the important settings (columns, gaps, board size, anchor, number of copies, boards mode).
+      placeholder: |
+        1. Open project …
+        2. Select …
+        3. Set …
+        4. Click Save as new project
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: What you expected
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: What happened
+      description: The exact text of any error message helps a lot. Screenshots are welcome (check they show no customer data).
+    validations:
+      required: true
+  - type: textarea
+    id: protocol
+    attributes:
+      label: Save protocol (optional)
+      description: If the problem is about a saved project, paste the protocol — the `.json` file with the same name saved next to it (if the protocol is switched on in Settings → Saving). It contains no geometry, but it does contain **file paths and item names** — replace any that reveal customer data.
+      render: json
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Before submitting
+      options:
+        - label: I am using the newest release (or I wrote the version above).
+          required: true
+        - label: I did not attach any customer project or file I am not allowed to share.
+          required: true
