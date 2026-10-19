@@ -1109,3 +1109,48 @@ def test_unselected_policy_in_settings_dialog(make_window, tmp_path):
     d.unselected_radios["keep"].setChecked(True)
     d.apply()
     assert w.settings.unselected_policy() == "keep" and w.plan.omitted == frozenset()
+
+
+def test_unsaved_changes_prompt_on_open_and_close(make_window, tmp_path):
+    from PySide6.QtGui import QCloseEvent
+
+    w = make_window("en")
+    src = write(tmp_path, project([card(10, 20, text="A"), card(300, 400, text="B")]))
+    other = write(tmp_path, project([card(10, 20, text="X")]), name="other.lbrn2")
+    assert w.open_project(src) and not w.is_dirty() and not w.windowTitle().endswith("*")
+    assert w.open_project(other) and ("unsaved", True) not in w._dialogs  # beze změn: bez dotazu
+    assert w.open_project(src)
+    w.spin_cols.setValue(1)
+    assert w.is_dirty() and w.windowTitle().endswith("karty.lbrn2*")
+    w.undo()  # zpět na otevřený stav = bez změn
+    assert not w.is_dirty()
+    w.spin_cols.setValue(1)
+    # Zrušit: projekt zůstane otevřený
+    w._unsaved_answers = ["cancel"]
+    assert not w.open_project(other)
+    assert w.project.info.path == src and w._dialogs[-1] == ("unsaved", True)
+    ev = QCloseEvent()
+    w._unsaved_answers = ["cancel"]
+    w.closeEvent(ev)
+    assert not ev.isAccepted()
+    # Uložit: uloží nový projekt (bez dalšího dotazu) a teprve pak otevře jiný
+    w._unsaved_answers = ["save"]
+    assert w.open_project(other)
+    assert (tmp_path / "karty__grid_001.lbrn2").exists() and w.project.info.path == other
+    # Neukládat
+    w.spin_cols.setValue(3)
+    w._unsaved_answers = ["discard"]
+    ev = QCloseEvent()
+    w.closeEvent(ev)
+    assert ev.isAccepted()
+
+
+def test_saving_clears_unsaved_state_and_blocked_layout_offers_only_discard(make_window, tmp_path):
+    w = make_window("en")
+    w.open_project(write(tmp_path, project([card(10, 20, text="A"), card(300, 400, text="B")])))
+    w.spin_cols.setValue(1)
+    assert w.save_new_project(confirm=False) is not None and not w.is_dirty()
+    w.spin_bw.setValue(50)  # přesah desky: uložit nejde
+    assert w.is_dirty() and not w.act_save.isEnabled()
+    w._unsaved_answers = ["cancel"]
+    assert not w.confirm_leave_project() and w._dialogs[-1] == ("unsaved", False)

@@ -20,4 +20,6 @@ Istniejące pliki ani oryginał nigdy nie są nadpisywane — jeśli wybrany pli
 3. Uruchom **Preview** i obejrzyj ścieżki.
 4. Sprawdź położenie na maszynie (**Frame**). Dopiero potem tnij, pod nadzorem.
 
+**Niezapisane zmiany:** jeśli układ zmienił się od otwarcia lub ostatniego zapisu, pasek tytułu pokazuje gwiazdkę po nazwie projektu (`karty.lbrn2*`). Przy zamykaniu aplikacji, otwieraniu innego projektu lub instalowaniu aktualizacji aplikacja pyta, czy zapisać układ jako nowy projekt, odrzucić go, czy anulować. Jeśli układ nie przeszedł kontroli, proponuje tylko odrzucenie lub anulowanie.
+
 [← Płyta](board.md) · [Rozwiązywanie problemów →](troubleshooting.md)

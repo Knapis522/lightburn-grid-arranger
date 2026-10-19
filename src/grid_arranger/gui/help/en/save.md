@@ -20,4 +20,6 @@ Neither existing files nor the original are ever overwritten — if the chosen f
 3. Run **Preview** and inspect the paths.
 4. Check the position on the machine (**Frame**). Only then cut, under supervision.
 
+**Unsaved changes:** when the layout has changed since the project was opened or last saved, the window title shows an asterisk after the project name (`karty.lbrn2*`). When you close the application, open another project or install an update, the application asks whether to save the layout as a new project, discard it, or cancel. If the layout did not pass the checks, it only offers discard or cancel.
+
 [← Board](board.md) · [Troubleshooting →](troubleshooting.md)

@@ -20,4 +20,6 @@ I file esistenti e l'originale non vengono mai sovrascritti — se il file scelt
 3. Avvia la **Preview** ed esamina i percorsi.
 4. Controlla la posizione sulla macchina (**Frame**). Solo allora taglia, sotto sorveglianza.
 
+**Modifiche non salvate:** se la disposizione è cambiata dall'apertura o dall'ultimo salvataggio, la barra del titolo mostra un asterisco dopo il nome del progetto (`karty.lbrn2*`). Alla chiusura dell'applicazione, all'apertura di un altro progetto o all'installazione di un aggiornamento, l'applicazione chiede se salvare la disposizione come nuovo progetto, scartarla o annullare. Se la disposizione non ha superato il controllo, propone solo di scartare o annullare.
+
 [← Lastra](board.md) · [Risoluzione dei problemi →](troubleshooting.md)

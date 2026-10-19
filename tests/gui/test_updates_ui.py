@@ -164,3 +164,17 @@ def test_update_dialog_lists_all_newer_versions(qapp, make_window):
     assert d.choice == "skip"
     d2 = UpdateDialog(info, False, w)
     assert d2.btn_primary.text() == "Otevřít stránku ke stažení"
+
+
+def test_install_asks_about_unsaved_layout_first(ctl_factory, tmp_path):
+    from tests.integration.lbrn2_builder import card, project
+
+    w, c, log = ctl_factory(lambda: releases("v0.0.1", NEWER))
+    src = tmp_path / "p.lbrn2"
+    src.write_bytes(project([card(10, 20), card(300, 400)]))
+    w.open_project(src)
+    w.spin_cols.setValue(1)
+    log["choice"] = "install"
+    w._unsaved_answers = ["cancel"]
+    c.check(manual=True)
+    assert w._dialogs[-1] == ("unsaved", True) and log["launched"] == [] and log["quit"] == 0

@@ -1,7 +1,7 @@
 # Stav projektu
 
 **Aktualizováno:** 2026-10-18
-**Verze specifikace:** 1.27 (`docs/specification.md`)
+**Verze specifikace:** 1.28 (`docs/specification.md`)
 **Verze aplikace:** rozpracovaná `0.1.0-alpha.6` (nevydaná). Poslední vydaná: `v0.1.0-alpha.5` (2026-10-18, GitHub Pre-release); předchozí `v0.1.0-alpha.4` (2026-10-18), `v0.1.0-alpha.3` (2026-10-17, `a804585`), `v0.1.0-alpha.2` (2026-10-17, `d8c0cc9`), `v0.1.0-alpha.1` (2026-10-16, `64a5d00`).
 
 > Tento soubor je hlavní předávací dokument. Při navázání práce: přečíst tento soubor → `ROADMAP.md` → relevantní kapitolu specifikace. Nepředpokládat, že funkce funguje jen proto, že existuje kód.
@@ -76,3 +76,4 @@
 - 2026-10-18 — `0.1.0-alpha.6` (spec. v1.25): **počet kusů výrobků** (V11-02) — tím jsou funkce verze 1.1 implementované. 500 testů. Dál: V20-01 (rozdělení zakázky na více desek).
 - 2026-10-18 — spec. v1.26 (přání vlastníka, PUBLIC-01 / L10N-PUBLIC-01): **další jazyky** — rozhraní a příručka v němčině, slovenštině, polštině, francouzštině, španělštině a italštině (vedle cs/en), volba v Nastavení → Obecné → Jazyk; detekce jazyka Windows pro všech osm jazyků; samokontrola sestavení ověřuje příručku ve všech jazycích. Překlady jsou **strojové (AI) a čekají na revizi rodilými mluvčími** — do té doby nesplňují L10N-PUBLIC-01. Dál: ruční test počtu kusů, snímky dlouhých textů na Windows (T-I18N-21), MVP-ACCEPT.
 - 2026-10-18 — spec. v1.27 (přání vlastníka): **vynechání objektů z výstupu** — nezaškrtnuté objekty se ve výchozím stavu nezapíší (Nastavení → Uložení → Ponechat na místě = dosavadní chování), Delete vynechá vybrané (i šedé skupiny), Úpravy → Obnovit vynechané objekty; sdílená geometrie z vynechaného tvaru se přesune do prvního ponechaného, nezávislá kontrola rozšířena. Ověřeno na všech testovacích projektech vlastníka (každý tvar vynechán zvlášť, kontrola bez problémů). 558 testů. Vynechávání v aplikaci ověřeno vlastníkem 2026-10-18; **čeká KAL-07** (výstupy `kal07\…__kal07_bez_…lbrn2` otevřít v LightBurnu). Rozpracováno: více desek (V20-01, stránky LightBurnu) — čeká vzorky KAL-06.
+- 2026-10-19 — spec. v1.28 (připomínka vlastníka): **upozornění na neuložené rozložení** při zavření aplikace, otevření jiného projektu a instalaci aktualizace (Uložit / Neukládat / Zrušit), hvězdička v titulku. 561 testů.

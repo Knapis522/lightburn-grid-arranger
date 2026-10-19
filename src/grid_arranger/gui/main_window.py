@@ -602,6 +602,9 @@ class MainWindow(QMainWindow):
             self.splitter.restoreState(QByteArray(splitter))
 
     def closeEvent(self, event) -> None:  # noqa: N802
+        if not self.confirm_leave_project():
+            event.ignore()
+            return
         self.settings.set_window_state(bytes(self.saveGeometry()), bytes(self.splitter.saveState()))
         super().closeEvent(event)
 
@@ -649,7 +652,7 @@ class MainWindow(QMainWindow):
         """Jako v LightBurnu: název aplikace a verze, za pomlčkou otevřený projekt."""
         title = f"{self.app_title()} {display_version()}"
         if self.project is not None:
-            title += f" - {self.project.info.path.name}"
+            title += f" - {self.project.info.path.name}" + ("*" if self.is_dirty() else "")
             saved = self._saved_elsewhere()
             if saved is not None:  # uloženo do nového souboru, ale dál se pracuje s otevřeným projektem
                 title += " " + self.tr("(last saved as {name})").format(name=saved.name)
@@ -689,6 +692,8 @@ class MainWindow(QMainWindow):
 
     # ====================================================================== projekt
     def open_project(self, path: str | Path | None = None) -> bool:
+        if not self.confirm_leave_project():
+            return False
         if path is None:
             path, _ = QFileDialog.getOpenFileName(
                 self, self.tr("Open LightBurn project"), "",
@@ -722,7 +727,46 @@ class MainWindow(QMainWindow):
         self._update_project_labels()
         self._rebuild_item_list()
         self.recompute()
+        self._mark_clean()
         return True
+
+    # --- neuložené změny ------------------------------------------------------------------------
+    def _mark_clean(self) -> None:
+        """Současné rozložení = uložený / právě otevřený stav (bez upozornění při zavření)."""
+        self._clean_state = self._snapshot() if self.project is not None else None
+        self._update_title()
+
+    def is_dirty(self) -> bool:
+        """Rozložení se od otevření projektu nebo od posledního uložení změnilo."""
+        clean = getattr(self, "_clean_state", None)
+        return self.project is not None and clean is not None and self._snapshot() != clean
+
+    def confirm_leave_project(self) -> bool:
+        """Před zavřením / otevřením jiného projektu: neuložené změny uložit, zahodit, nebo akci zrušit."""
+        if not self.is_dirty():
+            return True
+        can_save = self.plan is not None and self.plan.report.can_save
+        answer = self._ask_unsaved(can_save)
+        if answer == "save":
+            return self.save_new_project(ask_after=False) is not None
+        return answer == "discard"
+
+    def _ask_unsaved(self, can_save: bool) -> str:
+        """``save`` | ``discard`` | ``cancel``."""
+        name = self.project.info.path.name
+        if can_save:
+            text = self.tr("The arrangement of {name} has unsaved changes. Save it as a new project?").format(name=name)
+            buttons = (QMessageBox.StandardButton.Save | QMessageBox.StandardButton.Discard
+                       | QMessageBox.StandardButton.Cancel)
+        else:
+            text = self.tr("The arrangement of {name} has unsaved changes, but it cannot be saved — it did not pass "
+                           "the checks. Discard the changes?").format(name=name)
+            buttons = QMessageBox.StandardButton.Discard | QMessageBox.StandardButton.Cancel
+        box = QMessageBox(QMessageBox.Icon.Warning, self.app_title(), text, buttons, self)
+        box.setDefaultButton(QMessageBox.StandardButton.Save if can_save else QMessageBox.StandardButton.Cancel)
+        result = box.exec()
+        return {QMessageBox.StandardButton.Save: "save", QMessageBox.StandardButton.Discard: "discard"}.get(
+            QMessageBox.StandardButton(result), "cancel")
 
     def _set_board(self, p: BoardPreset) -> None:
         values = (p.width, p.height, *p.margins)
@@ -1578,6 +1622,7 @@ class MainWindow(QMainWindow):
         self._draw()
         self._refresh_issue_texts()
         self._record_history()
+        self._update_title()
 
     def _draw(self) -> None:
         from ..domain.models import Rect
@@ -1671,7 +1716,7 @@ class MainWindow(QMainWindow):
 
 
     # ====================================================================== uložení
-    def save_new_project(self, confirm: bool = True) -> Path | None:
+    def save_new_project(self, confirm: bool = True, ask_after: bool = True) -> Path | None:
         if self.plan is None or not self.plan.report.can_save:
             return None
         src = self.project.info.path
@@ -1697,11 +1742,15 @@ class MainWindow(QMainWindow):
             text += "\n\n" + self.tr("Protocol:\n{proto}").format(proto=res.protocol)
         self.last_saved = res.output
         self.act_open_in_lb.setEnabled(True)
+        self._mark_clean()
         self._update_project_labels()
         text += "\n\n" + self.tr("Open it in LightBurn (button below, or File → Open — not Import) and check the layers, "
                                    "Preview and the position on the machine before cutting.")
         text += "\n\n" + self.tr("The original project stays open here. To continue arranging the saved file "
                                    "instead, tick the option below.")
+        if not ask_after:  # ukládá se před zavřením / otevřením jiného projektu
+            self.statusBar().showMessage(self.tr("Saved: {out}").format(out=res.output.name), 8000)
+            return res.output
         open_lb, switch = self._ask_after_save(text)
         if open_lb:
             self.open_in_lightburn(res.output)

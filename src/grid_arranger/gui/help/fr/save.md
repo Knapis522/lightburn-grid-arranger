@@ -20,4 +20,6 @@ Ni les fichiers existants ni l'original ne sont jamais écrasés — si le fichi
 3. Lancez la **Preview** et examinez les trajets.
 4. Vérifiez la position sur la machine (**Frame**). Ensuite seulement, découpez, sous surveillance.
 
+**Modifications non enregistrées :** si la disposition a changé depuis l'ouverture ou le dernier enregistrement, la barre de titre affiche un astérisque après le nom du projet (`karty.lbrn2*`). À la fermeture de l'application, à l'ouverture d'un autre projet ou à l'installation d'une mise à jour, l'application demande s'il faut enregistrer la disposition comme nouveau projet, l'abandonner ou annuler. Si la disposition n'a pas passé la vérification, seuls l'abandon et l'annulation sont proposés.
+
 [← Plaque](board.md) · [Résolution des problèmes →](troubleshooting.md)

@@ -20,4 +20,6 @@ Vorhandene Dateien und das Original werden nie überschrieben — existiert die 
 3. Starten Sie die **Preview** und prüfen Sie die Bahnen.
 4. Prüfen Sie die Position an der Maschine (**Frame**). Erst dann schneiden, unter Aufsicht.
 
+**Ungespeicherte Änderungen:** Wenn sich das Layout seit dem Öffnen oder dem letzten Speichern geändert hat, zeigt die Titelleiste ein Sternchen nach dem Projektnamen (`karty.lbrn2*`). Beim Schließen der Anwendung, beim Öffnen eines anderen Projekts oder beim Installieren eines Updates fragt die Anwendung, ob das Layout als neues Projekt gespeichert, verworfen oder die Aktion abgebrochen werden soll. Hat das Layout die Prüfung nicht bestanden, bietet sie nur Verwerfen oder Abbrechen an.
+
 [← Platte](board.md) · [Problemlösung →](troubleshooting.md)

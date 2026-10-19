@@ -68,6 +68,13 @@ def make_window(qapp, qm_dir, settings):
         w._open_in_lb_answer = False  # tlačítko „Otevřít v LightBurnu“ v hlášení o uložení
         w._switch_answer = False  # zaškrtnuto „Pokračovat s uloženým souborem“
         w._ask_after_save = lambda text: (w._dialogs.append(("info", text)), (w._open_in_lb_answer, w._switch_answer))[1]
+        w._unsaved_answers = []  # odpovědi na „neuložené změny“ (save/discard/cancel); prázdné = discard
+
+        def _ask_unsaved(can_save):
+            w._dialogs.append(("unsaved", can_save))
+            return w._unsaved_answers.pop(0) if w._unsaved_answers else "discard"
+
+        w._ask_unsaved = _ask_unsaved
         w._opened = []  # soubory „otevřené“ přiřazeným programem (LightBurn)
         w._open_file = lambda path: (w._opened.append(path), True)[1]
         windows.append((w, lm))

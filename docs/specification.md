@@ -1,6 +1,6 @@
 # Grid Arranger for LightBurn — technická specifikace
 
-**Verze dokumentu:** 1.27 (vynechání objektů z výstupu; viz kap. 21.2)  
+**Verze dokumentu:** 1.28 (upozornění na neuložené rozložení; viz kap. 21.5)  
 **Datum:** 17. 10. 2026  
 **Název produktu:** Grid Arranger for LightBurn; spustitelný soubor `GridArranger.exe`; Python balíček `grid_arranger`; repozitář `lightburn-grid-arranger`. Neoficiální nástroj, nikoli produkt LightBurn Software.  
 **Stav:** Interní pracovní podklad; nikoli hotový nebo otestovaný plugin  
@@ -737,6 +737,8 @@ for each placed_item:
 
 **Přijímací důkaz:** T-MVP-19 až 26 a integrační LB-01 až LB-13.
 
+**Neuložené rozložení (v1.28, 19. 10. 2026, připomínka vlastníka):** změní-li uživatel rozložení od otevření projektu nebo od posledního uložení (porovnává se stav pro krok zpět: pořadí, kopie, vynechané objekty, úhly, mřížka, umístění, deska, cílový laser), titulek okna ukazuje `název.lbrn2*`. Před zavřením aplikace, otevřením jiného projektu a spuštěním instalátoru aktualizace se aplikace zeptá: **Uložit** (uložení jako nový projekt se stejnými pojistkami jako Ctrl+S; zrušení dialogu uložení = akce se neprovede) / **Neukládat** / **Zrušit**. Neprošlo-li rozložení kontrolou, nabízí jen Neukládat / Zrušit. Návrat krokem zpět do otevřeného stavu = beze změn.
+
 ### 21.6 Souhrnná akceptace MVP
 
 MVP je **splněné až po současném úspěchu** testů MVP-01 až MVP-07 (včetně MVP-06 ovládání a MVP-07 jazyků), odpovídajících T-I18N-01 až 16, běžného používání přes PySide6 GUI na čistém Windows bez Pythonu a ruční kontrole alespoň tří různých reálných podporovaných projektů v LightBurnu (včetně odlišných textů a dvou vrstev). Případné nepodporované případy musí být výslovně zaznamenané v matici kompatibility. Žádný známý nebezpečný výstup nesmí projít automatickou validací.
@@ -1074,6 +1076,7 @@ Toto jsou **ověřovací úkoly**, nikoli potvrzené technické možnosti souča
 
 ## 28. Záznam změn specifikace
 
+- **v1.28 (19. 10. 2026):** Upozornění na neuložené rozložení při zavření, otevření jiného projektu a instalaci aktualizace; hvězdička v titulku (kap. 21.5).
 - **v1.27 (18. 10. 2026):** Na přání vlastníka vynechání objektů z výstupu (kap. 21.2): nezaškrtnuté objekty se ve výchozím stavu do výstupu nezapíší (volba Ponechat na místě v Nastavení → Uložení), Delete vynechá vybrané objekty, Obnovit vynechané objekty je vrátí; přesun sdílené geometrie z vynechaných tvarů, rozšířená nezávislá kontrola; ověření v LightBurnu = KAL-07.
 - **v1.26 (18. 10. 2026):** Na přání vlastníka zahájeno PUBLIC-01 / L10N-PUBLIC-01: katalogy rozhraní a offline příručka v `de/sk/pl/fr/es/it` (vedle `cs/en`), volba jazyka nabízí všech osm jazyků. Překlady jsou **strojový návrh** — stav viz kap. 36.5 (*Stav k v1.26*); jazyk se nesmí prohlásit za ověřený bez lidské revize.
 - **v1.25 (18. 10. 2026):** Počet kusů výrobků (V11-02 dokončeno): pole Počet kusů, kopie hned za originálem, 0 = vynechat; CLI `--quantity` (kap. 22.2).

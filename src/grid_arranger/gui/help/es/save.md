@@ -20,4 +20,6 @@ Ni los archivos existentes ni el original se sobrescriben nunca — si el archiv
 3. Ejecute la **Preview** y revise los recorridos.
 4. Compruebe la posición en la máquina (**Frame**). Solo entonces corte, bajo supervisión.
 
+**Cambios sin guardar:** si la distribución ha cambiado desde que se abrió o se guardó por última vez, la barra de título muestra un asterisco tras el nombre del proyecto (`karty.lbrn2*`). Al cerrar la aplicación, abrir otro proyecto o instalar una actualización, la aplicación pregunta si guardar la distribución como proyecto nuevo, descartarla o cancelar. Si la distribución no superó la comprobación, solo ofrece descartar o cancelar.
+
 [← Plancha](board.md) · [Solución de problemas →](troubleshooting.md)

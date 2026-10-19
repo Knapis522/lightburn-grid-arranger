@@ -20,4 +20,6 @@ Existujúce súbory ani originál sa nikdy neprepisujú — ak zvolený súbor (
 3. Spustite **Preview** a prezrite dráhy.
 4. Overte polohu na stroji (**Frame**). Až potom režte, pod dohľadom.
 
+**Neuložené zmeny:** ak sa rozloženie od otvorenia alebo posledného uloženia zmenilo, je za názvom projektu v titulku okna hviezdička (`karty.lbrn2*`). Pri zatvorení aplikácie, otvorení iného projektu alebo inštalácii aktualizácie sa aplikácia opýta, či rozloženie uložiť ako nový projekt, zahodiť, alebo akciu zrušiť. Ak rozloženie neprešlo kontrolou, ponúkne len zahodiť alebo zrušiť.
+
 [← Doska](board.md) · [Riešenie problémov →](troubleshooting.md)

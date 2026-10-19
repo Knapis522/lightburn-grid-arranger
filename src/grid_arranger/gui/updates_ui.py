@@ -211,6 +211,9 @@ class UpdateController(QObject):
             if err.code != "cancelled":
                 self.window._error(self.error_text(err))
             return
+        confirm = getattr(self.window, "confirm_leave_project", None)
+        if confirm is not None and not confirm():  # neuložené rozložení: uživatel instalaci zrušil
+            return
         try:
             self._launch(installer_command(path))
         except OSError as e:
